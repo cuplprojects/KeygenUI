@@ -3,6 +3,7 @@ import { Form, Button, Row, Col } from 'react-bootstrap';
 import FormDataComponent from './FormDataComponent';
 import FileUpload from './FileUpload';
 import ShuffleConfig from './ShuffleConfig';
+import PropTypes from 'prop-types';
 
 const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [editing, setEditing] = useState(false);
@@ -171,5 +172,11 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         </Row>
     );
 };
+
+FormComponent.propTypes = {
+    formSubmitted: PropTypes.bool.isRequired,
+    setFormSubmitted: PropTypes.func.isRequired
+  };
+
 
 export default FormComponent;

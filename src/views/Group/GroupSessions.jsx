@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Form, Alert, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import PropTypes from 'prop-types';
 
 const GroupSessions = ({ group, onViewSession }) => {
     const [sessions, setSessions] = useState(null);
@@ -146,5 +147,10 @@ const GroupSessions = ({ group, onViewSession }) => {
         </div>
     );
 };
+
+GroupSessions.propTypes = {
+    group: PropTypes.string.isRequired,
+    onViewSession: PropTypes.func.isRequired
+  };
 
 export default GroupSessions;

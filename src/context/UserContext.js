@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import PropTypes from 'prop-types'; // Import PropTypes
 
 // Helper function to retrieve keygenUser from local storage
 const getKeygenUserFromLocalStorage = () => {
@@ -35,6 +36,11 @@ export const UserProvider = ({ children }) => {
       {children}
     </UserContext.Provider>
   );
+};
+
+// Add prop type validation for the 'children' prop
+UserProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export const useUser = () => {

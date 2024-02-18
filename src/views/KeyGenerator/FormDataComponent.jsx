@@ -1,5 +1,6 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
+import PropTypes from 'prop-types';
 
 const FormDataComponent = ({ formData, handleInputChange, disabled }) => {
   return (
@@ -51,5 +52,16 @@ const FormDataComponent = ({ formData, handleInputChange, disabled }) => {
     </div>
   );
 };
-
+FormDataComponent.propTypes = {
+  formData: PropTypes.arrayOf(
+    PropTypes.shape({
+      sn: PropTypes.number.isRequired,
+      page: PropTypes.string.isRequired,
+      qNumber: PropTypes.string.isRequired,
+      key: PropTypes.string.isRequired
+    })
+  ).isRequired,
+  handleInputChange: PropTypes.func.isRequired,
+  disabled: PropTypes.bool.isRequired
+};
 export default FormDataComponent;

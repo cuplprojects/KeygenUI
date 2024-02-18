@@ -6,6 +6,7 @@ import { CSVLink } from 'react-csv';
 import DefaultAvatar from './../../assets/images/avatars/defaultavatar.jpg';
 import { faEye, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import PropTypes from 'prop-types'; // Import PropTypes
 
 // import Security from '../../Security';
 
@@ -83,16 +84,17 @@ const UserTable = ({ users }) => {
   );
 };
 
-// UserTable.propTypes = {
-//   users: PropTypes.arrayOf(
-//     PropTypes.shape({
-//       userId: PropTypes.number.isRequired,
-//       username: PropTypes.string.isRequired,
-//       email: PropTypes.string.isRequired,
-//       name: PropTypes.string.isRequired,
-//       mobileNumber: PropTypes.string.isRequired,
-//     })
-//   ).isRequired,
-// };
+UserTable.propTypes = {
+  users: PropTypes.arrayOf(
+    PropTypes.shape({
+      userId: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+      email: PropTypes.string.isRequired,
+      mobileNumber: PropTypes.string.isRequired,
+      designation: PropTypes.string.isRequired,
+      profilePicturePath: PropTypes.string // Assuming profilePicturePath is optional
+    })
+  ).isRequired,
+};
 
 export default UserTable;

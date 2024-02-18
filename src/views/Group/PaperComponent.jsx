@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const PaperComponent = ({ session }) => {
     return (
@@ -9,5 +10,12 @@ const PaperComponent = ({ session }) => {
         </div>
     );
 };
+
+PaperComponent.propTypes = {
+    session: PropTypes.shape({
+      session_Name: PropTypes.string.isRequired,
+      university_id: PropTypes.string.isRequired
+    }).isRequired
+  };
 
 export default PaperComponent;

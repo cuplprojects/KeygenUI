@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Table, Button, Form, Row, Col } from 'react-bootstrap';
 import { CSVLink } from 'react-csv';
 import $ from 'jquery';
+import PropTypes from 'prop-types'; // Import PropTypes
 
 const KeysTable = ({ keys }) => {
     const [filteredKeys, setFilteredKeys] = useState(keys);
@@ -169,5 +170,10 @@ const KeysTable = ({ keys }) => {
         </>
     );
 };
+
+KeysTable.propTypes = {
+    keys: PropTypes.array.isRequired,
+};
+
 
 export default KeysTable;

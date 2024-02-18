@@ -1,5 +1,6 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
+import PropTypes from 'prop-types';
 
 const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
   const handleFileInputChange = async (e) => {
@@ -36,6 +37,12 @@ const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
       />
     </Form.Group>
   );
+};
+
+FileUpload.propTypes = {
+  setFormData: PropTypes.func.isRequired,
+  setNumberOfQuestions: PropTypes.func.isRequired,
+  disabled: PropTypes.bool.isRequired
 };
 
 export default FileUpload;

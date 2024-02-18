@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { Table, Button } from 'react-bootstrap';
 import $ from 'jquery'
+import PropTypes from 'prop-types';
+
 const GroupTable = ({ groups, onViewGroup }) => {
   const tableRef = useRef(null);
 
@@ -38,5 +40,16 @@ const GroupTable = ({ groups, onViewGroup }) => {
     </div>
   );
 };
+
+GroupTable.propTypes = {
+  groups: PropTypes.arrayOf(
+    PropTypes.shape({
+      university_id: PropTypes.string.isRequired,
+      university_Name: PropTypes.string.isRequired
+    })
+  ).isRequired,
+  onViewGroup: PropTypes.func.isRequired
+};
+
 
 export default GroupTable;

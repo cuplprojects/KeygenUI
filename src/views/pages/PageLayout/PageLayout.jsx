@@ -3,6 +3,7 @@
 import React from 'react';
 import { Card, CardBody, CardGroup, Col, Container, Row } from 'react-bootstrap';
 import loginicon from './../../../assets/images/loginicon.png'
+import PropTypes from 'prop-types';
 
 const PageLayout = ({ children }) => {
     return (
@@ -45,6 +46,9 @@ const PageLayout = ({ children }) => {
             {/* </footer> */}
         </div>
     );
+};
+PageLayout.propTypes = {
+    children: PropTypes.node.isRequired, // Children should be a node and is required
 };
 
 export default PageLayout;

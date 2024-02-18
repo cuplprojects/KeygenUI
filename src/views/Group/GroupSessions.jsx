@@ -24,7 +24,7 @@ const GroupSessions = ({ group, onViewSession }) => {
 
     useEffect(() => {
         fetchSessions();
-    }, [group]);
+    });
 
     const fetchSessions = () => {
         fetch(`https://localhost:7247/api/Sessions/University/${group}`, {

@@ -83,8 +83,8 @@ const KeysTable = ({ keys }) => {
 
     useEffect(() => {
         filterKeys();
-    }, [universityFilter, setFilter, paperCodeFilter]);
-
+    }, [filterKeys]);
+    
     return (
         <>
             <Form className="mb-3">

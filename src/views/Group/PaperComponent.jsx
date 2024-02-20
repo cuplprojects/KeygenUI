@@ -13,9 +13,9 @@ const PaperComponent = ({ session }) => {
 
 PaperComponent.propTypes = {
     session: PropTypes.shape({
-      session_Name: PropTypes.string.isRequired,
-      university_id: PropTypes.string.isRequired
+        session_Name: PropTypes.string.isRequired,
+        groupID: PropTypes.number.isRequired
     }).isRequired
-  };
+};
 
 export default PaperComponent;

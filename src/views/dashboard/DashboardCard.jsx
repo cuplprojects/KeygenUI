@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import $ from 'jquery';
 import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 const DashboardCard = ({ link, color, iconClass, value, title }) => {
     const counterRef = useRef(null);
@@ -40,6 +41,14 @@ const DashboardCard = ({ link, color, iconClass, value, title }) => {
             </Link>
         </div>
     );
+};
+
+DashboardCard.propTypes = {
+    link: PropTypes.string.isRequired,
+    color: PropTypes.string.isRequired,
+    iconClass: PropTypes.string.isRequired,
+    value: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired
 };
 
 export default DashboardCard;

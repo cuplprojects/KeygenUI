@@ -23,12 +23,12 @@ const GroupTable = ({ groups, onViewGroup }) => {
         </thead>
         <tbody>
           {groups.map((group) => (
-            <tr key={group.university_Id}>
-              <td>{group.university_Name}</td>
+            <tr key={group.groupID}>
+              <td>{group.groupName}</td>
               <td>
                 <Button
                   variant="primary"
-                  onClick={() => onViewGroup(group.university_Id)}
+                  onClick={() => onViewGroup(group.groupID)}
                 >
                   View
                 </Button>
@@ -44,8 +44,8 @@ const GroupTable = ({ groups, onViewGroup }) => {
 GroupTable.propTypes = {
   groups: PropTypes.arrayOf(
     PropTypes.shape({
-      university_id: PropTypes.string.isRequired,
-      university_Name: PropTypes.string.isRequired
+      groupID: PropTypes.string.isRequired,
+      groupName: PropTypes.string.isRequired
     })
   ).isRequired,
   onViewGroup: PropTypes.func.isRequired

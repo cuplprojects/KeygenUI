@@ -3,6 +3,8 @@ import { Table, Button, Form, Alert, InputGroup } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
+const sessionApi = process.env.REACT_APP_API_SESSION;
+const sessionbyGroupIDApi = process.env.REACT_APP_API_SESSION_BY_GROUP;
 
 const GroupSessions = ({ group, onViewSession }) => {
     const [sessions, setSessions] = useState(null);
@@ -27,7 +29,7 @@ const GroupSessions = ({ group, onViewSession }) => {
     });
 
     const fetchSessions = () => {
-        fetch(`https://localhost:7247/api/Sessions/University/${group}`, {
+        fetch(`${sessionbyGroupIDApi}/${group}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -55,14 +57,14 @@ const GroupSessions = ({ group, onViewSession }) => {
             return;
         }
 
-        fetch('https://localhost:7247/api/Sessions', {
+        fetch(sessionApi, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 session_Name: selectedSession,
-                university_id: group
+                groupID: group
             })
         })
             .then((res) => {
@@ -91,7 +93,7 @@ const GroupSessions = ({ group, onViewSession }) => {
                     >
                         <option value="">Select Session</option>
                         {generatedSessions.map((session, index) => {
-                            const isSessionAdded = sessions && sessions.some(s => s.session_Name === session && s.university_id === group);
+                            const isSessionAdded = sessions && sessions.some(s => s.session_Name === session && s.groupID === group);
                             return (
                                 <option key={index} value={session} disabled={isSessionAdded}>
                                     {session} {isSessionAdded ? "(Already Added)" : ""}

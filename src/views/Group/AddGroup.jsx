@@ -8,8 +8,8 @@ const AddGroup = () => {
 
   // State for form data
   const [formData, setFormData] = useState({
-    group_Id:0,
-    group_Name: "",
+    groupID:0,
+    groupName: "",
     region: "",
     city: "",
     address: ""
@@ -48,8 +48,8 @@ const AddGroup = () => {
       setErrorText("");
       // Clear form data after successful submission
       setFormData({
-        group_Id:0,
-        group_Name: "",
+        groupID:0,
+        groupName: "",
         region: "",
         city: "",
         address: ""
@@ -104,8 +104,8 @@ const AddGroup = () => {
               <Form.Control
                 type="text"
                 placeholder="Enter group name"
-                name="group_Name"
-                value={formData.group_Name}
+                name="groupName"
+                value={formData.groupName}
                 onChange={handleChange}
                 required
               />

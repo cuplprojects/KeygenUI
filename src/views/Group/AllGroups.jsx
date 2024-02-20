@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import GroupTable from './GroupTable';
 import GroupSessions from './GroupSessions'; // Import the GroupSessions component
 import PaperComponent from './PaperComponent'; // Import the PaperComponent
+const apiUrl = process.env.REACT_APP_API_GROUP;
 
 const AllGroups = () => {
     const [groups, setGroups] = useState([]);
@@ -12,7 +13,7 @@ const AllGroups = () => {
     const [selectedSession, setSelectedSession] = useState(null); // State to store the selected session for PaperComponent
 
     useEffect(() => {
-        fetch("https://localhost:7247/api/Universities")
+        fetch(apiUrl)
             .then((res) => res.json())
             .then((data) => {
                 setGroups(data);

@@ -10,11 +10,12 @@ import {
   CDropdownMenu,
   CDropdownToggle,
 } from '@coreui/react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const AppHeaderDropdown = () => {
   const { keygenUser, logout } = useUser();
   const [profilePicturePath, setProfilePicturePath] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,19 +41,21 @@ const AppHeaderDropdown = () => {
     // Example: history.push('/login');
   };
 
+  const handleProfileClick = () => {
+    navigate(`/users/view-user/${keygenUser.user_ID}`);
+  };
+
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
         <CAvatar src={profilePicturePath} size="md" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-          <Link to={`/users/view-user/${keygenUser.user_ID}`}>
-        <CDropdownItem >
-            <i className="icon-user me-2"></i>
-            Profile
+        <CDropdownItem onClick={handleProfileClick}>
+          <i className="icon-user me-2"></i>
+          Profile
         </CDropdownItem>
-          </Link>
-        <CDropdownItem href="#">
+        <CDropdownItem >
           <i className="icon-settings me-2"></i>
           Settings
         </CDropdownItem>

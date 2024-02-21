@@ -14,6 +14,7 @@ const PaperComponent = ({ session }) => {
         const filteredPapers = data.filter(paper => paper.groupID === session.groupID && paper.sessionID === session.session_Id);
         setPapers(filteredPapers);
         setLoading(false);
+        console.log(papers)
       })
       .catch(error => {
         console.error('Error fetching papers:', error);
@@ -34,7 +35,7 @@ const PaperComponent = ({ session }) => {
     <div className='border border-1 p-3'>
       <div className='d-flex align-items-center justify-content-between mb-2'>
         <h3>Papers</h3>
-        <Button as={Link} to={`/Groups/AddPaper/?groupID=${session.groupID}&sessionID=${session.session_Id}`}>Add Paper</Button>
+        <Button as={Link} to={`/Groups/AddPaper/${session.groupID}/${session.session_Id}`}>Add Paper</Button>
       </div>
       <hr />
       <Card className='my-2'>
@@ -74,7 +75,7 @@ PaperComponent.propTypes = {
   session: PropTypes.shape({
     session_Name: PropTypes.string.isRequired,
     groupID: PropTypes.number.isRequired,
-    sessionID: PropTypes.number.isRequired
+    session_Id: PropTypes.number.isRequired
   }).isRequired
 };
 

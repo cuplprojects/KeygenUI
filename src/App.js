@@ -6,6 +6,7 @@ import { CSpinner, useColorModes } from '@coreui/react';
 import { UserProvider } from './context/UserContext';
 import PrivateRoute from './components/PrivateRoute'; // Import PrivateRoute component
 import './scss/style.scss';
+import MyComponent from './components/MyComponent';
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
@@ -61,6 +62,7 @@ const App = () => {
             <Route exact path="/" element={<Navigate to="/login" />} />
             <Route path="/login" element={<Login />} />
             <Route path="/ForgotPassword" element={<ForgotPassword />} />
+            <Route path="/MyComponent" element={<MyComponent />} />
 
             {/* Private route for authenticated users */}
             <Route path="/ChangePassword" element={<PrivateRoute element={<ChangePassword />} />} />

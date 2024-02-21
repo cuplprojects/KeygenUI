@@ -27,27 +27,26 @@ const AddPaper = React.lazy(()=>import('./views/Group/Papers/AddPaper'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  { path: '/dashboard', name: 'Dashboard', element: Dashboard, permissionType: 'dashboard.view' },
 
-  // MyRouts
-  // user Routes
-  { path: '/users', name: 'All Users', element: AllUsers },
-  { path: '/users/add-user', name: 'Add User', element: AddUser },
-  { path: '/users/view-user/:userId', name: 'view User', element: ViewUser },
-  { path: '/users/update-user/:userId', name: 'Update User', element: UpdateUser },
-  //Permission Page Route
-  { path: '/users/AddPermissions/:userId', Name: 'User Permissions', element: Permission},
-  // KeyGenerator,,
-  { path: '/KeyGenerator', name: 'Key Generator', element: AllKeys },
-  { path: '/KeyGenerator/Newkey', name: 'New Key', element: NewKey },
-  { path: '/KeyGenerator/download-keys', name: 'Download Keys', element: DownloadKeys },
-// Group
-  { path: '/Groups/add-Group', name: 'Add Group', element: AddGroup },
-  { path: '/Groups', name: 'All Groups', element: AllGroups },
-  // Paper
-  { path: '/Groups/AddPaper', name: 'Add Paper', element: AddPaper }
+  // User Routes
+  { path: '/users', name: 'All Users', element: AllUsers, permissionType: 'users.view' },
+  { path: '/users/add-user', name: 'Add User', element: AddUser, permissionType: 'users.add' },
+  { path: '/users/view-user/:userId', name: 'view User', element: ViewUser, permissionType: 'users.view' },
+  { path: '/users/update-user/:userId', name: 'Update User', element: UpdateUser, permissionType: 'users.update' },
 
+  // KeyGenerator Routes
+  { path: '/KeyGenerator', name: 'Key Generator', element: AllKeys, permissionType: 'keygenerator.view' },
+  { path: '/KeyGenerator/Newkey', name: 'New Key', element: NewKey, permissionType: 'keygenerator.add' },
+  { path: '/KeyGenerator/download-keys', name: 'Download Keys', element: DownloadKeys, permissionType: 'keygenerator.download' },
 
-]
+  // Group Routes
+  { path: '/Groups/add-Group', name: 'Add Group', element: AddGroup, permissionType: 'groups.add' },
+  { path: '/Groups', name: 'All Groups', element: AllGroups, permissionType: 'groups.view' },
+
+  // Paper Routes
+  { path: '/Groups/AddPaper/:groupID/:sessionID', name: 'Add Paper', element: AddPaper, permissionType: 'paper.add' }
+];
+
 
 export default routes

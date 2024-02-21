@@ -134,12 +134,18 @@ const GroupSessions = ({ group, onViewSession }) => {
                             </thead>
                             <tbody>
                                 {sessions
-                                    .filter(session => session.session_Name.toLowerCase().includes(searchQuery.toLowerCase()))
+                                    .filter((session) =>
+                                        session.session_Name.toLowerCase().includes(searchQuery.toLowerCase())
+                                    )
                                     .sort((a, b) => a.session_Name.localeCompare(b.session_Name)) // Sort sessions by session name
                                     .map((session) => (
                                         <tr key={session.session_Id}>
-                                            <td className='text-center'>{session.session_Name}</td>
-                                            <td className='text-center'><Button variant="primary" onClick={() => onViewSession(session)}>Paper</Button></td>
+                                            <td className='p-2 text-center'>{session.session_Name}</td>
+                                            <td className='p-2 text-center'>
+                                                <Button variant='primary' size='sm' onClick={() => onViewSession(session)}>
+                                                    Paper
+                                                </Button>
+                                            </td>
                                         </tr>
                                     ))}
                             </tbody>
@@ -154,6 +160,6 @@ const GroupSessions = ({ group, onViewSession }) => {
 GroupSessions.propTypes = {
     group: PropTypes.string.isRequired,
     onViewSession: PropTypes.func.isRequired
-  };
+};
 
 export default GroupSessions;

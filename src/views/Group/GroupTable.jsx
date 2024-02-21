@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Table, Button } from 'react-bootstrap';
-import $ from 'jquery'
+import $ from 'jquery';
 import PropTypes from 'prop-types';
 
 const GroupTable = ({ groups, onViewGroup }) => {
@@ -10,7 +10,6 @@ const GroupTable = ({ groups, onViewGroup }) => {
     // Initialize DataTable
     $(tableRef.current).DataTable();
   }, []);
-
 
   return (
     <div className='table-responsive hover'>
@@ -24,11 +23,12 @@ const GroupTable = ({ groups, onViewGroup }) => {
         <tbody>
           {groups.map((group) => (
             <tr key={group.groupID}>
-              <td>{group.groupName}</td>
-              <td className='text-center'>
+              <td className='p-2'>{group.groupName}</td>
+              <td className='text-center p-2'>
                 <Button
                   variant="primary"
                   onClick={() => onViewGroup(group.groupID)}
+                  size='sm'
                 >
                   View
                 </Button>
@@ -50,6 +50,5 @@ GroupTable.propTypes = {
   ).isRequired,
   onViewGroup: PropTypes.func.isRequired
 };
-
 
 export default GroupTable;

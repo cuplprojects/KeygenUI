@@ -19,6 +19,9 @@ const AllKeys = React.lazy(()=>import('./views/KeyGenerator/AllKeys'))
 const AddGroup = React.lazy(()=>import('./views/Group/AddGroup'))
 const AllGroups = React.lazy(()=>import('./views/Group/AllGroups'))
 
+// Paper
+const AddPaper = React.lazy(()=>import('./views/Group/Papers/AddPaper'))
+
 
 
 
@@ -40,7 +43,9 @@ const routes = [
   { path: '/KeyGenerator/download-keys', name: 'Download Keys', element: DownloadKeys },
 // Group
   { path: '/Groups/add-Group', name: 'Add Group', element: AddGroup },
-  { path: '/Groups', name: 'All Groups', element: AllGroups }
+  { path: '/Groups', name: 'All Groups', element: AllGroups },
+  // Paper
+  { path: '/Groups/AddPaper', name: 'Add Paper', element: AddPaper }
 
 
 ]

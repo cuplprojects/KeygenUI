@@ -25,7 +25,7 @@ const GroupTable = ({ groups, onViewGroup }) => {
           {groups.map((group) => (
             <tr key={group.groupID}>
               <td>{group.groupName}</td>
-              <td>
+              <td className='text-center'>
                 <Button
                   variant="primary"
                   onClick={() => onViewGroup(group.groupID)}

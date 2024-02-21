@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 const apiUrl = process.env.REACT_APP_API_USERS;
 const UniUrl = process.env.REACT_APP_API_GROUP;
-const keyUrl = process.env.REACT_APP_API_ANSWERKEYS;
+const keyUrl = 'https://localhost:7247/api/Papers';
 
 const DashboardCardData = () => {
   const [userCount, setUserCount] = useState(0);

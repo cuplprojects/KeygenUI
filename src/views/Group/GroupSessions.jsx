@@ -83,6 +83,7 @@ const GroupSessions = ({ group, onViewSession }) => {
     return (
         <div className='border border-1 p-3'>
             <h2>Sessions</h2>
+            <hr />
             <Form.Group className="mb-3">
                 <Form.Label>Add Session</Form.Label>
                 <div className="input-group">

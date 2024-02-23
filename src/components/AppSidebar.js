@@ -42,7 +42,7 @@ const AppSidebar = () => {
       }}
     >
       <CSidebarHeader className="border-bottom">
-        <CSidebarBrand to="/">
+        <CSidebarBrand to="/" >
           <h4 className='text-center text-underline'>KEY GENERATOR</h4>
           {/* <CIcon customClassName="sidebar-brand-full" icon={logo} height={32} />
           <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} /> */}

@@ -12,9 +12,9 @@ const GroupSessions = ({ group, onViewSession }) => {
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const generateFutureSessions = (numYears) => {
+    const generateFutureSessions = (backyear,numYears) => {
         const currentYear = new Date().getFullYear();
-        const startYear = currentYear - 5;
+        const startYear = currentYear - backyear;
         const sessions = [];
         for (let year = startYear; year < startYear + numYears; year++) {
             sessions.push(`${year}-${String(year + 1).slice(-2)}`);
@@ -22,7 +22,7 @@ const GroupSessions = ({ group, onViewSession }) => {
         return sessions;
     };
 
-    const generatedSessions = generateFutureSessions(15);
+    const generatedSessions = generateFutureSessions(5,15);
 
     useEffect(() => {
         fetchSessions();

@@ -5,6 +5,7 @@ import { Button, ButtonGroup, Card, CardBody, Col, Container, Image, Row } from 
 import DefaultAvatar from './../../assets/images/avatars/defaultavatar.jpg';
 
 const apiUserbyid = process.env.REACT_APP_API_USER_BY_ID;
+const apiPermissionsByUser = 'https://localhost:7247/api/Permissions/ByUser';
 
 const ViewUser = () => {
   const { userId } = useParams();
@@ -21,8 +22,8 @@ const ViewUser = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showBtn, setShowBtn] = useState(false);
-
-  const [, forceUpdate] = useState();
+  const [permissions, setPermissions] = useState([]);
+  const [activeTab, setActiveTab] = useState("permissions");
 
   useEffect(() => {
     // Fetch user data based on userId and update the state
@@ -32,16 +33,23 @@ const ViewUser = () => {
         setUser(userData);
       })
       .catch(err => console.log(err));
-  }, [userId, user.profilePicturePath]);
+
+    // Fetch permissions for the user
+    axios.get(`${apiPermissionsByUser}/${userId}`)
+      .then(res => {
+        const permissionsData = res.data;
+        setPermissions(permissionsData);
+      })
+      .catch(err => console.log(err));
+  }, [userId]);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     setSelectedImage(file);
-    setShowBtn(true)
+    setShowBtn(true);
   };
 
   const handleUpload = () => {
-    console.log('upload called')
     if (selectedImage) {
       setLoading(true);
 
@@ -50,18 +58,15 @@ const ViewUser = () => {
 
       axios.post(`https://localhost:7247/api/Users/upload/${userId}`, formData)
         .then(response => {
-          console.log('Profile picture updated successfully:', response.data);
           setUser(prevUser => ({ ...prevUser, profilePicturePath: response.data.filePath }));
-          forceUpdate();
-          setShowBtn(false) // Trigger a re-render to update the profile picture
+          setShowBtn(false);
         })
         .catch(error => {
-          setShowBtn(false)
           console.error('Error updating profile picture:', error);
         })
         .finally(() => {
           setLoading(false);
-          setShowBtn(false)
+          setShowBtn(false);
         });
     }
   };
@@ -120,10 +125,41 @@ const ViewUser = () => {
           <Col className="col-12 col-md-8">
             <Row className="gap-1 p-1">
               <ButtonGroup className="mb-3 gap-1">
-                <Button variant="outline-secondary" className="border rounded p-1 fw-bold">Permissions</Button>
-                <Button variant="outline-secondary" className="border rounded p-1 fw-bold">Activities</Button>
+                <Button variant={activeTab === "permissions" ? "primary" : "outline-secondary"} className="border rounded p-1 fw-bold" onClick={() => setActiveTab("permissions")}>Permissions</Button>
+                <Button variant={activeTab === "activities" ? "primary" : "outline-secondary"} className="border rounded p-1 fw-bold" onClick={() => setActiveTab("activities")}>Activities</Button>
               </ButtonGroup>
               <hr />
+              {activeTab === "permissions" && (
+                <div className="table-responsive">
+                  <table className="table table-hover table-bordered align-middle text-center">
+                    <thead>
+                      <tr>
+                        <th>Module ID</th>
+                        <th>Can View</th>
+                        <th>Can Add</th>
+                        <th>Can Update</th>
+                        <th>Can Delete</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {permissions.map(permission => (
+                        <tr key={permission.permission_Id}>
+                          <td>{permission.module_Id}</td>
+                          <td>{permission.can_View ? "Yes" : "No"}</td>
+                          <td>{permission.can_Add ? "Yes" : "No"}</td>
+                          <td>{permission.can_Update ? "Yes" : "No"}</td>
+                          <td>{permission.can_Delete ? "Yes" : "No"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {activeTab === "activities" && (
+                <div className="text-center">
+                  <p>Activities table content here (dummy data)</p>
+                </div>
+              )}
             </Row>
           </Col>
         </Row>

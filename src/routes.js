@@ -1,52 +1,36 @@
-import React from 'react'
+// routes.js
+import React from 'react';
+import PermissionDecorator from './context/PermissionDecorator';
 
-const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-
-// User
-const AddUser = React.lazy(() => import('./views/Users/AddUser'))
-const AllUsers = React.lazy(() => import('./views/Users/AllUsers'))
-const ViewUser = React.lazy(() => import('./views/Users/ViewUser'))
-const UpdateUser = React.lazy(() => import('./views/Users/UpdateUser'))
-//Permissions
-const Permission = React.lazy(()=>import('./views/Users/UserPermissons'))
-
-// Keygenerator
-const NewKey = React.lazy(()=>import('./views/KeyGenerator/NewKey'))
-const DownloadKeys = React.lazy(()=>import('./views/KeyGenerator/DownloadKeys'))
-const AllKeys = React.lazy(()=>import('./views/KeyGenerator/AllKeys'))
-
-// Group
-const AddGroup = React.lazy(()=>import('./views/Group/AddGroup'))
-const AllGroups = React.lazy(()=>import('./views/Group/AllGroups'))
-
-// Paper
-const AddPaper = React.lazy(()=>import('./views/Group/Papers/AddPaper'))
-
-
-
+// Components
+import AllUsers from './views/Users/AllUsers';
+import AddUser from './views/Users/AddUser';
+import ViewUser from './views/Users/ViewUser';
+import UpdateUser from './views/Users/UpdateUser';
+import Permission from './views/Users/UserPermissons';
+import AllKeys from './views/KeyGenerator/AllKeys';
+import NewKey from './views/KeyGenerator/NewKey';
+import DownloadKeys from './views/KeyGenerator/DownloadKeys';
+import AddGroup from './views/Group/AddGroup';
+import AllGroups from './views/Group/AllGroups';
+import AddPaper from './views/Group/Papers/AddPaper';
+import Dashboard from './views/dashboard/Dashboard';
 
 const routes = [
-  { path: '/', exact: true, name: 'Home' },
-  { path: '/dashboard', name: 'Dashboard', element: Dashboard, permissionType: 'dashboard.view' },
-
-  // User Routes
-  { path: '/users', name: 'All Users', element: AllUsers, permissionType: 'users.view' },
-  { path: '/users/add-user', name: 'Add User', element: AddUser, permissionType: 'users.add' },
-  { path: '/users/view-user/:userId', name: 'view User', element: ViewUser, permissionType: 'users.view' },
-  { path: '/users/update-user/:userId', name: 'Update User', element: UpdateUser, permissionType: 'users.update' },
-
-  // KeyGenerator Routes
-  { path: '/KeyGenerator', name: 'Key Generator', element: AllKeys, permissionType: 'keygenerator.view' },
-  { path: '/KeyGenerator/Newkey', name: 'New Key', element: NewKey, permissionType: 'keygenerator.add' },
-  { path: '/KeyGenerator/download-keys', name: 'Download Keys', element: DownloadKeys, permissionType: 'keygenerator.download' },
-
-  // Group Routes
-  { path: '/Groups/add-Group', name: 'Add Group', element: AddGroup, permissionType: 'groups.add' },
-  { path: '/Groups', name: 'All Groups', element: AllGroups, permissionType: 'groups.view' },
-
-  // Paper Routes
-  { path: '/Groups/AddPaper/:groupID/:sessionID', name: 'Add Paper', element: AddPaper, permissionType: 'paper.add' }
+  { path: '/', exact: true, name: 'Home', element: <Dashboard /> },
+  { path: '/dashboard', name: 'Dashboard', element: <Dashboard /> },
+  { path: '*', name: 'Dashboard', element: <Dashboard /> },
+  { path: '/users', name: 'All Users', element: <PermissionDecorator moduleId={1} permissionType="can_Delete" element={<AllUsers />} /> },
+  { path: '/users/add-user', name: 'Add User', element: <PermissionDecorator moduleId={1} permissionType="can_Add" element={<AddUser />} /> },
+  { path: '/users/view-user/:userId', name: 'View User', element: <PermissionDecorator moduleId={1} permissionType="can_View" element={<ViewUser />} /> },
+  { path: '/users/update-user/:userId', name: 'Update User', element: <PermissionDecorator moduleId={1} permissionType="can_Update" element={<UpdateUser />} /> },
+  { path: '/users/AddPermissions/:userId', name: 'User Permissions', element: <PermissionDecorator moduleId={1} permissionType="can_Add" element={<Permission />} /> },
+  { path: '/KeyGenerator', name: 'Key Generator', element: <AllKeys /> },
+  { path: '/KeyGenerator/Newkey', name: 'New Key', element: <NewKey /> },
+  { path: '/KeyGenerator/download-keys', name: 'Download Keys', element: <DownloadKeys /> },
+  { path: '/Groups/add-Group', name: 'Add Group', element: <AddGroup /> },
+  { path: '/Groups', name: 'All Groups', element: <AllGroups /> },
+  { path: '/Groups/AddPaper/:groupID/:sessionID', name: 'Add Paper', element: <AddPaper /> },
 ];
 
-
-export default routes
+export default routes;

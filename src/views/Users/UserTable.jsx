@@ -1,3 +1,4 @@
+// UserTable.js
 import React, { useEffect, useRef } from 'react';
 import { Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
@@ -7,11 +8,9 @@ import DefaultAvatar from './../../assets/images/avatars/defaultavatar.jpg';
 import { faEye, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PropTypes from 'prop-types'; // Import PropTypes
+import PermissionChecker from './../../context/PermissionChecker'; // Correct import statement for PermissionChecker
 
-// import Security from '../../Security';
-
-
-const UserTable = ({ users }) => {
+const UserTable = ({ users, hasPermission }) => {
   const tableRef = useRef(null);
 
   useEffect(() => {
@@ -29,8 +28,8 @@ const UserTable = ({ users }) => {
 
   return (
     <div className="table-responsive">
-      <Table striped bordered hover ref={tableRef} >
-        <thead >
+      <Table striped bordered hover ref={tableRef}>
+        <thead>
           <tr>
             <th>User ID</th>
             <th>Picture</th>
@@ -43,26 +42,18 @@ const UserTable = ({ users }) => {
         </thead>
         <tbody className='text-center'>
           {users.map((user) => (
-
-            <tr key={user.userId} >
+            <tr key={user.userId}>
               <td>{user.userId}</td>
-              <td><img className="rounded-circle" src={user.profilePicturePath ? `https://localhost:7247/${user.profilePicturePath}` : DefaultAvatar}
-                alt="" width="50px" height='50px' /></td>
+              <td><img className="rounded-circle" src={user.profilePicturePath ? `https://localhost:7247/${user.profilePicturePath}` : DefaultAvatar} alt="" width="50px" height='50px' /></td>
               <td className='text-capitalize'>{user.name}</td>
               <td>{user.email}</td>
               <td>{user.mobileNumber}</td>
               <td className='text-capitalize'>{user.designation}</td>
               <td>
-                <div className="d-flex gap-3 text-primary">
-                  <Link to={`view-user/${user.userId}`}>
-                    <FontAwesomeIcon icon={faEye} className="text-success" />
-                  </Link>
-                  <Link to={`update-user/${user.userId}`}>
-                    <FontAwesomeIcon icon={faPenToSquare} className="text-primary" />
-                  </Link>
-                  <Link to={`delete-user/${user.userId}`}>
-                    <FontAwesomeIcon icon={faTrash} className="text-danger" />
-                  </Link>
+                <div className="d-flex gap-3 text-primary justify-content-center">
+                  {hasPermission(1, 'can_View') && <Link to={`view-user/${user.userId}`}><FontAwesomeIcon icon={faEye} className="text-success" /></Link>}
+                  {hasPermission(1, 'can_Update') && <Link to={`update-user/${user.userId}`}><FontAwesomeIcon icon={faPenToSquare} className="text-primary" /></Link>}
+                  {hasPermission(1, 'can_Delete') && <Link to={`delete-user/${user.userId}`}><FontAwesomeIcon icon={faTrash} className="text-danger" /></Link>}
                 </div>
               </td>
             </tr>
@@ -71,14 +62,7 @@ const UserTable = ({ users }) => {
       </Table>
 
       <div className="d-flex justify-content-end mt-3">
-        <CSVLink
-          data={users}
-          headers={csvHeaders}
-          filename={'user_data.csv'}
-          className="btn btn-primary"
-        >
-          Download CSV
-        </CSVLink>
+        <CSVLink data={users} headers={csvHeaders} filename={'user_data.csv'} className="btn btn-primary">Download CSV</CSVLink>
       </div>
     </div>
   );
@@ -95,6 +79,7 @@ UserTable.propTypes = {
       profilePicturePath: PropTypes.string // Assuming profilePicturePath is optional
     })
   ).isRequired,
+  hasPermission: PropTypes.func.isRequired, // Ensure hasPermission is a function and is required
 };
 
 export default UserTable;

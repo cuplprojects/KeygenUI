@@ -1,28 +1,45 @@
-import React, { useState, useEffect } from 'react';
+// PermissionChecker.js
+import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types'; // Import PropTypes
+import { useUser } from './UserContext';
 import axios from 'axios';
-import { useUser } from './UserContext'; // Assuming this is the path to your UserContext component
 
-const PermissionChecker = ({ permissionType, children }) => {
+const PermissionChecker = ({ children }) => {
   const { keygenUser } = useUser();
-  const userId = keygenUser.user_ID; // Assuming your user object has a userId property
-  const [permissions, setPermissions] = useState([]);
+  const [userPermissions, setUserPermissions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
+        const userId = keygenUser.user_ID; // Assuming you are using a fixed userId for now
         const response = await axios.get(`https://localhost:7247/api/Permissions/ByUser/${userId}`);
-        setPermissions(response.data);
+        setUserPermissions(response.data);
+        setLoading(false);
+        console.log(response.data);
       } catch (error) {
-        console.error('Failed to fetch permissions:', error);
+        console.error('Error fetching permissions:', error);
+        setLoading(false);
       }
     };
 
     fetchPermissions();
-  }, [userId]);
+  }, [keygenUser]);
 
-  const hasPermission = permissions.some(permission => permission.permissionType === permissionType);
+  const hasPermission = (moduleId, permissionType) => {
+    const modulePermissions = userPermissions.find(p => p.module_Id === moduleId);
+    return modulePermissions && modulePermissions[permissionType];
+  };
 
-  return hasPermission ? children : null;
+  return typeof children === 'function' ? children({ hasPermission }) : null;
+};
+
+// Add prop type validation for the 'permissions' prop
+PermissionChecker.propTypes = {
+  children: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.func
+  ]).isRequired
 };
 
 export default PermissionChecker;

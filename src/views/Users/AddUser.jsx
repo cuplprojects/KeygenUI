@@ -1,12 +1,12 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Form, Button, Row, Col, Container, Alert } from "react-bootstrap";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const AddUser = () => {
-  // API URL from environment variables
   const apiUrl = process.env.REACT_APP_API_USER_BY_ID;
+  const navigate = useNavigate(); // Get the navigate function
 
-  // State for form data
   const [formData, setFormData] = useState({
     firstName: "",
     middleName: "",
@@ -14,41 +14,27 @@ const AddUser = () => {
     emailAddress: "",
     phoneNumber: "",
     designation: "",
-    profilePicturePath:"",
+    profilePicturePath: "",
   });
-
-  // State for success alert
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-
-  // State for error alert
   const [showErrorAlert, setShowErrorAlert] = useState(false);
-
-  // State for loading state of the button
   const [isLoading, setIsLoading] = useState(false);
-
-  // State for error message text
   const [errorText, setErrorText] = useState("");
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  // Handle form submission
   const handleUserSubmit = async (event) => {
     event.preventDefault();
     setIsLoading(true);
 
     try {
-      // Make API request to add user
       const res = await axios.post(apiUrl, formData);
-      console.log(res);
-      // Show success alert
       setShowSuccessAlert(true);
       setShowErrorAlert(false);
       setErrorText("");
-      // Clear form data after successful submission
       setFormData({
         firstName: "",
         middleName: "",
@@ -56,25 +42,25 @@ const AddUser = () => {
         emailAddress: "",
         phoneNumber: "",
         designation: "",
-        profilePicturePath:"",
+        profilePicturePath: "",
       });
+
+      // Navigate to AddPermissions/:userId
+      navigate(`/users/AddPermissions/${res.data.user_ID}`); // Use navigate to navigate to the new location
     } catch (error) {
       if (error.response && error.response.status === 500) {
-        // Handle 500 Internal Server Error (Duplicate Entry)
         console.error("Duplicate entry error:", error.response.data);
         setErrorText("Email Already Exists!");
       } else {
-        // Handle other errors
         console.error("API error:", error);
         setErrorText("An error occurred. Please try again later.");
       }
-      // Show error alert
       setShowErrorAlert(true);
     } finally {
-      // Reset loading state after submission
       setIsLoading(false);
     }
   };
+
 
   return (
     <Container className="userform border border-3 p-4 my-3">

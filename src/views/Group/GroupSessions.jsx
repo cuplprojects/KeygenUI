@@ -158,7 +158,7 @@ const GroupSessions = ({ group, onViewSession }) => {
 };
 
 GroupSessions.propTypes = {
-    group: PropTypes.string.isRequired,
+    group: PropTypes.number.isRequired,
     onViewSession: PropTypes.func.isRequired
 };
 

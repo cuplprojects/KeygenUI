@@ -60,7 +60,7 @@ const PaperComponent = ({ session }) => {
                 <td>{paper.catchNumber}</td>
                 <td>{paper.paperCode}</td>
                 <td>
-                  <button className='btn btn-primary' onClick={() => handleViewPaper(paper)}>View</button>
+                  <Link to={`/Groups/ViewPaper/${paper.paperID}`} className='btn btn-primary'>View</Link>
                 </td>
               </tr>
             ))}

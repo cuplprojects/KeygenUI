@@ -4,11 +4,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useUser } from './../../../context/UserContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import Select from 'react-select';
 import AddProgramModal from './AddProgramModal';
 import AddSubjectModal from './AddSubjectModal';
+import PaperConfig from './PaperConfig';
 
 const AddPaper = () => {
-  const { keygenUser } = useUser(); // Destructure keygenUser from the useUser hook result
+  const { keygenUser } = useUser();
   const userId = keygenUser?.user_ID;
 
   const navigate = useNavigate();
@@ -18,7 +20,6 @@ const AddPaper = () => {
   const [subjects, setSubjects] = useState([]);
   const [showAddProgramModal, setShowAddProgramModal] = useState(false);
   const [showAddSubjectModal, setShowAddSubjectModal] = useState(false);
-
 
   const [formData, setFormData] = useState({
     paperID: 0,
@@ -40,8 +41,7 @@ const AddPaper = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = e => {
-    const { name, value } = e.target;
+  const handleChange = (name, value) => {
     setFormData({
       ...formData,
       [name]: value
@@ -60,14 +60,12 @@ const AddPaper = () => {
       if (!response.ok) {
         throw new Error('Failed to add program');
       }
-      fetchPrograms(); // Fetch programs again to update the list
+      fetchPrograms();
     } catch (error) {
       console.error('Error adding program:', error);
-      // Handle error
     }
   };
 
-  // Add Subject
   const addSubject = async (subjectName) => {
     try {
       const response = await fetch('https://localhost:7247/api/Subjects', {
@@ -80,15 +78,13 @@ const AddPaper = () => {
       if (!response.ok) {
         throw new Error('Failed to add subject');
       }
-      // Fetch subjects again to update the list
       fetchSubjects();
     } catch (error) {
       console.error('Error adding subject:', error);
-      // Handle error
     }
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -111,11 +107,8 @@ const AddPaper = () => {
   };
 
   useEffect(() => {
-    // Fetch programs
     fetchPrograms();
-    // Fetch subjects
     fetchSubjects();
-
   }, []);
 
   const fetchPrograms = () => {
@@ -144,7 +137,7 @@ const AddPaper = () => {
                 type='text'
                 name='paperName'
                 value={formData.paperName}
-                onChange={handleChange}
+                onChange={(e) => handleChange('paperName', e.target.value)}
                 required
               />
             </Form.Group>
@@ -156,7 +149,7 @@ const AddPaper = () => {
                 type='text'
                 name='catchNumber'
                 value={formData.catchNumber}
-                onChange={handleChange}
+                onChange={(e) => handleChange('catchNumber', e.target.value)}
                 required
               />
             </Form.Group>
@@ -168,7 +161,7 @@ const AddPaper = () => {
                 type='text'
                 name='paperCode'
                 value={formData.paperCode}
-                onChange={handleChange}
+                onChange={(e) => handleChange('paperCode', e.target.value)}
                 required
               />
             </Form.Group>
@@ -177,7 +170,7 @@ const AddPaper = () => {
         <Row className='mb-3'>
           <Col>
             <Form.Group controlId='program'>
-              <div className='d-flex align-items-center justify-content-between me-3'>
+              <div className='d-flex align-items-center justify-content-between me-2 dropdown-container'>
                 <Form.Label>Program</Form.Label>
                 <FontAwesomeIcon onClick={() => setShowAddProgramModal(true)} icon={faPlus} />
               </div>
@@ -186,18 +179,12 @@ const AddPaper = () => {
                 handleClose={() => setShowAddProgramModal(false)}
                 addProgram={addProgram}
               />
-              <Form.Control
-                as='select'
-                name='program'
-                value={formData.program}
-                onChange={handleChange}
-                required
-              >
-                <option value=''>Select Program</option>
-                {programs.map(program => (
-                  <option key={program.programID} value={program.programID}>{program.programName}</option>
-                ))}
-              </Form.Control>
+              <Select
+                options={programs.map(program => ({ label: program.programName, value: program.programID }))}
+                value={formData.program ? { label: programs.find(p => p.programID === formData.program).programName, value: formData.program } : null}
+                onChange={(selectedOption) => handleChange('program', selectedOption ? selectedOption.value : null)} placeholder="Select Program"
+                isClearable
+              />
             </Form.Group>
           </Col>
           <Col>
@@ -207,15 +194,15 @@ const AddPaper = () => {
                 type='text'
                 name='examCode'
                 value={formData.examCode}
-                onChange={handleChange}
+                onChange={(e) => handleChange('examCode', e.target.value)}
                 required
               />
             </Form.Group>
           </Col>
           <Col>
             <Form.Group controlId='subjectID'>
-              <div className='d-flex align-items-center justify-content-between me-3'>
-                <Form.Label>Subject ID</Form.Label>
+              <div className='d-flex align-items-center justify-content-between me-2 dropdown-container'>
+                <Form.Label>Select Subject</Form.Label>
                 <FontAwesomeIcon onClick={() => setShowAddSubjectModal(true)} icon={faPlus} />
               </div>
               <AddSubjectModal
@@ -223,18 +210,13 @@ const AddPaper = () => {
                 handleClose={() => setShowAddSubjectModal(false)}
                 addSubject={addSubject}
               />
-              <Form.Control
-                as='select'
-                name='subjectID'
-                value={formData.subjectID}
-                onChange={handleChange}
-                required
-              >
-                <option value=''>Select Subject ID</option>
-                {subjects.map(subject => (
-                  <option key={subject.subject_Id} value={subject.subject_Id}>{subject.subject_Name}</option>
-                ))}
-              </Form.Control>
+              <Select
+                options={subjects.map(subject => ({ label: subject.subject_Name, value: subject.subject_Id }))}
+                value={formData.subjectID ? { label: subjects.find(s => s.subject_Id === formData.subjectID).subject_Name, value: formData.subjectID } : null}
+                onChange={(selectedOption) => handleChange('subjectID', selectedOption? selectedOption.value:null)}
+                placeholder="Select Subject"
+                isClearable
+              />
             </Form.Group>
           </Col>
         </Row>
@@ -246,7 +228,7 @@ const AddPaper = () => {
                 type='text'
                 name='paperNumber'
                 value={formData.paperNumber}
-                onChange={handleChange}
+                onChange={(e) => handleChange('paperNumber', e.target.value)}
                 required
               />
             </Form.Group>
@@ -258,7 +240,7 @@ const AddPaper = () => {
                 type='date'
                 name='examDate'
                 value={formData.examDate}
-                onChange={handleChange}
+                onChange={(e) => handleChange('examDate', e.target.value)}
                 required
               />
             </Form.Group>
@@ -270,7 +252,7 @@ const AddPaper = () => {
                 type='text'
                 name='bookletSize'
                 value={formData.bookletSize}
-                onChange={handleChange}
+                onChange={(e) => handleChange('bookletSize', e.target.value)}
                 required
               />
             </Form.Group>
@@ -281,6 +263,7 @@ const AddPaper = () => {
           {loading ? 'Adding...' : 'Add Paper'}
         </Button>
       </Form>
+      <PaperConfig />
     </Container>
   );
 };

@@ -44,7 +44,7 @@ const GroupTable = ({ groups, onViewGroup }) => {
 GroupTable.propTypes = {
   groups: PropTypes.arrayOf(
     PropTypes.shape({
-      groupID: PropTypes.string.isRequired,
+      groupID: PropTypes.number.isRequired,
       groupName: PropTypes.string.isRequired
     })
   ).isRequired,

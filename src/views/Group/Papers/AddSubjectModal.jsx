@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types'; // Import PropTypes
 import { Modal, Button, Form } from 'react-bootstrap';
 
 const AddSubjectModal = ({ show, handleClose, addSubject }) => {
@@ -35,6 +36,13 @@ const AddSubjectModal = ({ show, handleClose, addSubject }) => {
       </Modal.Footer>
     </Modal>
   );
+};
+
+// Add prop types
+AddSubjectModal.propTypes = {
+  show: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  addSubject: PropTypes.func.isRequired,
 };
 
 export default AddSubjectModal;

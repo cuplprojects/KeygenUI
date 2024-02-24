@@ -17,6 +17,7 @@ const AllKeys = lazy(() => import('./../views/KeyGenerator/AllKeys'));
 const AddGroup = lazy(() => import('./../views/Group/AddGroup'));
 const AllGroups = lazy(() => import('./../views/Group/AllGroups'));
 const AddPaper = lazy(() => import('./../views/Group/Papers/AddPaper'));
+const ViewPaper = lazy(() => import('./../views/Group/Papers/ViewPaper'));
 
 const AppContent = () => {
   return (
@@ -33,12 +34,14 @@ const AppContent = () => {
           <Route path="/users/view-user/:userId" name="View User" element={<PermissionDecorator moduleId={1} permissionType="can_View" element={<ViewUser />} />} />
           <Route path="/users/update-user/:userId" name="Update User" element={<PermissionDecorator moduleId={1} permissionType="can_Update" element={<UpdateUser />} />} />
           <Route path="/users/AddPermissions/:userId" name="Add Permissions" element={<PermissionDecorator moduleId={1} permissionType="can_Add" element={<Permission />} />} />
+          
           <Route path="/KeyGenerator" name="Key Generator" element={<AllKeys />} />
           <Route path="/KeyGenerator/Newkey" name="New Key" element={<NewKey />} />
           <Route path="/KeyGenerator/download-keys" name="Download Keys" element={<DownloadKeys />} />
           <Route path="/Groups/add-Group" name="Add Group" element={<AddGroup />} />
           <Route path="/Groups" name="All Groups" element={<AllGroups />} />
           <Route path="/Groups/AddPaper/:groupID/:sessionID" name="Add Paper" element={<AddPaper />} />
+          <Route path="/Groups/ViewPaper/:paperID" name="Add Paper" element={<ViewPaper />} />
           <Route path="/403" name="Access Denied" element={<AccessDeniedPage />} />
         </Routes>
       </Suspense>

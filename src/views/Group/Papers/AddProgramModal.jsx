@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types'; // Import PropTypes
 import { Modal, Button, Form } from 'react-bootstrap';
 
 const AddProgramModal = ({ show, handleClose, addProgram }) => {
@@ -42,6 +43,13 @@ const AddProgramModal = ({ show, handleClose, addProgram }) => {
       </Modal.Footer>
     </Modal>
   );
+};
+
+// Add prop types
+AddProgramModal.propTypes = {
+  show: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  addProgram: PropTypes.func.isRequired,
 };
 
 export default AddProgramModal;

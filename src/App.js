@@ -62,7 +62,8 @@ const App = () => {
             <Route exact path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/login" element={<Login />} />
             <Route path="/ForgotPassword" element={<ForgotPassword />} />
-            <Route path="/403" element={<AccessDeniedPage />} />
+            
+            <Route path="/403" element={<PrivateRoute element={<AccessDeniedPage />} />} />
 
             {/* Private route for authenticated users */}
             <Route path="/ChangePassword" element={<PrivateRoute element={<ChangePassword />} />} />

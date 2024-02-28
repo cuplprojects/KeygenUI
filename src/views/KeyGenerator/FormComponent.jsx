@@ -3,32 +3,98 @@ import { Form, Button, Row, Col } from 'react-bootstrap';
 import FormDataComponent from './FormDataComponent';
 import FileUpload from './FileUpload';
 import ShuffleConfig from './ShuffleConfig';
+import Select from 'react-select';
 import PropTypes from 'prop-types';
 
 const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [editing, setEditing] = useState(false);
     const [numberOfQuestions, setNumberOfQuestions] = useState(0);
     const [formData, setFormData] = useState([]);
-    const [universityName, setUniversityName] = useState('');
-    const [paperCode, setPaperCode] = useState('');
-    const [universities, setUniversities] = useState([]);
+    const [selectedGroup, setSelectedGroup] = useState('');
+    const [selectedSession, setSelectedSession] = useState('');
+    const [selectedPaper, setSelectedPaper] = useState('');
+    const [groups, setGroups] = useState([]);
+    const [sessions, setSessions] = useState([]);
+    const [papers, setPapers] = useState([]);
+    const [selectedPaperData, setSelectedPaperData] = useState(null);
 
     useEffect(() => {
-        async function fetchUniversities() {
+        async function fetchGroups() {
             try {
-                const response = await fetch('https://localhost:7247/api/Universities');
+                const response = await fetch('https://localhost:7247/api/Group');
                 if (response.ok) {
                     const data = await response.json();
-                    setUniversities(data);
+                    setGroups(data);
                 } else {
-                    console.error('Failed to fetch universities:', response.statusText);
+                    console.error('Failed to fetch groups:', response.statusText);
                 }
             } catch (error) {
-                console.error('Error fetching universities:', error);
+                console.error('Error fetching groups:', error);
             }
         }
-        fetchUniversities();
+        fetchGroups();
     }, []);
+
+    useEffect(() => {
+        async function fetchSessions() {
+            try {
+                const response = await fetch(`https://localhost:7247/api/Sessions/Group/${selectedGroup.value}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setSessions(data);
+                } else {
+                    console.error('Failed to fetch sessions:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching sessions:', error);
+            }
+        }
+        if (selectedGroup.value) {
+            fetchSessions();
+        }
+    }, [selectedGroup]);
+
+    useEffect(() => {
+        async function fetchPapers() {
+            try {
+                const response = await fetch(`https://localhost:7247/api/Papers/${selectedGroup.value}/${selectedSession.value}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setPapers(data);
+                    setSelectedPaperData(null);
+                } else {
+                    console.error('Failed to fetch papers:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching papers:', error);
+            }
+        }
+        if (selectedGroup.value && selectedSession.value) {
+            fetchPapers();
+        }
+    }, [selectedGroup, selectedSession]);
+
+    useEffect(() => {
+        async function fetchPaperConfig() {
+            try {
+                const response = await fetch(`https://localhost:7247/api/PaperConfig/${selectedPaper.value}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setNumberOfQuestions(data.numberofQuestions);
+                    if(setNumberOfQuestions){
+                        handleNumberOfQuestionsChange()
+                    }
+                } else {
+                    console.error('Failed to fetch paper config:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching paper config:', error);
+            }
+        }
+        if (selectedPaper.value) {
+            fetchPaperConfig();
+        }
+    }, [selectedPaper]);
 
     const handleNumberOfQuestionsChange = (e) => {
         const inputNumber = e.target.value;
@@ -57,7 +123,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!universityName || !paperCode || !numberOfQuestions || formData.some(data => !data.page || !data.qNumber || !data.key)) {
+        if (!selectedGroup || !selectedSession || !selectedPaper || !numberOfQuestions || formData.some(data => !data.page || !data.qNumber || !data.key)) {
             alert("Please ensure all required fields are filled out.");
             return;
         }
@@ -70,7 +136,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             const formdataForSubmit = new FormData();
             formdataForSubmit.append('file', blob, `file_${Date.now()}.csv`);
 
-            const url = `https://localhost:7247/api/FormData?UniversityName=${encodeURIComponent(universityName)}&PaperCode=${encodeURIComponent(paperCode)}`;
+            const url = `https://localhost:7247/api/FormData?GroupName=${encodeURIComponent(selectedGroup.label)}&PaperCode=${encodeURIComponent(selectedPaperData.paperCode)}&CatchNumber=${encodeURIComponent(selectedPaperData.catchNumber)}&SubjectID=${selectedPaperData.subjectID}`;
 
             const response = await fetch(url, {
                 method: 'POST',
@@ -100,35 +166,67 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         <Row>
             <Col lg={6}>
                 <Form onSubmit={handleSubmit}>
-                    <Form.Group className='mb-2'>
-                        <Form.Label><span className="text-danger">*</span>Enter University Name:</Form.Label>
-                        <Form.Control
-                            as="select"
-                            value={universityName}
-                            onChange={(e) => setUniversityName(e.target.value)}
-                            placeholder="Select the name of the university"
-                            required
-                            disabled={!editing && formSubmitted}
-                        >
-                            <option value="">Select University</option>
-                            {universities.map((uni) => (
-                                <option key={uni.id} value={uni.university_Name}>{uni.university_Name}</option>
-                            ))}
-                        </Form.Control>
-                    </Form.Group>
-
-                    <Form.Group >
-                        <Form.Label><span className="text-danger">*</span>Enter Paper Code:</Form.Label>
-                        <Form.Control
-                            type="text"
-                            value={paperCode}
-                            onChange={(e) => setPaperCode(e.target.value)}
-                            placeholder="Enter the paper code"
-                            required
-                            disabled={!editing && formSubmitted}
-                        />
-                    </Form.Group>
-
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group className='mb-2'>
+                                <Form.Label><span className="text-danger">*</span>Select Group:</Form.Label>
+                                <Select
+                                    options={groups.map((group) => ({ value: group.groupID, label: group.groupName }))}
+                                    value={selectedGroup}
+                                    onChange={setSelectedGroup}
+                                    placeholder="Select the group"
+                                    isDisabled={!editing && formSubmitted}
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={6}>
+                            <Form.Group className='mb-2'>
+                                <Form.Label><span className="text-danger">*</span>Select Session:</Form.Label>
+                                <Select
+                                    options={sessions.map((session) => ({ value: session.session_Id, label: session.session_Name }))}
+                                    value={selectedSession}
+                                    onChange={setSelectedSession}
+                                    placeholder="Select the session"
+                                    isDisabled={!editing && formSubmitted}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col md={6}>
+                            <Form.Group className='mb-2'>
+                                <Form.Label><span className="text-danger">*</span>Select Paper:</Form.Label>
+                                <Select
+                                    options={papers.map((paper) => ({ value: paper.paperID, label: paper.catchNumber }))}
+                                    value={selectedPaper}
+                                    onChange={(selectedOption) => {
+                                        setSelectedPaper(selectedOption);
+                                        const paperData = papers.find((paper) => paper.paperID === selectedOption.value);
+                                        setSelectedPaperData(paperData);
+                                    }}
+                                    placeholder="Select the paper"
+                                    isDisabled={!editing && formSubmitted}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    {selectedPaperData && (
+                        <><Row>
+                            <Col md={6}>
+                                <Form.Group>
+                                    <Form.Label>Paper Name</Form.Label>
+                                    <Form.Control value={selectedPaperData.paperName} disabled />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group>
+                                    <Form.Label>Paper Code</Form.Label>
+                                    <Form.Control value={selectedPaperData.paperCode} disabled />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        </>
+                    )}
                     <hr />
                     <center className='text-primary fw-bold'><u>Input Master Data</u></center>
 
@@ -155,7 +253,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     </div>
                 </Form>
                 {numberOfQuestions > 0 && !editing && formSubmitted && (
-                    <ShuffleConfig />
+                    <ShuffleConfig  />
                 )}
             </Col>
 
@@ -176,7 +274,6 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
 FormComponent.propTypes = {
     formSubmitted: PropTypes.bool.isRequired,
     setFormSubmitted: PropTypes.func.isRequired
-  };
-
+};
 
 export default FormComponent;

@@ -26,7 +26,7 @@ const GroupSessions = ({ group, onViewSession }) => {
 
     useEffect(() => {
         fetchSessions();
-    });
+    },[group]);
 
     const fetchSessions = () => {
         fetch(`${sessionbyGroupIDApi}/${group}`, {

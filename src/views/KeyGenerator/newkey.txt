@@ -1,0 +1,101 @@
+import React, { useState, useEffect } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import Select from 'react-select';
+
+const NewKey = () => {
+    const [groups, setGroups] = useState([]);
+    const [sessions, setSessions] = useState([]);
+    const [papers, setPapers] = useState([]);
+    const [selectedGroup, setSelectedGroup] = useState(null);
+    const [selectedSession, setSelectedSession] = useState(null);
+    const [selectedPaper, setSelectedPaper] = useState(null);
+    const [paperData, setPaperData] = useState(null);
+
+    useEffect(() => {
+        fetch('https://localhost:7247/api/Group')
+            .then(response => response.json())
+            .then(data => setGroups(data))
+            .catch(error => console.error('Error fetching groups:', error));
+    }, []);
+
+    const handleGroupChange = selectedOption => {
+        setSelectedGroup(selectedOption);
+        setSelectedSession(null);
+        setSelectedPaper(null);
+
+        fetch(`https://localhost:7247/api/Sessions/Group/${selectedOption.value}`)
+            .then(response => response.json())
+            .then(data => setSessions(data))
+            .catch(error => console.error('Error fetching sessions:', error));
+    };
+
+    const handleSessionChange = selectedOption => {
+        setSelectedSession(selectedOption);
+        setSelectedPaper(null);
+
+        fetch(`https://localhost:7247/api/Papers/${selectedGroup.value}/${selectedOption.value}`)
+            .then(response => response.json())
+            .then(data => {
+                setPapers(data);
+                console.log(data);
+            })
+            .catch(error => console.error('Error fetching papers:', error));
+    };
+
+    const handlePaperChange = selectedOption => {
+        setSelectedPaper(selectedOption);
+
+        fetch(`https://localhost:7247/api/PaperConfig/GetByCatchNumber/${selectedOption.value}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                setPaperData(data);
+            })
+            .catch(error => console.error('Error fetching paper config:', error));
+    };
+
+    return (
+        <div>
+            <h1>New Key</h1>
+            <Row>
+                <Col>
+                    <label>Select Group:</label>
+                    <Select
+                        options={groups.map(group => ({ value: group.groupID, label: group.groupName }))}
+                        onChange={handleGroupChange}
+                        value={selectedGroup}
+                    />
+                </Col>
+                <Col>
+                    <label>Select Session:</label>
+                    <Select
+                        options={sessions.map(session => ({ value: session.session_Id, label: session.session_Name }))}
+                        onChange={handleSessionChange}
+                        value={selectedSession}
+                        isDisabled={!selectedGroup}
+                    />
+                </Col>
+                <Col>
+                    <label>Select Paper:</label>
+                    <Select
+                        options={papers.map(paper => ({ value: paper.catchNumber, label: paper.catchNumber }))}
+                        onChange={handlePaperChange}
+                        value={selectedPaper}
+                        isDisabled={!selectedSession}
+                    />
+                </Col>
+            </Row>
+
+            {paperData && (
+                <div>
+                    <h2>Selected Paper</h2>
+                    <p>Paper ID: {paperData}</p>
+                    <p>Paper Name: {paperData.paper.paperName}</p>
+                    {/* Display other paper details as needed */}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default NewKey;

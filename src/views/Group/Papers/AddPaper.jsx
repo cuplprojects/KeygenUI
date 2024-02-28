@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Container, Row, Col } from 'react-bootstrap';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useUser } from './../../../context/UserContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import Select from 'react-select';
 import AddProgramModal from './AddProgramModal';
 import AddSubjectModal from './AddSubjectModal';
-import PaperConfig from './PaperConfig';
 
 const AddPaper = () => {
   const { keygenUser } = useUser();
@@ -98,7 +97,9 @@ const AddPaper = () => {
       if (!response.ok) {
         throw new Error('Failed to add paper');
       }
-      navigate('/papers');
+      const paperData = await response.json();
+      const { paperID } = paperData;
+      navigate(`/Groups/PaperConfig/${groupID}/${sessionID}/${paperID}`);
     } catch (error) {
       console.error('Error adding paper:', error);
       setError('Failed to add paper. Please try again.');
@@ -263,7 +264,6 @@ const AddPaper = () => {
           {loading ? 'Adding...' : 'Add Paper'}
         </Button>
       </Form>
-      <PaperConfig />
     </Container>
   );
 };

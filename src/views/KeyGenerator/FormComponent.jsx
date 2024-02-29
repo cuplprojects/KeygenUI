@@ -16,6 +16,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [groups, setGroups] = useState([]);
     const [sessions, setSessions] = useState([]);
     const [papers, setPapers] = useState([]);
+    const [suffleconfigdata, setSuffleconfigdata] = useState([]);
     const [selectedPaperData, setSelectedPaperData] = useState(null);
 
     useEffect(() => {
@@ -80,6 +81,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                 const response = await fetch(`https://localhost:7247/api/PaperConfig/${selectedPaper.value}`);
                 if (response.ok) {
                     const data = await response.json();
+                    setSuffleconfigdata(data)
                     setNumberOfQuestions(data.numberofQuestions);
                     if(setNumberOfQuestions){
                         handleNumberOfQuestionsChange()
@@ -253,7 +255,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     </div>
                 </Form>
                 {numberOfQuestions > 0 && !editing && formSubmitted && (
-                    <ShuffleConfig  />
+                    <ShuffleConfig paperID={selectedPaperData.paperID} />
                 )}
             </Col>
 

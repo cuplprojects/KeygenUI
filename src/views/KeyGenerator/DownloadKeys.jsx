@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CSVLink } from 'react-csv';
+import { Col, Row, Table } from 'react-bootstrap';
 
 const DownloadKeys = () => {
   const [csvData, setCsvData] = useState([]);
@@ -9,9 +10,19 @@ const DownloadKeys = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        if (apiResponse && apiResponse.answerKey_Name) {
-          const response = await axios.get(`https://localhost:7247/api/FormData/${apiResponse.answerKey_Name}`);
-          setCsvData(response.data);
+        // Retrieve data from localStorage
+        const storedData = localStorage.getItem('generatedKeys');
+        if (storedData) {
+          const { groupName, catchNumber, subject_Name } = JSON.parse(storedData);
+
+          // Make API call with data from localStorage
+          const response = await axios.get(
+            `https://localhost:7247/api/FormData/q?GroupName=${groupName}&CatchNumber=${catchNumber}&Subject=${subject_Name}`
+          );
+
+          // Set state with API response
+          setApiResponse(response.data);
+          setCsvData(response.data); // Set CSV data for CSVLink
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -19,96 +30,57 @@ const DownloadKeys = () => {
     };
 
     fetchData();
-  }, [apiResponse]); // Fetch data when apiResponse changes
+  }, []);
 
-  useEffect(() => {
-    const storedApiResponse = localStorage.getItem('apiResponse');
-    if (storedApiResponse) {
-      try {
-        const parsedApiResponse = JSON.parse(storedApiResponse);
-        setApiResponse(parsedApiResponse);
-      } catch (error) {
-        console.error('Error parsing stored apiResponse:', error);
-      }
-    }
-  }, []); // Fetch stored apiResponse once when component mounts
-
-  const downloadCSV = () => {
-    let csvContent = 'S/N,';
-    for (let i = 0; i < csvData.length; i++) {
-      csvContent += `Set ${String.fromCharCode(65 + i)},,,`;
-    }
-    csvContent = csvContent.slice(0, -1) + '\n';
-
-    for (let i = 0; i < csvData[0].length; i++) {
-      csvContent += `${i + 1},`;
-      for (let j = 0; j < csvData.length; j++) {
-        if (csvData[j][i]) {
-          const rowData = csvData[j][i].split(',');
-          csvContent += `${rowData[0]},${rowData[1]},${rowData[2]},`;
-        } else {
-          csvContent += ',,,';
-        }
-      }
-      csvContent = csvContent.slice(0, -1) + '\n';
-    }
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'table_data.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const headers = [
+    { label: 'Page Number', key: 'pageNumber' },
+    { label: 'Question Number', key: 'questionNumber' },
+    { label: 'Answer', key: 'answer' },
+    { label: 'Set ID', key: 'setID' },
+  ];
 
   return (
-    <div className="container">
-      <div className='text-start m-3'>
-      <button className="btn btn-primary" onClick={downloadCSV}>Download CSV</button>
+    <div>
+      <div className='d-flex align-items-center justify-content-between mb-2'>
+        <h1>Download Keys</h1>
+        <CSVLink className='btn btn-primary' data={csvData} headers={headers}>Download CSV</CSVLink>
       </div>
-      <div className="table-responsive">
-        <table className="table table-striped table-bordered border-dark">
-          <thead>
-            <tr>
-              <th></th> {/* Blank column */}
-              {csvData.map((_, index) => (
-                <React.Fragment key={index}>
-                  <th></th> {/* Blank column before each CSV */}
-                  <th colSpan="3" className={`Set${String.fromCharCode(65 + index)} text-center`}>Set {String.fromCharCode(65 + index)}</th>
-                </React.Fragment>
-              ))}
-            </tr>
-            <tr>
-              <th>S/N</th>
-              {csvData.map((_, index) => (
-                <React.Fragment key={index}>
-                  <th></th>
-                  <th className={`CSV${index + 1}`}>Page No.</th>
-                  <th className={`CSV${index + 1}`}>Q#</th>
-                  <th className={`CSV${index + 1}`}>Key</th>
-                </React.Fragment>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {csvData.length > 0 && csvData[0].map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                <td>{rowIndex + 1}</td> {/* Serial number */}
-                {csvData.map((csv, csvIndex) => (
-                  <React.Fragment key={csvIndex}>
-                    <td></td> {/* Blank column before each CSV */}
-                    {csv[rowIndex + 1] && csv[rowIndex + 1].split(',').map((cell, cellIndex) => (
-                      <td className={`CSV${csvIndex + 1}`} key={cellIndex}>{cell}</td>
-                    ))}
-                  </React.Fragment>
-                ))}
-              </tr>
+      <hr />
+      <Row>
+        {apiResponse && (
+          <>
+            {apiResponse.reduce((tables, item) => {
+              if (!tables[item.setID]) {
+                tables[item.setID] = [];
+              }
+              tables[item.setID].push(
+                <tr key={tables[item.setID].length}>
+                  <td>{item.pageNumber}</td>
+                  <td>{item.questionNumber}</td>
+                  <td>{item.answer}</td>
+                </tr>
+              );
+              return tables;
+            }, []).map((table, index) => (
+              <Col md={3}>
+                <Table key={index} striped bordered>
+                  <thead>
+                    <tr className='text-center'>
+                      <th colSpan="3">Set {index}</th>
+                    </tr>
+                    <tr>
+                      <th>Page Number</th>
+                      <th>Question Number</th>
+                      <th>Answer</th>
+                    </tr>
+                  </thead>
+                  <tbody>{table}</tbody>
+                </Table>
+              </Col>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </>
+        )}
+      </Row>
     </div>
   );
 };

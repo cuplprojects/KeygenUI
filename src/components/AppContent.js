@@ -2,7 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { CContainer } from '@coreui/react';
 import PermissionDecorator from './../context/PermissionDecorator';
-// import AccessDeniedPage from './../views/pages/page403/AccessDeniedPage';
+import AccessDeniedPage from './../views/pages/page403/AccessDeniedPage';
 import { Spinner } from 'react-bootstrap';
 
 const AllUsers = lazy(() => import('./../views/Users/AllUsers'));
@@ -43,7 +43,7 @@ const AppContent = () => {
           <Route path="/Groups" name="All Groups" element={<AllGroups />} />
           <Route path="/Groups/AddPaper/:groupID/:sessionID" name="Add Paper" element={<AddPaper />} />
           <Route path="/Groups/ViewPaper/:paperID" name="Add Paper" element={<ViewPaper />} />
-          {/* <Route path="/403" name="Access Denied" element={<AccessDeniedPage />} /> */}
+          <Route path="/403" name="Access Denied" element={<AccessDeniedPage />} />
           <Route path="/Groups/PaperConfig/:groupID/:sessionID/:paperID"  name="Paper Configration" element={<PaperConfig />} />
         </Routes>
       </Suspense>

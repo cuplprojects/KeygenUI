@@ -1,11 +1,13 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Form, Button, Row, Col, Container, Alert } from "react-bootstrap";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
+import { useSecurity } from "./../../context/Security";
 
 const AddUser = () => {
+  const { encrypt } = useSecurity();
   const apiUrl = process.env.REACT_APP_API_USER_BY_ID;
-  const navigate = useNavigate(); // Get the navigate function
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -45,8 +47,7 @@ const AddUser = () => {
         profilePicturePath: "",
       });
 
-      // Navigate to AddPermissions/:userId
-      navigate(`/users/AddPermissions/${res.data.user_ID}`); // Use navigate to navigate to the new location
+      navigate(`/users/AddPermissions/${encrypt(res.data.user_ID)}`);
     } catch (error) {
       if (error.response && error.response.status === 500) {
         console.error("Duplicate entry error:", error.response.data);
@@ -60,7 +61,6 @@ const AddUser = () => {
       setIsLoading(false);
     }
   };
-
 
   return (
     <Container className="userform border border-3 p-4 my-3">
@@ -89,7 +89,7 @@ const AddUser = () => {
           <Col>
             <Form.Group controlId="formFirstName">
               <Form.Label>
-              <span className="text-danger">*</span> First Name
+                First Name <span className="text-danger">*</span>
               </Form.Label>
               <Form.Control
                 type="text"
@@ -131,7 +131,7 @@ const AddUser = () => {
           <Col>
             <Form.Group controlId="formEmailAddress">
               <Form.Label>
-                <span className="text-danger">*</span> Email
+                Email <span className="text-danger">*</span>
               </Form.Label>
               <Form.Control
                 type="email"
@@ -146,7 +146,7 @@ const AddUser = () => {
           <Col>
             <Form.Group controlId="formPhoneNumber">
               <Form.Label>
-                <span className="text-danger">*</span> Mobile Number
+                Mobile Number <span className="text-danger">*</span>
               </Form.Label>
               <Form.Control
                 type="text"

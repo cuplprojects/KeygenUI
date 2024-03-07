@@ -2,10 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Container, Table, Form, Button, Alert } from 'react-bootstrap';
 import axios from 'axios';
 import { Link, useParams } from 'react-router-dom';
+import { useSecurity } from "./../../context/Security";
+const moduleApi = process.env.REACT_APP_API_MODULES;
+const permissionApi = process.env.REACT_APP_API_PERMISSION;
 
 
 const UserPermissions = () => {
   const { userId } = useParams();
+  const { encrypt, decrypt } = useSecurity();
+  const decryptid = decrypt(userId)
+
   const [dupliError, setDupliError] = useState(false);
   const [success, setSuccess] = useState(false);
   const [modulePermissions, setModulePermissions] = useState([]);
@@ -15,7 +21,7 @@ const UserPermissions = () => {
 
 
   useEffect(() => {
-    axios.get('https://localhost:7247/api/Modules')
+    axios.get(moduleApi)
       .then(response => {
         // setModules(response.data);
         // Initialize modulePermissions based on modules
@@ -31,20 +37,32 @@ const UserPermissions = () => {
       .catch(error => console.error(error));
   }, []);
 
+
   const handleInputChange = (module_Id, permissionType, checked) => {
     setModulePermissions((prevPermissions) =>
       prevPermissions.map((module) =>
         module.module_Id === module_Id
-          ? { ...module, [permissionType]: checked }
+          ? {
+              ...module,
+              [permissionType]: checked,
+              // Automatically grant additional permissions based on the updated permission
+              ...(permissionType === 'can_Delete' && checked
+                ? { can_View: true, can_Add: true, can_Update: true }
+                : permissionType === 'can_Update' && checked
+                ? { can_View: true, can_Add: true }
+                : permissionType === 'can_Add' && checked
+                ? { can_View: true }
+                : {}),
+            }
           : module
       )
     );
   };
-
+  
 
   const onAddPermissions = () => {
     const permissionsArray = modulePermissions.map(({ module_Id, can_Add, can_View, can_Update, can_Delete }) => ({
-      user_Id: userId,
+      user_Id: decryptid,
       module_Id,
       can_Add,
       can_View,
@@ -52,10 +70,10 @@ const UserPermissions = () => {
       can_Delete,
     }));
 
-    console.log('Adding permissions for user:', userId);
+    console.log('Adding permissions for user:', decryptid);
     console.log('Permissions to be added:', permissionsArray);
 
-    axios.post(`https://localhost:7247/api/Permissions`, permissionsArray)
+    axios.post(permissionApi, permissionsArray)
       .then(response => {
         console.log('Permissions added successfully:', response.data);
         setSuccess(true);
@@ -107,7 +125,7 @@ const UserPermissions = () => {
                 {
                   updatePermissions && (
                     <>&nbsp; Pls. Update Permissions. <br />
-                   <Link to={`/UpdatePermissions/${userId}`}>Update Permissions</Link>
+                   <Link to={`/users/view-user/${userId}`}>Update Permissions</Link>
                     </>
                   )
                 }

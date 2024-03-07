@@ -6,7 +6,7 @@ import { CSpinner, useColorModes } from '@coreui/react';
 import { UserProvider } from './context/UserContext';
 import PrivateRoute from './components/PrivateRoute'; // Import PrivateRoute component
 import './scss/style.scss';
-import AccessDeniedPage from './views/pages/page403/AccessDeniedPage';
+// import AccessDeniedPage from './views/pages/page403/AccessDeniedPage';
 
 // Containers
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
@@ -63,11 +63,11 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/ForgotPassword" element={<ForgotPassword />} />
             
-            <Route path="/403" element={<PrivateRoute element={<AccessDeniedPage />} />} />
-
             {/* Private route for authenticated users */}
+            {/* <Route path="/403" element={<PrivateRoute element={<AccessDeniedPage />} />} /> */}
             <Route path="/ChangePassword" element={<PrivateRoute element={<ChangePassword />} />} />
             <Route path="*" element={<PrivateRoute element={<DefaultLayout />} />} />
+
           </Routes>
         </Suspense>
       </BrowserRouter>

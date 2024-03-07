@@ -1,14 +1,25 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
-import { Button, ButtonGroup, Card, CardBody, Col, Container, Image, Row } from "react-bootstrap";
+import { Button, ButtonGroup, Card, CardBody, Col, Container, Row } from "react-bootstrap";
 import DefaultAvatar from './../../assets/images/avatars/defaultavatar.jpg';
+import { useSecurity } from './../../context/Security';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleCheck, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import './viewuser.css'
+
+const permissionApi = process.env.REACT_APP_API_PERMISSION;
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const apiUserbyid = process.env.REACT_APP_API_USER_BY_ID;
-const apiPermissionsByUser = 'https://localhost:7247/api/Permissions/ByUser';
+const apiPermissionsByUser = `${permissionApi}/ByUser`;
+const apiModules = process.env.REACT_APP_API_MODULES;
 
 const ViewUser = () => {
+  const { decrypt } = useSecurity();
   const { userId } = useParams();
+  const decodedUserId = decrypt(userId);
+
   const [user, setUser] = useState({
     firstName: "",
     middleName: "",
@@ -23,11 +34,12 @@ const ViewUser = () => {
   const [loading, setLoading] = useState(false);
   const [showBtn, setShowBtn] = useState(false);
   const [permissions, setPermissions] = useState([]);
+  const [modules, setModules] = useState([]);
   const [activeTab, setActiveTab] = useState("permissions");
 
   useEffect(() => {
     // Fetch user data based on userId and update the state
-    axios.get(`${apiUserbyid}/${userId}`)
+    axios.get(`${apiUserbyid}/${decodedUserId}`)
       .then(res => {
         const userData = res.data;
         setUser(userData);
@@ -35,13 +47,21 @@ const ViewUser = () => {
       .catch(err => console.log(err));
 
     // Fetch permissions for the user
-    axios.get(`${apiPermissionsByUser}/${userId}`)
+    axios.get(`${apiPermissionsByUser}/${decodedUserId}`)
       .then(res => {
         const permissionsData = res.data;
         setPermissions(permissionsData);
       })
       .catch(err => console.log(err));
-  }, [userId]);
+
+    // Fetch modules for the user
+    axios.get(apiModules)
+      .then(res => {
+        const modulesData = res.data;
+        setModules(modulesData);
+      })
+      .catch(err => console.log(err));
+  }, [decodedUserId]);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -56,7 +76,7 @@ const ViewUser = () => {
       const formData = new FormData();
       formData.append('image', selectedImage);
 
-      axios.post(`https://localhost:7247/api/Users/upload/${userId}`, formData)
+      axios.post(`${baseUrl}/api/Users/upload/${decodedUserId}`, formData)
         .then(response => {
           setUser(prevUser => ({ ...prevUser, profilePicturePath: response.data.filePath }));
           setShowBtn(false);
@@ -71,6 +91,62 @@ const ViewUser = () => {
     }
   };
 
+  // Function to get module name based on module ID
+  const getModuleNameById = (moduleId) => {
+    const module = modules.find(m => m.module_Id === moduleId);
+    return module ? module.module_Name : 'Unknown';
+  };
+
+  const handlePermissionUpdate = (permissionId, field) => {
+    let updatedPermissions = [...permissions];
+  
+    // Update the permission
+    updatedPermissions = updatedPermissions.map(permission => {
+      if (permission.permission_Id === permissionId) {
+        return { ...permission, [field]: !permission[field] };
+      }
+      return permission;
+    });
+  
+    // Get the module ID for the updated permission
+    const updatedPermission = updatedPermissions.find(p => p.permission_Id === permissionId);
+    if (updatedPermission) {
+      const moduleId = updatedPermission.module_Id;
+      const modulePermissions = updatedPermissions.filter(p => p.module_Id === moduleId);
+  
+      if (field === "can_Delete" && updatedPermission.can_Delete) {
+        // Grant view, add, and update permissions if delete permission is granted
+        modulePermissions.forEach(permission => {
+          permission.can_View = true;
+          permission.can_Add = true;
+          permission.can_Update = true;
+          permission.can_Delete = true;
+        });
+      } else if (field === "can_Update" && updatedPermission.can_Update) {
+        // Grant view and add permissions if update permission is granted
+        modulePermissions.forEach(permission => {
+          permission.can_View = true;
+          permission.can_Add = true;
+        });
+      } else if (field === "can_Add" && updatedPermission.can_Add) {
+        // Grant view permission if add permission is granted
+        modulePermissions.forEach(permission => {
+          permission.can_View = true;
+        });
+      }
+    }
+  
+    setPermissions(updatedPermissions);
+  
+    // Update permissions in the API
+    axios.put(`${permissionApi}/${permissionId}`, updatedPermissions.find(p => p.permission_Id === permissionId))
+      .then(res => {
+        // console.log("Permission updated successfully");
+      })
+      .catch(err => console.log(err));
+  };
+  
+
   return (
     <Card>
       <CardBody>
@@ -78,8 +154,7 @@ const ViewUser = () => {
           <Col className="col-12 col-md-4 border-end">
             <Container className="my-4 text-center text-capitalize">
               <div className="upload">
-                <img src={user.profilePicturePath ? `https://localhost:7247/${user.profilePicturePath}?${new Date().getTime()}` : DefaultAvatar}
-                  alt="" />
+              <img src={user.profilePicturePath ? `${baseUrl}/${user.profilePicturePath}?${new Date().getTime()}`.replace('wwwroot/', '') : DefaultAvatar} alt="" />
                 <div className="round">
                   <input type="file" onChange={handleImageChange} />
                   <i className="fa fa-pencil" style={{ color: "#fff" }} ></i>
@@ -92,7 +167,6 @@ const ViewUser = () => {
               )}
               <h5>{`${user.firstName} ${user.middleName} ${user.lastName}`}</h5>
               <p style={{ lineHeight: '1' }}>{user.designation}</p>
-
             </Container>
             <hr />
             {/* Additional user details */}
@@ -134,7 +208,7 @@ const ViewUser = () => {
                   <table className="table table-hover table-bordered align-middle text-center">
                     <thead>
                       <tr>
-                        <th>Module ID</th>
+                        <th>Module Name</th>
                         <th>Can View</th>
                         <th>Can Add</th>
                         <th>Can Update</th>
@@ -144,20 +218,73 @@ const ViewUser = () => {
                     <tbody>
                       {permissions.map(permission => (
                         <tr key={permission.permission_Id}>
-                          <td>{permission.module_Id}</td>
-                          <td>{permission.can_View ? "Yes" : "No"}</td>
-                          <td>{permission.can_Add ? "Yes" : "No"}</td>
-                          <td>{permission.can_Update ? "Yes" : "No"}</td>
-                          <td>{permission.can_Delete ? "Yes" : "No"}</td>
+                          <td>{getModuleNameById(permission.module_Id)}</td>
+                          <td>
+                            <div className="toggle-button">
+                              <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                className={`text-success toggle-icon ${permission.can_View ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_View")}
+                              />
+                              <FontAwesomeIcon
+                                icon={faCircleXmark}
+                                className={`text-danger toggle-icon ${!permission.can_View ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_View")}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <div className="toggle-button">
+                              <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                className={`text-success toggle-icon ${permission.can_Add ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Add")}
+                              />
+                              <FontAwesomeIcon
+                                icon={faCircleXmark}
+                                className={`text-danger toggle-icon ${!permission.can_Add ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Add")}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <div className="toggle-button">
+                              <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                className={`text-success toggle-icon ${permission.can_Update ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Update")}
+                              />
+                              <FontAwesomeIcon
+                                icon={faCircleXmark}
+                                className={`text-danger toggle-icon ${!permission.can_Update ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Update")}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <div className="toggle-button">
+                              <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                className={`text-success toggle-icon ${permission.can_Delete ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Delete")}
+                              />
+                              <FontAwesomeIcon
+                                icon={faCircleXmark}
+                                className={`text-danger toggle-icon ${!permission.can_Delete ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Delete")}
+                              />
+                            </div>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
               )}
+
               {activeTab === "activities" && (
                 <div className="text-center">
-                  <p>Activities table content here (dummy data)</p>
+                  <p>No Activity Detected</p>
                 </div>
               )}
             </Row>

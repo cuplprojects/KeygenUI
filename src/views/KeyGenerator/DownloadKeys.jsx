@@ -62,8 +62,8 @@ const DownloadKeys = () => {
               );
               return tables;
             }, []).map((table, index) => (
-              <Col md={3}>
-                <Table key={index} striped bordered>
+              <Col md={3} key={index}> {/* Add key prop here */}
+                <Table striped bordered>
                   <thead>
                     <tr className='text-center'>
                       <th colSpan="3">Set {index}</th>

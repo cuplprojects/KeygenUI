@@ -1,0 +1,17 @@
+.toggle-button {
+    display: inline-flex;
+    border: 1px solid #dadada;
+    border-radius: 20px;
+    padding: 2px;
+  }
+  
+  .toggle-icon {
+    cursor: pointer;
+    padding: 1px 2px;
+    visibility: hidden;
+  }
+  
+  .toggle-icon.active {
+    visibility: visible;
+  }
+  

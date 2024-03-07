@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Spinner, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
 const ShuffleConfig = ({ paperID }) => {
   const [paperData, setPaperData] = useState({});
@@ -134,6 +135,10 @@ const ShuffleConfig = ({ paperID }) => {
       </Form>
     </Container>
   );
+};
+
+ShuffleConfig.propTypes = {
+  paperID: PropTypes.number.isRequired,
 };
 
 export default ShuffleConfig;

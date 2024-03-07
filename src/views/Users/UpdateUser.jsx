@@ -1,57 +1,31 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Form, Button, Row, Col, Container, Alert } from "react-bootstrap";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useSecurity } from "./../../context/Security";
 
 const apiUserById = process.env.REACT_APP_API_USER_BY_ID;
 
 const UpdateUser = () => {
   const { userId } = useParams();
-  const navigate = useNavigate();
+  const { decrypt } = useSecurity();
+  const decryptid = decrypt(userId);
 
-  const [userData, setUserData] = useState({
-    // user_ID: userId,
-    // firstName: "",
-    // middleName: "",
-    // lastName: "",
-    // emailAddress: "",
-    // phoneNumber: "",
-    // designation: "",
-  });
-
+  const [userData, setUserData] = useState({});
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
-
   const [showErrorAlert, setShowErrorAlert] = useState(false);
-
-  const handleCloseErrorAlert = () => {
-    setShowErrorAlert(false);
-  };
-
-  const handleCloseSuccessAlert = () => {
-    setUpdateSuccess(false);
-  };
 
   useEffect(() => {
     axios
-      .get(`${apiUserById}/${userId}`)
+      .get(`${apiUserById}/${decryptid}`)
       .then((res) => {
-        const user = res.data;
-        setUserData(res.data)
-        // setUserData({
-        //   user_ID: userId,
-        //   firstName: user.firstName,
-        //   middleName: user.middleName,
-        //   lastName: user.lastName,
-        //   emailAddress: user.emailAddress,
-        //   phoneNumber: user.phoneNumber,
-        //   designation: user.designation,
-        // });
+        setUserData(res.data);
       })
       .catch((err) => setApiError(err.message || "An error occurred"))
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, [decryptid]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,23 +40,17 @@ const UpdateUser = () => {
     setUpdateSuccess(false);
 
     try {
-      await axios.put(`${apiUserById}/${userId}`, userData);
-      setUpdateSuccess(true);
+      await axios.put(`${apiUserById}/${decryptid}`, userData);
       setUpdateSuccess(true);
       setApiError('');
-      // Redirect immediately after success using navigate
-      // navigate("/user-list");
     } catch (error) {
       if (error.response && error.response.status === 500) {
-        console.error("Duplicate entry error:", error.response.data);
         setApiError("Email Already Exists!");
         setShowErrorAlert(true);
       } else {
-        console.error("API error:", error);
         setApiError("An error occurred. Please try again later.");
         setShowErrorAlert(true);
       }
-      // Set showSuccessAlert to false in case of error
       setUpdateSuccess(false);
     }
   };
@@ -91,16 +59,12 @@ const UpdateUser = () => {
     <Container className="userform border border-3 p-4 my-3">
       {loading && <p>Loading...</p>}
       {showErrorAlert && (
-        <Alert variant="danger" onClose={handleCloseErrorAlert} dismissible>
+        <Alert variant="danger" onClose={() => setShowErrorAlert(false)} dismissible>
           {apiError}
         </Alert>
       )}
       {updateSuccess && (
-        <Alert
-          variant="success"
-          onClose={handleCloseSuccessAlert}
-          dismissible
-        >
+        <Alert variant="success" onClose={() => setUpdateSuccess(false)} dismissible>
           User updated successfully!
         </Alert>
       )}
@@ -110,7 +74,7 @@ const UpdateUser = () => {
             <Col>
               <Form.Group controlId="formFirstName">
                 <Form.Label>
-                  <span className="text-danger">*</span> First Name
+                  First Name <span className="text-danger">*</span>
                 </Form.Label>
                 <Form.Control
                   type="text"
@@ -151,7 +115,7 @@ const UpdateUser = () => {
             <Col>
               <Form.Group controlId="formEmailAddress">
                 <Form.Label>
-                  <span className="text-danger">*</span> Email
+                  Email <span className="text-danger">*</span>
                 </Form.Label>
                 <Form.Control
                   type="email"
@@ -166,7 +130,7 @@ const UpdateUser = () => {
             <Col>
               <Form.Group controlId="formPhoneNumber">
                 <Form.Label>
-                  <span className="text-danger">*</span> Mobile Number
+                  Mobile Number <span className="text-danger">*</span>
                 </Form.Label>
                 <Form.Control
                   type="text"

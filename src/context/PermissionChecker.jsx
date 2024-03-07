@@ -16,7 +16,7 @@ const PermissionChecker = ({ children }) => {
         const response = await axios.get(`https://localhost:7247/api/Permissions/ByUser/${userId}`);
         setUserPermissions(response.data);
         setLoading(false);
-        console.log(response.data);
+        // console.log(response.data);
       } catch (error) {
         console.error('Error fetching permissions:', error);
         setLoading(false);

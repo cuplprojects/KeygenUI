@@ -41,7 +41,7 @@
     "csv-parser": "^3.0.0",
     "datatables.net": "^1.13.8",
     "datatables.net-dt": "^1.13.8",
-    "dotenv": "^16.4.1",
+    "dotenv": "^16.4.5",
     "font-awesome": "^4.7.0",
     "jquery": "^3.7.1",
     "jszip": "^3.10.1",

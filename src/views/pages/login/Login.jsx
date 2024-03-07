@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import CIcon from '@coreui/icons-react';
 import { cilLockLocked, cilEnvelopeOpen } from '@coreui/icons';
-import { Card, CardBody, CardGroup, Col, Container, Row, Form, InputGroup, Button, Spinner, Alert } from 'react-bootstrap';
+import { Col, Row, Form, InputGroup, Button, Spinner, Alert } from 'react-bootstrap';
 import { useUser } from './../../../context/UserContext';
 import axios from 'axios';
 import PageLayout from '../PageLayout/PageLayout';

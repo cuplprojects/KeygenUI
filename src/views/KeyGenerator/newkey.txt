@@ -12,7 +12,7 @@ const NewKey = () => {
     const [paperData, setPaperData] = useState(null);
 
     useEffect(() => {
-        fetch('https://localhost:7247/api/Group')
+        fetch('http://api2.chandrakala.co.in/api/Group')
             .then(response => response.json())
             .then(data => setGroups(data))
             .catch(error => console.error('Error fetching groups:', error));
@@ -23,7 +23,7 @@ const NewKey = () => {
         setSelectedSession(null);
         setSelectedPaper(null);
 
-        fetch(`https://localhost:7247/api/Sessions/Group/${selectedOption.value}`)
+        fetch(`http://api2.chandrakala.co.in/api/Sessions/Group/${selectedOption.value}`)
             .then(response => response.json())
             .then(data => setSessions(data))
             .catch(error => console.error('Error fetching sessions:', error));
@@ -33,7 +33,7 @@ const NewKey = () => {
         setSelectedSession(selectedOption);
         setSelectedPaper(null);
 
-        fetch(`https://localhost:7247/api/Papers/${selectedGroup.value}/${selectedOption.value}`)
+        fetch(`http://api2.chandrakala.co.in/api/Papers/${selectedGroup.value}/${selectedOption.value}`)
             .then(response => response.json())
             .then(data => {
                 setPapers(data);
@@ -45,7 +45,7 @@ const NewKey = () => {
     const handlePaperChange = selectedOption => {
         setSelectedPaper(selectedOption);
 
-        fetch(`https://localhost:7247/api/PaperConfig/GetByCatchNumber/${selectedOption.value}`)
+        fetch(`http://api2.chandrakala.co.in/api/PaperConfig/GetByCatchNumber/${selectedOption.value}`)
             .then(response => response.json())
             .then(data => {
                 console.log(data);

@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom';
 import PropTypes from 'prop-types'; // Import PropTypes
 import { useUser } from './UserContext';
 import axios from 'axios';
+const BaseUrl = process.env.REACT_APP_BASE_URL;
 
 const PermissionDecorator = ({ element, moduleId, permissionType }) => {
   const { keygenUser } = useUser();
@@ -14,7 +15,7 @@ const PermissionDecorator = ({ element, moduleId, permissionType }) => {
     const fetchPermissions = async () => {
       try {
         const userId = keygenUser.user_ID; // Assuming you are using a fixed userId for now
-        const response = await axios.get(`https://localhost:7247/api/Permissions/ByUser/${userId}`);
+        const response = await axios.get(`${BaseUrl}/api/Permissions/ByUser/${userId}`);
         setPermissions(response.data);
         setLoading(false);
         // console.log(response.data);

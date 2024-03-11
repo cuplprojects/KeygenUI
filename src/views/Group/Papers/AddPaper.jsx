@@ -1,3 +1,4 @@
+// AddPaper.js
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Container, Row, Col } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -13,19 +14,19 @@ const AddPaper = () => {
   const userId = keygenUser?.user_ID;
 
   const navigate = useNavigate();
-  const { groupID, sessionID } = useParams();
+  const { groupID } = useParams();
 
   const [programs, setPrograms] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [sessions, setSessions] = useState([]);
   const [showAddProgramModal, setShowAddProgramModal] = useState(false);
   const [showAddSubjectModal, setShowAddSubjectModal] = useState(false);
 
   const [formData, setFormData] = useState({
     paperID: 0,
-    paperName: '',
-    groupID: groupID || '',
-    sessionID: sessionID || '',
+    sessionID: '',
     catchNumber: '',
+    paperName: '',
     paperCode: '',
     program: '',
     examCode: '',
@@ -49,7 +50,7 @@ const AddPaper = () => {
 
   const addProgram = async (programName) => {
     try {
-      const response = await fetch('https://localhost:7247/api/Program', {
+      const response = await fetch('http://api2.chandrakala.co.in/api/Program', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -67,7 +68,7 @@ const AddPaper = () => {
 
   const addSubject = async (subjectName) => {
     try {
-      const response = await fetch('https://localhost:7247/api/Subjects', {
+      const response = await fetch('http://api2.chandrakala.co.in/api/Subjects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -87,7 +88,7 @@ const AddPaper = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('https://localhost:7247/api/Papers', {
+      const response = await fetch('http://api2.chandrakala.co.in/api/Papers', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -99,7 +100,7 @@ const AddPaper = () => {
       }
       const paperData = await response.json();
       const { paperID } = paperData;
-      navigate(`/Groups/PaperConfig/${groupID}/${sessionID}/${paperID}`);
+      navigate(`/Groups/PaperConfig/${groupID}/${formData.sessionID}/${paperID}`);
     } catch (error) {
       console.error('Error adding paper:', error);
       setError('Failed to add paper. Please try again.');
@@ -110,20 +111,28 @@ const AddPaper = () => {
   useEffect(() => {
     fetchPrograms();
     fetchSubjects();
+    fetchSessions();
   }, []);
 
   const fetchPrograms = () => {
-    fetch('https://localhost:7247/api/Program')
+    fetch('http://api2.chandrakala.co.in/api/Program')
       .then(response => response.json())
       .then(data => setPrograms(data))
       .catch(error => console.error('Error fetching programs:', error));
   };
 
   const fetchSubjects = () => {
-    fetch('https://localhost:7247/api/Subjects')
+    fetch('http://api2.chandrakala.co.in/api/Subjects')
       .then(response => response.json())
       .then(data => setSubjects(data))
       .catch(error => console.error('Error fetching subjects:', error));
+  };
+
+  const fetchSessions = () => {
+    fetch('http://api2.chandrakala.co.in/api/Sessions')
+      .then(response => response.json())
+      .then(data => setSessions(data))
+      .catch(error => console.error('Error fetching sessions:', error));
   };
 
   return (
@@ -132,13 +141,14 @@ const AddPaper = () => {
       <Form onSubmit={handleSubmit}>
         <Row className='mb-3'>
           <Col>
-            <Form.Group controlId='paperName'>
-              <Form.Label>Paper Name</Form.Label>
-              <Form.Control
-                type='text'
-                name='paperName'
-                value={formData.paperName}
-                onChange={(e) => handleChange('paperName', e.target.value)}
+            <Form.Group controlId='sessionID'>
+              <Form.Label>Session</Form.Label>
+              <Select
+                options={sessions.map(session => ({ label: session.session_Name, value: session.session_Id }))}
+                value={formData.sessionID ? { label: sessions.find(s => s.session_Id === formData.sessionID).session_Name, value: formData.sessionID } : null}
+                onChange={(selectedOption) => handleChange('sessionID', selectedOption ? selectedOption.value : null)}
+                placeholder="Select Session"
+                isClearable
                 required
               />
             </Form.Group>
@@ -156,6 +166,20 @@ const AddPaper = () => {
             </Form.Group>
           </Col>
           <Col>
+            <Form.Group controlId='paperName'>
+              <Form.Label>Paper Name</Form.Label>
+              <Form.Control
+                type='text'
+                name='paperName'
+                value={formData.paperName}
+                onChange={(e) => handleChange('paperName', e.target.value)}
+                required
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className='mb-3'>
+          <Col>
             <Form.Group controlId='paperCode'>
               <Form.Label>Paper Code</Form.Label>
               <Form.Control
@@ -167,8 +191,6 @@ const AddPaper = () => {
               />
             </Form.Group>
           </Col>
-        </Row>
-        <Row className='mb-3'>
           <Col>
             <Form.Group controlId='program'>
               <div className='d-flex align-items-center justify-content-between me-2 dropdown-container'>
@@ -185,6 +207,7 @@ const AddPaper = () => {
                 value={formData.program ? { label: programs.find(p => p.programID === formData.program).programName, value: formData.program } : null}
                 onChange={(selectedOption) => handleChange('program', selectedOption ? selectedOption.value : null)} placeholder="Select Program"
                 isClearable
+                required
               />
             </Form.Group>
           </Col>
@@ -200,6 +223,8 @@ const AddPaper = () => {
               />
             </Form.Group>
           </Col>
+        </Row>
+        <Row className='mb-3'>
           <Col>
             <Form.Group controlId='subjectID'>
               <div className='d-flex align-items-center justify-content-between me-2 dropdown-container'>
@@ -214,14 +239,13 @@ const AddPaper = () => {
               <Select
                 options={subjects.map(subject => ({ label: subject.subject_Name, value: subject.subject_Id }))}
                 value={formData.subjectID ? { label: subjects.find(s => s.subject_Id === formData.subjectID).subject_Name, value: formData.subjectID } : null}
-                onChange={(selectedOption) => handleChange('subjectID', selectedOption? selectedOption.value:null)}
+                onChange={(selectedOption) => handleChange('subjectID', selectedOption ? selectedOption.value : null)}
                 placeholder="Select Subject"
                 isClearable
+                required
               />
             </Form.Group>
           </Col>
-        </Row>
-        <Row className='mb-3'>
           <Col>
             <Form.Group controlId='paperNumber'>
               <Form.Label>Paper Number</Form.Label>
@@ -246,6 +270,8 @@ const AddPaper = () => {
               />
             </Form.Group>
           </Col>
+        </Row>
+        <Row className='mb-3'>
           <Col>
             <Form.Group controlId='bookletSize'>
               <Form.Label>Booklet Size</Form.Label>

@@ -23,7 +23,7 @@ const ViewPaper = () => {
   };
 
   const fetchPaper = () => {
-    fetch(`https://localhost:7247/api/Papers/${paperID}`)
+    fetch(`http://api2.chandrakala.co.in/api/Papers/${paperID}`)
       .then(response => response.json())
       .then(data => {
         setPaper(data);
@@ -43,7 +43,7 @@ const ViewPaper = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch('https://localhost:7247/api/Papers', {
+      const response = await fetch('http://api2.chandrakala.co.in/api/Papers', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

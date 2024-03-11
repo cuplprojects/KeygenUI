@@ -17,7 +17,7 @@ const DownloadKeys = () => {
 
           // Make API call with data from localStorage
           const response = await axios.get(
-            `https://localhost:7247/api/FormData/q?GroupName=${groupName}&CatchNumber=${catchNumber}&Subject=${subject_Name}`
+            `http://api2.chandrakala.co.in/api/FormData/q?GroupName=${groupName}&CatchNumber=${catchNumber}&Subject=${subject_Name}`
           );
 
           // Set state with API response

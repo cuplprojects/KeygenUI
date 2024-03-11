@@ -56,7 +56,7 @@ const PaperConfigForm = () => {
     }
 
     try {
-      const response = await fetch('https://localhost:7247/api/PaperConfig', {
+      const response = await fetch('http://api2.chandrakala.co.in/api/PaperConfig', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

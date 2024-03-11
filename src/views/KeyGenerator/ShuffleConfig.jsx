@@ -14,7 +14,7 @@ const ShuffleConfig = ({ paperID }) => {
   useEffect(() => {
     const fetchPaperData = async () => {
       try {
-        const response = await fetch(`https://localhost:7247/api/PaperConfig/GetByPaperID/${paperID}`);
+        const response = await fetch(`http://api2.chandrakala.co.in/api/PaperConfig/GetByPaperID/${paperID}`);
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
@@ -48,7 +48,7 @@ const ShuffleConfig = ({ paperID }) => {
         setID: 1,
       };
 
-      const url = 'https://localhost:7247/api/FormData/GenerateKey';
+      const url = 'http://api2.chandrakala.co.in/api/FormData/GenerateKey';
 
       const response = await fetch(url, {
         method: 'POST',

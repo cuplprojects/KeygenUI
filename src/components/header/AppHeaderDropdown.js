@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from './../../context/UserContext';
 import { fetchUserData } from './../../context/UserData';
 import DefaultAvatar from './../../assets/images/avatars/defaultavatar.jpg';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faGear } from '@fortawesome/free-solid-svg-icons';
 import {
   CAvatar,
   CDropdown,
@@ -11,11 +13,15 @@ import {
   CDropdownToggle,
 } from '@coreui/react';
 import { useNavigate } from 'react-router-dom';
+import { useSecurity } from './../../context/Security';
+
+const BaseUrl = process.env.REACT_APP_BASE_URL
 
 const AppHeaderDropdown = () => {
   const { keygenUser, logout } = useUser();
   const [profilePicturePath, setProfilePicturePath] = useState(null);
   const navigate = useNavigate();
+  const { decrypt } = useSecurity();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -23,10 +29,10 @@ const AppHeaderDropdown = () => {
         if (keygenUser) {
           const userData = await fetchUserData(keygenUser.user_ID);
           const relativePath = userData.profilePicturePath;
-          const baseURL = 'https://localhost:7247/';
-
+        
           // Set profile picture path based on condition
-          setProfilePicturePath(relativePath ? baseURL + relativePath : DefaultAvatar);
+          setProfilePicturePath(relativePath ? `${BaseUrl}/${relativePath}?${new Date().getTime()}` : DefaultAvatar);
+
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -34,7 +40,7 @@ const AppHeaderDropdown = () => {
     };
 
     fetchData();
-  }, [keygenUser, setProfilePicturePath]);
+  }, [keygenUser, setProfilePicturePath, decrypt]);
 
   const handleLogout = () => {
     logout();
@@ -42,7 +48,7 @@ const AppHeaderDropdown = () => {
   };
 
   const handleProfileClick = () => {
-    navigate(`/users/view-user/${keygenUser.user_ID}`);
+    navigate(`/Profile`);
   };
 
   return (
@@ -51,12 +57,12 @@ const AppHeaderDropdown = () => {
         <CAvatar src={profilePicturePath} size="md" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-        <CDropdownItem onClick={handleProfileClick}>
-          <i className="icon-user me-2"></i>
+        <CDropdownItem className='c-pointer' onClick={handleProfileClick}>
+          <FontAwesomeIcon icon={faUser} className='me-3' />
           Profile
         </CDropdownItem>
-        <CDropdownItem >
-          <i className="icon-settings me-2"></i>
+        <CDropdownItem className='c-pointer'>
+          <FontAwesomeIcon icon={faGear}  className='me-3'/>
           Settings
         </CDropdownItem>
         <CDropdownDivider />

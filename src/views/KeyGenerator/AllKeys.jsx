@@ -11,7 +11,7 @@ const AllKeys = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('https://localhost:7247/api/Papers')
+    fetch('http://api2.chandrakala.co.in/api/Papers')
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch data");
@@ -20,11 +20,11 @@ const AllKeys = () => {
       })
       .then(async (data) => {
         const updatedPapers = await Promise.all(data.map(async (paper) => {
-          const groupResponse = await fetch(`https://localhost:7247/api/Group/${paper.groupID}`);
+          const groupResponse = await fetch(`http://api2.chandrakala.co.in/api/Group/${paper.groupID}`);
           const groupData = await groupResponse.json();
-          const sessionResponse = await fetch(`https://localhost:7247/api/Sessions/${paper.sessionID}`);
+          const sessionResponse = await fetch(`http://api2.chandrakala.co.in/api/Sessions/${paper.sessionID}`);
           const sessionData = await sessionResponse.json();
-          const subjectResponse = await fetch(`https://localhost:7247/api/Subjects/${paper.subjectID}`);
+          const subjectResponse = await fetch(`http://api2.chandrakala.co.in/api/Subjects/${paper.subjectID}`);
           const subjectData = await subjectResponse.json();
           return {
             ...paper,

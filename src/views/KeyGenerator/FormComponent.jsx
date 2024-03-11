@@ -22,7 +22,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchGroups() {
             try {
-                const response = await fetch('https://localhost:7247/api/Group');
+                const response = await fetch('http://api2.chandrakala.co.in/api/Group');
                 if (response.ok) {
                     const data = await response.json();
                     setGroups(data);
@@ -39,7 +39,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchSessions() {
             try {
-                const response = await fetch(`https://localhost:7247/api/Sessions/Group/${selectedGroup.value}`);
+                const response = await fetch(`http://api2.chandrakala.co.in/api/Sessions/Group/${selectedGroup.value}`);
                 if (response.ok) {
                     const data = await response.json();
                     setSessions(data);
@@ -58,7 +58,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchPapers() {
             try {
-                const response = await fetch(`https://localhost:7247/api/Papers/${selectedGroup.value}/${selectedSession.value}`);
+                const response = await fetch(`http://api2.chandrakala.co.in/api/Papers/${selectedGroup.value}/${selectedSession.value}`);
                 if (response.ok) {
                     const data = await response.json();
                     setPapers(data);
@@ -78,7 +78,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchPaperConfig() {
             try {
-                const response = await fetch(`https://localhost:7247/api/PaperConfig/${selectedPaper.value}`);
+                const response = await fetch(`http://api2.chandrakala.co.in/api/PaperConfig/${selectedPaper.value}`);
                 if (response.ok) {
                     const data = await response.json();
                     setSuffleconfigdata(data)
@@ -138,7 +138,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             const formdataForSubmit = new FormData();
             formdataForSubmit.append('file', blob, `file_${Date.now()}.csv`);
 
-            const url = `https://localhost:7247/api/FormData?GroupName=${encodeURIComponent(selectedGroup.label)}&PaperCode=${encodeURIComponent(selectedPaperData.paperCode)}&CatchNumber=${encodeURIComponent(selectedPaperData.catchNumber)}&SubjectID=${selectedPaperData.subjectID}`;
+            const url = `http://api2.chandrakala.co.in/api/FormData?GroupName=${encodeURIComponent(selectedGroup.label)}&PaperCode=${encodeURIComponent(selectedPaperData.paperCode)}&CatchNumber=${encodeURIComponent(selectedPaperData.catchNumber)}&SubjectID=${selectedPaperData.subjectID}`;
 
             const response = await fetch(url, {
                 method: 'POST',

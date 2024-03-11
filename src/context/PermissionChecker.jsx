@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types'; // Import PropTypes
 import { useUser } from './UserContext';
 import axios from 'axios';
+const BaseUrl = process.env.REACT_APP_BASE_URL;
 
 const PermissionChecker = ({ children }) => {
   const { keygenUser } = useUser();
@@ -13,7 +14,7 @@ const PermissionChecker = ({ children }) => {
     const fetchPermissions = async () => {
       try {
         const userId = keygenUser.user_ID; // Assuming you are using a fixed userId for now
-        const response = await axios.get(`https://localhost:7247/api/Permissions/ByUser/${userId}`);
+        const response = await axios.get(`${BaseUrl}/api/Permissions/ByUser/${userId}`);
         setUserPermissions(response.data);
         setLoading(false);
         // console.log(response.data);

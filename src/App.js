@@ -1,6 +1,6 @@
 // src/App.js
 import React, { Suspense, useEffect } from 'react';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { CSpinner, useColorModes } from '@coreui/react';
 import { UserProvider } from './context/UserContext';
@@ -48,7 +48,7 @@ const App = () => {
     // Wrap the app with 'UserProvider' for seamless user context in authentication and state.
     <UserProvider>
       {/* BrowserRouter to manage navigation */}
-      <BrowserRouter>
+      <HashRouter>
         {/* Suspense for lazy loading and loading fallback */}
         <Suspense
           fallback={
@@ -70,7 +70,7 @@ const App = () => {
 
           </Routes>
         </Suspense>
-      </BrowserRouter>
+      </HashRouter>
     </UserProvider>
   );
 };

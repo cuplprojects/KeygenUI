@@ -77,7 +77,7 @@ const KeysTable = ({ keys }) => {
     ];
 
     const downloadFile = (filePath) => {
-        const fullUrl = `https://localhost:7247/${filePath.replace(/^wwwroot\//, '')}`;
+        const fullUrl = `http://api2.chandrakala.co.in/${filePath.replace(/^wwwroot\//, '')}`;
         window.open(fullUrl);
     };
 

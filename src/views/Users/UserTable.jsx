@@ -29,44 +29,47 @@ const UserTable = ({ users, hasPermission }) => {
   ];
 
   return (
-    <div className="table-responsive">
-      <Table striped bordered hover ref={tableRef}>
-        <thead>
-          <tr>
-            <th>User ID</th>
-            <th>Picture</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Mobile Number</th>
-            <th>Designation</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody className='text-center'>
-          {users.map((user) => (
-            <tr key={user.userId}>
-              <td>{user.userId}</td>
-              <td><img className="rounded-circle" src={user.profilePicturePath ? `${baseUrl}/${user.profilePicturePath}` : DefaultAvatar} alt="" width="50px" height='50px' /></td>
-              <td className='text-capitalize'>{user.name}</td>
-              <td>{user.email}</td>
-              <td>{user.mobileNumber}</td>
-              <td className='text-capitalize'>{user.designation}</td>
-              <td>
-                <div className="d-flex gap-3 text-primary justify-content-center">
-                  {hasPermission(1, 'can_View') && <Link to={`view-user/${encrypt(user.userId)}`}><FontAwesomeIcon icon={faEye} className="text-success" /></Link>}
-                  {hasPermission(1, 'can_Update') && <Link to={`update-user/${encrypt(user.userId)}`}><FontAwesomeIcon icon={faPenToSquare} className="text-primary" /></Link>}
-                  {hasPermission(1, 'can_Delete') && <Link to={`delete-user/${encrypt(user.userId)}`}><FontAwesomeIcon icon={faTrash} className="text-danger" /></Link>}
-                </div>
-              </td>
+    <>
+      <div className="table-responsive">
+        <Table striped bordered hover ref={tableRef}>
+          <thead>
+            <tr>
+              <th>User ID</th>
+              <th>Picture</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Mobile Number</th>
+              <th>Designation</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-
-      <div className="d-flex justify-content-end mt-3">
-        <CSVLink data={users} headers={csvHeaders} filename={'user_data.csv'} className="btn btn-primary">Download CSV</CSVLink>
+          </thead>
+          <tbody className='text-center'>
+            {users.map((user) => (
+              <tr key={user.userId}>
+                <td>{user.userId}</td>
+                <td><img className="rounded-circle" src={user.profilePicturePath ? `${baseUrl}/${user.profilePicturePath}` : DefaultAvatar} alt="" width="50px" height='50px' /></td>
+                <td className='text-capitalize'>{user.name}</td>
+                <td>{user.email}</td>
+                <td>{user.mobileNumber}</td>
+                <td className='text-capitalize'>{user.designation}</td>
+                <td>
+                  <div className="d-flex gap-3 text-primary justify-content-center">
+                    {hasPermission(1, 'can_View') && <Link to={`view-user/${encrypt(user.userId)}`}><FontAwesomeIcon icon={faEye} className="text-success" /></Link>}
+                    {hasPermission(1, 'can_Update') && <Link to={`update-user/${encrypt(user.userId)}`}><FontAwesomeIcon icon={faPenToSquare} className="text-primary" /></Link>}
+                    {hasPermission(1, 'can_Delete') && <Link to={`delete-user/${encrypt(user.userId)}`}><FontAwesomeIcon icon={faTrash} className="text-danger" /></Link>}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
       </div>
-    </div>
+      <div>
+        <div className="d-flex justify-content-end mt-3">
+          <CSVLink data={users} headers={csvHeaders} filename={'user_data.csv'} className="btn btn-primary">Download CSV</CSVLink>
+        </div>
+      </div>
+    </>
   );
 };
 

@@ -7,6 +7,7 @@ import { Spinner } from 'react-bootstrap';
 
 const AllUsers = lazy(() => import('./../views/Users/AllUsers'));
 const Dashboard = lazy(() => import('./../views/dashboard/Dashboard'));
+const Profile = lazy(() => import('./../views/Users/Profile'));
 const AddUser = lazy(() => import('./../views/Users/AddUser'));
 const ViewUser = lazy(() => import('./../views/Users/ViewUser'));
 const UpdateUser = lazy(() => import('./../views/Users/UpdateUser'));
@@ -14,8 +15,12 @@ const Permission = lazy(() => import('./../views/Users/UserPermissons'));
 const NewKey = lazy(() => import('./../views/KeyGenerator/NewKey'));
 const DownloadKeys = lazy(() => import('./../views/KeyGenerator/DownloadKeys'));
 const AllKeys = lazy(() => import('./../views/KeyGenerator/AllKeys'));
+// groups 
 const AddGroup = lazy(() => import('./../views/Group/AddGroup'));
 const AllGroups = lazy(() => import('./../views/Group/AllGroups'));
+// papers 
+
+const PaperComponent = lazy(() => import('./../views/Group/PaperComponent'));
 const AddPaper = lazy(() => import('./../views/Group/Papers/AddPaper'));
 const ViewPaper = lazy(() => import('./../views/Group/Papers/ViewPaper'));
 const PaperConfig  = lazy(() => import('./../views/Group/Papers/PaperConfig'));
@@ -36,12 +41,16 @@ const AppContent = () => {
           <Route path="/users/update-user/:userId" name="Update User" element={<PermissionDecorator moduleId={1} permissionType="can_Update" element={<UpdateUser />} />} />
           <Route path="/users/AddPermissions/:userId" name="Add Permissions" element={<PermissionDecorator moduleId={1} permissionType="can_Add" element={<Permission />} />} />
 
+          <Route path="/Profile" name="Profile" element={<Profile />} />
+
           <Route path="/KeyGenerator" name="Key Generator" element={<AllKeys />} />
           <Route path="/KeyGenerator/Newkey" name="New Key" element={<NewKey />} />
           <Route path="/KeyGenerator/download-keys" name="Download Keys" element={<DownloadKeys />} />
           <Route path="/Groups/add-Group" name="Add Group" element={<AddGroup />} />
           <Route path="/Groups" name="All Groups" element={<AllGroups />} />
-          <Route path="/Groups/AddPaper/:groupID/:sessionID" name="Add Paper" element={<AddPaper />} />
+          {/* Paper  */}
+          <Route path="/Groups/papers/:groupId" name="Papers" element={<PaperComponent />} />
+          <Route path="/Groups/AddPaper/:groupID" name="Add Paper" element={<AddPaper />} />
           <Route path="/Groups/ViewPaper/:paperID" name="Add Paper" element={<ViewPaper />} />
           <Route path="/403" name="Access Denied" element={<AccessDeniedPage />} />
           <Route path="/Groups/PaperConfig/:groupID/:sessionID/:paperID"  name="Paper Configration" element={<PaperConfig />} />

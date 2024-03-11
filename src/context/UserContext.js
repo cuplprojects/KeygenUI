@@ -1,37 +1,48 @@
+// UserContext.jsx
 import React, { createContext, useContext, useState } from 'react';
-import PropTypes from 'prop-types'; // Import PropTypes
+import PropTypes from 'prop-types';
 import { useSecurity } from './Security';
-
-// Helper function to retrieve keygenUser from local storage
-const getKeygenUserFromLocalStorage = () => {
-  const storedKeygenUser = localStorage.getItem('keygenUser');
-  return storedKeygenUser ? JSON.parse(storedKeygenUser) : null;
-};
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
-  // Initialize keygenUser state using the helper function
-  const [keygenUser, setKeygenUser] = useState(getKeygenUserFromLocalStorage());
+  const { encrypt, decrypt } = useSecurity();
 
-  // Function to log in a user and update keygenUser state
-  const login = (userData) => {
-    setKeygenUser(userData);
-    localStorage.setItem('keygenUser', JSON.stringify(userData));
+  const getKeygenUserFromLocalStorage = () => {
+    const storedKeygenUser = localStorage.getItem('keygenUser');
+    if (storedKeygenUser) {
+      const { user_ID, ...rest } = JSON.parse(storedKeygenUser);
+      const decryptedUserId = decrypt(user_ID); // Decrypt the user_ID
+      return {
+        ...rest,
+        user_ID: decryptedUserId
+      };
+    }
+    return null;
   };
 
-  // Function to log out a user and clear keygenUser state
+  const [keygenUser, setKeygenUser] = useState(getKeygenUserFromLocalStorage());
+
+  const login = (userData) => {
+    // Encrypt the user_ID before storing it in localStorage
+    const encryptedUserData = { ...userData, user_ID: encrypt(userData.user_ID) };
+    localStorage.setItem('keygenUser', JSON.stringify(encryptedUserData));
+
+    // Decrypt the user_ID before updating the keygenUser state
+    const decryptedUserId = decrypt(encryptedUserData.user_ID);
+    const decryptedUserData = { ...encryptedUserData, user_ID: decryptedUserId };
+    setKeygenUser(decryptedUserData);
+  };
+
   const logout = () => {
     setKeygenUser(null);
     localStorage.removeItem('keygenUser');
   };
 
-  // Function to check if a user is logged in
   const isLoggedIn = () => {
-    return !!keygenUser; // Return true if keygenUser is not null or undefined
+    return !!keygenUser;
   };
 
-  // Provide keygenUser, login, logout, and isLoggedIn functions to the context
   return (
     <UserContext.Provider value={{ keygenUser, login, logout, isLoggedIn }}>
       {children}
@@ -39,13 +50,11 @@ export const UserProvider = ({ children }) => {
   );
 };
 
-// Add prop type validation for the 'children' prop
 UserProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
 export const useUser = () => {
-  // Use the context to access keygenUser, login, logout, and isLoggedIn functions
   const context = useContext(UserContext);
   if (!context) {
     throw new Error('useUser must be used within a UserProvider');

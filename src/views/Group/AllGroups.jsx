@@ -1,16 +1,15 @@
+// AllGroups.js
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Container, Row, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import GroupTable from './GroupTable';
-import GroupSessions from './GroupSessions'; // Import the GroupSessions component
-import PaperComponent from './PaperComponent'; // Import the PaperComponent
+import { useHistory } from 'react-router-dom';
+
 const apiUrl = process.env.REACT_APP_API_GROUP;
 
 const AllGroups = () => {
     const [groups, setGroups] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedGroup, setSelectedGroup] = useState(null);
-    const [selectedSession, setSelectedSession] = useState(null); // State to store the selected session for PaperComponent
 
     useEffect(() => {
         fetch(apiUrl)
@@ -25,18 +24,9 @@ const AllGroups = () => {
             });
     }, []);
 
-    const onViewGroup = (group) => {
-        setSelectedGroup(group);
-        setSelectedSession(null); // Reset selected session when selecting a new group
-    };
-
-    const onViewSession = (session) => {
-        setSelectedSession(session);
-    };
-
     return (
         <Container className="userform border border-3 p-4">
-            <Row className=' row-cols-1 row-cols-lg-3'>
+            <Row className=' '>
                 <Col className='border border-1'>
                     <div className="d-flex justify-content-between align-items-center m-3">
                         <h3>Groups</h3>
@@ -45,23 +35,14 @@ const AllGroups = () => {
                         </Button>
                     </div>
                     <hr />
-
                     {loading ? (
                         <div className="text-center">
                             <Spinner animation="border" role="status">
                             </Spinner>
                         </div>
                     ) : (
-                        <GroupTable groups={groups} onViewGroup={onViewGroup} />
+                        <GroupTable groups={groups} />
                     )}
-                </Col>
-                <Col>
-                    {selectedGroup? <GroupSessions group={selectedGroup} onViewSession={onViewSession} />
-                    :<div className='border border-1 p-3 text-center'><h3>Select The Group</h3></div>}
-                </Col>
-                <Col>
-                    {selectedSession? <PaperComponent session={selectedSession} />
-                    :<div className='border border-1 p-3 text-center'><h3>Select The Session </h3></div>}
                 </Col>
             </Row>
         </Container>

@@ -4,6 +4,7 @@ import { CContainer } from '@coreui/react';
 import PermissionDecorator from './../context/PermissionDecorator';
 import AccessDeniedPage from './../views/pages/page403/AccessDeniedPage';
 import { Spinner } from 'react-bootstrap';
+import Reactpdf from './../views/pages/ReactPdf/Reactpdf';
 
 const AllUsers = lazy(() => import('./../views/Users/AllUsers'));
 const Dashboard = lazy(() => import('./../views/dashboard/Dashboard'));
@@ -18,12 +19,18 @@ const AllKeys = lazy(() => import('./../views/KeyGenerator/AllKeys'));
 // groups 
 const AddGroup = lazy(() => import('./../views/Group/AddGroup'));
 const AllGroups = lazy(() => import('./../views/Group/AllGroups'));
+const ViewGroup = lazy(() => import('./../views/Group/ViewGroup'));
 // papers 
 
 const PaperComponent = lazy(() => import('./../views/Group/PaperComponent'));
 const AddPaper = lazy(() => import('./../views/Group/Papers/AddPaper'));
 const ViewPaper = lazy(() => import('./../views/Group/Papers/ViewPaper'));
 const PaperConfig  = lazy(() => import('./../views/Group/Papers/PaperConfig'));
+// Master 
+const JumblingConfig  = lazy(() => import('./../views/Master/JumblingConfig'));
+const Sessions  = lazy(() => import('./../views/Master/Sessions'));
+
+
 
 const AppContent = () => {
   return (
@@ -54,6 +61,12 @@ const AppContent = () => {
           <Route path="/Groups/ViewPaper/:paperID" name="Add Paper" element={<ViewPaper />} />
           <Route path="/403" name="Access Denied" element={<AccessDeniedPage />} />
           <Route path="/Groups/PaperConfig/:groupID/:sessionID/:paperID"  name="Paper Configration" element={<PaperConfig />} />
+          <Route path="/Groups/ViewGroup/:groupID"  name="View Group" element={<ViewGroup />} />
+
+          <Route path="/Master/JumblingConfig"  name=" JumblingConfig" element={<JumblingConfig />} />
+          <Route path="/Master/Sessions"  name=" Sessions" element={<Sessions />} />
+
+          <Route path="/reactpdf"  name=" reactpdf" element={<Reactpdf />} />
         </Routes>
       </Suspense>
     </CContainer>

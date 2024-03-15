@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const apiUrl = process.env.REACT_APP_API_USERS;
 const UniUrl = process.env.REACT_APP_API_GROUP;
@@ -13,7 +13,7 @@ const DashboardCardData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [userDataResponse, uniDataResponse, keyDataResponse] = await Promise.all([
+        const [userDataResponse, uniDataResponse] = await Promise.all([
           fetch(apiUrl),
           fetch(UniUrl),
           // fetch(keyUrl)
@@ -60,10 +60,10 @@ const DashboardCardData = () => {
     },
     {
       color: "lightgreen",
-      iconClass: "fa-rocket",
+      iconClass: "fa-clock-rotate-left",
       link: "/users4",
       value: 0,
-      title: "Lorem Ipsome",
+      title: "Pending Keys",
     },
   ];
 

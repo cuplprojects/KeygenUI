@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Table, Button, Spinner, Alert } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 
-const apiUrl = process.env.REACT_APP_API_CHANGE_ANSWERKEYS;
+// const apiUrl = process.env.REACT_APP_API_CHANGE_ANSWERKEYS;
 
 const AllKeys = () => {
   const [papers, setPapers] = useState([]);

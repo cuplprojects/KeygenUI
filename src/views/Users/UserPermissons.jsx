@@ -9,7 +9,7 @@ const permissionApi = process.env.REACT_APP_API_PERMISSION;
 
 const UserPermissions = () => {
   const { userId } = useParams();
-  const { encrypt, decrypt } = useSecurity();
+  const { decrypt } = useSecurity();
   const decryptid = decrypt(userId)
 
   const [dupliError, setDupliError] = useState(false);

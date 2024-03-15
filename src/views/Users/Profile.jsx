@@ -5,8 +5,9 @@ import { fetchUserData, updateProfilePicture } from './../../context/UserData';
 import DefaultAvatar from './../../assets/images/avatars/defaultavatar.jpg';
 import { Accordion, Card, Col, Container, Row, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faKey } from '@fortawesome/free-solid-svg-icons';
+import { faClockRotateLeft, faKey, faLock } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
+// import ChangePasswordForm from '../pages/ChangePassword/ChangePasswordForm';
 
 const BaseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -66,9 +67,11 @@ const Profile = () => {
             ) : userData && (
                 <Row>
                     <Col md={5} className="text-center">
-                        <Card className="mx-auto w-100">
-                            <Card.Img variant="top" src={profilePicturePath} className="rounded" alt="Profile" />
-                            <Card.Body>
+                        <Card className="mx-auto w-100 p-3">
+                            <Card.Body style={{border: '2px dashed #dadada '}}>
+                                <div className="text-center">
+                                    <Card.Img variant="top" src={profilePicturePath} style={{ width: '200px' }} alt="Profile" />
+                                </div>
                                 <Card.Title>{`${userData.firstName} ${userData.lastName}`}</Card.Title>
                                 <Card.Text>
                                     Email: {userData.emailAddress}
@@ -88,13 +91,14 @@ const Profile = () => {
                         <Accordion defaultActiveKey="0">
                             <Accordion.Item eventKey="0">
                                 <Accordion.Header>
-                                <FontAwesomeIcon icon={faKey} className='me-3'/> ********</Accordion.Header>
+                                    <FontAwesomeIcon icon={faLock} className='me-3' /> Security</Accordion.Header>
                                 <Accordion.Body className='rounded'>
-                                 <Link to={'/ChangePassword'}> Change Password</Link>
+                                    <Link to={'/ChangePassword'}><FontAwesomeIcon icon={faKey} className='me-3' /> Change Password</Link>
+                                    {/* <ChangePasswordForm/> */}
                                 </Accordion.Body>
                             </Accordion.Item>
                             <Accordion.Item eventKey="1" className='mt-3 rounded'>
-                                <Accordion.Header>Activity</Accordion.Header>
+                                <Accordion.Header><FontAwesomeIcon icon={faClockRotateLeft} className='me-3' />Activity</Accordion.Header>
                                 <Accordion.Body>
                                     No Activity Found.
                                 </Accordion.Body>

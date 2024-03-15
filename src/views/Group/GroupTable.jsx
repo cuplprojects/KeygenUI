@@ -29,7 +29,7 @@ const GroupTable = ({ groups }) => {
                             <td className='p-2'>{group.city}</td>
                             <td className='p-2'>{group.address}</td>
                             <td className='text-center p-2'>
-                                <Link to={`/Groups/papers/${group.groupID}`}>
+                                <Link to={`/Groups/ViewGroup/${group.groupID}`}>
                                     <FontAwesomeIcon icon={faEye} />
                                 </Link>
                             </td>

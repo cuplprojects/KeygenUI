@@ -1,19 +1,34 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types'; // Import PropTypes
-import { Modal, Button, Form } from 'react-bootstrap';
+import PropTypes from 'prop-types';
+import { Modal, Button, Form, Alert } from 'react-bootstrap';
 
-const AddProgramModal = ({ show, handleClose, addProgram }) => {
+const AddProgramModal = ({ show, handleClose, addProgram, programs }) => {
   const [programName, setProgramName] = useState('');
+  const [error, setError] = useState('');
 
   const handleChange = e => {
     setProgramName(e.target.value);
+    setError('');
   };
 
   const handleAddProgram = () => {
+    if (!programName.trim()) {
+      setError('Program name cannot be empty.');
+      return;
+    }
+    const isDuplicate = programs.some(program =>
+      program.programName.toLowerCase() === programName.toLowerCase()
+    );
+    if (isDuplicate) {
+      setError('Program already exists.');
+      return;
+    }
     addProgram(programName);
     handleClose();
     setProgramName('');
   };
+  
+  
 
   return (
     <Modal show={show} onHide={handleClose}>
@@ -31,13 +46,14 @@ const AddProgramModal = ({ show, handleClose, addProgram }) => {
               onChange={handleChange}
             />
           </Form.Group>
+          {error && <Alert variant='danger'>{error}</Alert>}
         </Form>
       </Modal.Body>
       <Modal.Footer>
         <Button variant='secondary' onClick={handleClose}>
           Close
         </Button>
-        <Button variant='primary' onClick={handleAddProgram}>
+        <Button variant='primary' onClick={handleAddProgram} disabled={!programName}>
           Add Program
         </Button>
       </Modal.Footer>
@@ -45,11 +61,11 @@ const AddProgramModal = ({ show, handleClose, addProgram }) => {
   );
 };
 
-// Add prop types
 AddProgramModal.propTypes = {
   show: PropTypes.bool.isRequired,
   handleClose: PropTypes.func.isRequired,
   addProgram: PropTypes.func.isRequired,
+  programs: PropTypes.array.isRequired,
 };
 
 export default AddProgramModal;

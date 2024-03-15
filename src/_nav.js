@@ -6,6 +6,7 @@ import {
   cilPlus,
   cilHamburgerMenu,
   cilNewspaper,
+  cilApplications,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -73,6 +74,25 @@ const _nav = [
         component: CNavItem,
         name: 'All Generated Keys',
         to: '/KeyGenerator',
+        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+      },
+    ],
+  },
+  {
+    component: CNavGroup,
+    name: 'Master',
+    icon: <CIcon icon={cilApplications} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Jumble Configrations',
+        to: '/Master/JumblingConfig',
+        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Sessions',
+        to: '/Master/Sessions',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
       },
     ],

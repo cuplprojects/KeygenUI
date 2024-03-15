@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, CardBody, CardGroup, Col, Container, Row } from 'react-bootstrap';
-import loginicon from './../../../assets/images/loginicon.png'
+// import loginicon from './../../../assets/images/loginicon.png'
 // import logo from './../../../assets/images/logo.png'
 
 import PropTypes from 'prop-types';

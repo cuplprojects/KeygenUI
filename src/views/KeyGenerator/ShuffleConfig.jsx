@@ -3,7 +3,7 @@ import { Container, Form, Button, Spinner, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
-const ShuffleConfig = ({ paperID }) => {
+const ShuffleConfig = ({ selectedPaperData }) => {
   const [paperData, setPaperData] = useState({});
   const [iterations, setIterations] = useState('');
   const [copies, setCopies] = useState('');
@@ -14,14 +14,18 @@ const ShuffleConfig = ({ paperID }) => {
   useEffect(() => {
     const fetchPaperData = async () => {
       try {
-        const response = await fetch(`http://api2.chandrakala.co.in/api/PaperConfig/GetByPaperID/${paperID}`);
+        const groupID = selectedPaperData.groupID;
+        const sessionID = selectedPaperData.sessionID;
+        const bookletSize = selectedPaperData.bookletSize;
+
+        const response = await fetch(`http://api2.chandrakala.co.in/api/PaperConfig/Group/Session?groupID=${groupID}&sessionID=${sessionID}&bookletsize=${bookletSize}`);
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
         const data = await response.json();
         setPaperData(data);
-        setCopies(data.paperConfig.sets);
-        setIterations(data.paperConfig.numberofJumblingSteps);
+        setCopies(data.paperConfig.sets.toString());
+        setIterations(data.paperConfig.numberofJumblingSteps.toString());
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('An error occurred while fetching data. Please try again later.');
@@ -29,7 +33,7 @@ const ShuffleConfig = ({ paperID }) => {
     };
 
     fetchPaperData();
-  }, [paperID]);
+  }, [selectedPaperData.groupID, selectedPaperData.sessionID, selectedPaperData.bookletSize]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,16 +41,18 @@ const ShuffleConfig = ({ paperID }) => {
     setError(null);
 
     try {
+      console.log(paperData)
       const formData = {
-        iterations: parseInt(iterations),
-        copies: parseInt(copies),
-        setofSteps: paperData.steps.map(step => step.steps.split(',').map(s => s.trim())),
-        groupID: paperData.group.groupID,
-        subjectID: paperData.paper.subjectID,
-        paperCode: paperData.paper.paperCode,
-        catchNumber: paperData.paper.catchNumber,
+        iterations: parseInt(paperData.paperConfig.numberofJumblingSteps),
+        copies: parseInt(paperData.paperConfig.sets),
+        setofSteps: paperData.steps.map(step => step.split(',').map(s => s.trim())),
+        groupID: selectedPaperData.groupID,
+        subjectID: selectedPaperData.subjectID,
+        paperCode: selectedPaperData.paperCode,
+        catchNumber: selectedPaperData.catchNumber,
         setID: 1,
       };
+      console.log(formData)
 
       const url = 'http://api2.chandrakala.co.in/api/FormData/GenerateKey';
 
@@ -62,7 +68,6 @@ const ShuffleConfig = ({ paperID }) => {
         const responseData = await response.json();
         console.log('Data sent successfully!');
 
-        // Save response data to localStorage
         localStorage.setItem('generatedKeys', JSON.stringify(responseData));
 
         navigate('/KeyGenerator/download-keys');
@@ -77,12 +82,11 @@ const ShuffleConfig = ({ paperID }) => {
     }
   };
 
-
   const renderSetOfStepsFields = () => {
     const fields = [];
     for (let i = 0; i < paperData?.steps?.length; i++) {
       const step = paperData.steps[i];
-      const steps = step.steps.split(',').map(value => value.trim());
+      const steps = step.split(',').map(value => value.trim());
       const stepField = (
         <Form.Group key={i} className='mt-2'>
           <Form.Label>{`Set of Steps ${i + 1}: (Ex. 10,20)`}</Form.Label>
@@ -101,7 +105,7 @@ const ShuffleConfig = ({ paperID }) => {
 
   return (
     <Container className="userform border border-3 p-4 my-3">
-      <h3 className='text-center'>Give Jumbling Steps <hr /></h3>
+      <h3 className='text-center'>Jumbling Steps <hr /></h3>
       <Form onSubmit={handleSubmit}>
         <Form.Group className='mt-2'>
           <Form.Label>No. Of Copies:</Form.Label>
@@ -127,18 +131,20 @@ const ShuffleConfig = ({ paperID }) => {
 
         {renderSetOfStepsFields()}
 
-        {error && <Alert variant="danger">{error}</Alert>}
+        {error && <Alert variant="danger" className='mt-3'>{error}</Alert>}
 
-        <Button type="submit" className='mt-3' disabled={loading}>
-          {loading ? <Spinner animation="border" size="sm" /> : 'Submit'}
-        </Button>
+        <div className="text-center">
+          <Button type="submit" className='mt-3' disabled={loading}>
+            {loading ? <Spinner animation="border" size="sm" /> : 'Generate Keys'}
+          </Button>
+        </div>
       </Form>
     </Container>
   );
 };
 
 ShuffleConfig.propTypes = {
-  paperID: PropTypes.number.isRequired,
+  selectedPaperData: PropTypes.object.isRequired,
 };
 
 export default ShuffleConfig;

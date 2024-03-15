@@ -16,12 +16,13 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [groups, setGroups] = useState([]);
     const [sessions, setSessions] = useState([]);
     const [papers, setPapers] = useState([]);
-    const [suffleconfigdata, setSuffleconfigdata] = useState([]);
     const [selectedPaperData, setSelectedPaperData] = useState(null);
+    
 
     useEffect(() => {
         async function fetchGroups() {
             try {
+              
                 const response = await fetch('http://api2.chandrakala.co.in/api/Group');
                 if (response.ok) {
                     const data = await response.json();
@@ -39,7 +40,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchSessions() {
             try {
-                const response = await fetch(`http://api2.chandrakala.co.in/api/Sessions/Group/${selectedGroup.value}`);
+                const response = await fetch('http://api2.chandrakala.co.in/api/Sessions');
                 if (response.ok) {
                     const data = await response.json();
                     setSessions(data);
@@ -50,10 +51,9 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                 console.error('Error fetching sessions:', error);
             }
         }
-        if (selectedGroup.value) {
-            fetchSessions();
-        }
-    }, [selectedGroup]);
+        fetchSessions();
+    }, []);
+    
 
     useEffect(() => {
         async function fetchPapers() {
@@ -74,29 +74,6 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             fetchPapers();
         }
     }, [selectedGroup, selectedSession]);
-
-    useEffect(() => {
-        async function fetchPaperConfig() {
-            try {
-                const response = await fetch(`http://api2.chandrakala.co.in/api/PaperConfig/${selectedPaper.value}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setSuffleconfigdata(data)
-                    setNumberOfQuestions(data.numberofQuestions);
-                    if(setNumberOfQuestions){
-                        handleNumberOfQuestionsChange()
-                    }
-                } else {
-                    console.error('Failed to fetch paper config:', response.statusText);
-                }
-            } catch (error) {
-                console.error('Error fetching paper config:', error);
-            }
-        }
-        if (selectedPaper.value) {
-            fetchPaperConfig();
-        }
-    }, [selectedPaper]);
 
     const handleNumberOfQuestionsChange = (e) => {
         const inputNumber = e.target.value;
@@ -255,7 +232,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     </div>
                 </Form>
                 {numberOfQuestions > 0 && !editing && formSubmitted && (
-                    <ShuffleConfig paperID={selectedPaperData.paperID} />
+                    <ShuffleConfig selectedPaperData={selectedPaperData} />
                 )}
             </Col>
 

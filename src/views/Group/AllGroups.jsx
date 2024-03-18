@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { Button, Col, Container, Row, Spinner } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import GroupTable from './GroupTable';
-import { useHistory } from 'react-router-dom';
 
 const apiUrl = process.env.REACT_APP_API_GROUP;
 

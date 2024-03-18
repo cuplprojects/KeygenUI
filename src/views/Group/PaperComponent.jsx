@@ -17,7 +17,7 @@ const PaperComponent = ({ groupId }) => {
         return response.json();
       })
       .then(data => {
-        const filteredPapers = data.filter(paper => paper.groupID == groupId);
+        const filteredPapers = data.filter(paper => parseInt(paper.groupID) === parseInt(groupId));
         setPapers(filteredPapers);
         setLoading(false);
       })
@@ -32,7 +32,7 @@ const PaperComponent = ({ groupId }) => {
     <Card>
       <Card.Header className='d-flex align-items-center justify-content-between'>
         <h4>Papers</h4>
-        <Link to={`/Groups/AddPaper/${groupId}`} className="btn btn-primary">
+        <Link to={`/Groups/AddPaper`} className="btn btn-primary">
           Add New Paper
         </Link>
       </Card.Header>
@@ -42,7 +42,7 @@ const PaperComponent = ({ groupId }) => {
         ) : error ? (
           <Alert variant="danger">{error}</Alert>
         ) : papers.length === 0 ? (
-          <div className="alert alert-info">No papers found for this session.</div>
+          <div className="alert alert-info">No papers found for this Group.</div>
         ) : (
           <Table bordered hover striped>
             <thead>

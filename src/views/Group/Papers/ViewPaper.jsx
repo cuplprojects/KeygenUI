@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Container, Row, Col } from 'react-bootstrap';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useUser } from './../../../context/UserContext';
+import {  useParams } from 'react-router-dom';
 
 const ViewPaper = () => {
-  const { keygenUser } = useUser();
-  const userId = keygenUser?.user_ID;
 
-  const navigate = useNavigate();
   const { paperID } = useParams();
 
   const [paper, setPaper] = useState(null);

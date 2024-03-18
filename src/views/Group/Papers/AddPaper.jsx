@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Container, Row, Col, Card } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
-import { useUser } from './../../../context/UserContext';
+import { useUser } from '../../../context/UserContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import Select from 'react-select';
@@ -14,6 +14,7 @@ const AddPaper = () => {
 
   const { groupID } = useParams();
 
+  const [groups, setGroups] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [sessions, setSessions] = useState([]);
@@ -23,7 +24,7 @@ const AddPaper = () => {
   const [formData, setFormData] = useState({
     paperID: 0,
     sessionID: '',
-    groupID: groupID,
+    groupID: '',
     catchNumber: '',
     paperName: '',
     paperCode: '',
@@ -163,6 +164,7 @@ const AddPaper = () => {
     fetchPrograms();
     fetchSubjects();
     fetchSessions();
+    fetchGroups();
   }, []);
 
   const fetchPrograms = () => {
@@ -170,6 +172,13 @@ const AddPaper = () => {
       .then(response => response.json())
       .then(data => setPrograms(data))
       .catch(error => console.error('Error fetching programs:', error));
+  };
+
+  const fetchGroups = () => {
+    fetch('http://api2.chandrakala.co.in/api/Group')
+      .then(response => response.json())
+      .then(data => setGroups(data))
+      .catch(error => console.error('Error fetching Groups:', error));
   };
 
   const fetchSubjects = () => {
@@ -196,6 +205,19 @@ const AddPaper = () => {
       <h3>Add Paper</h3>
       <Form onSubmit={handleSubmit}>
         <Row className='mb-3'>
+          <Col>
+            <Form.Group controlId='groupID'>
+              <Form.Label >Groups<span className='text-danger'>*</span></Form.Label>
+              <Select
+                options={groups.map(group => ({ label: group.groupName, value: group.groupID }))}
+                value={formData.groupID ? { label: groups.find(s => s.groupID === formData.groupID).groupName, value: formData.groupID } : null}
+                onChange={(selectedOption) => handleChange('groupID', selectedOption ? selectedOption.value : null)}
+                placeholder="Select Session"
+                isClearable
+                required
+              />
+            </Form.Group>
+          </Col>
           <Col>
             <Form.Group controlId='sessionID'>
               <Form.Label>Session<span className='text-danger'>*</span></Form.Label>

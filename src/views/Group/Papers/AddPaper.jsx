@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Container, Row, Col, Card } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
 import { useUser } from '../../../context/UserContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
@@ -11,8 +10,6 @@ import AddSubjectModal from './AddSubjectModal';
 const AddPaper = () => {
   const { keygenUser } = useUser();
   const userId = keygenUser?.user_ID;
-
-  const { groupID } = useParams();
 
   const [groups, setGroups] = useState([]);
   const [programs, setPrograms] = useState([]);
@@ -52,7 +49,7 @@ const AddPaper = () => {
 
     if (name === 'bookletSize') {
       try {
-        const response = await fetch(`http://api2.chandrakala.co.in/api/PaperConfig/Group/Session?groupID=${groupID}&sessionID=${formData.sessionID}&bookletsize=${value}`);
+        const response = await fetch(`http://api2.chandrakala.co.in/api/PaperConfig/Group/Session?groupID=${formData.groupID}&sessionID=${formData.sessionID}&bookletsize=${value}`);
         if (!response.ok) {
           throw new Error('Failed to fetch paper config');
         }

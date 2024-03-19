@@ -40,25 +40,7 @@ const _nav = [
       },
     ],
   },
-  {
-    component: CNavGroup,
-    name: 'Groups',
-    icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Add Group',
-        to: '/Groups/add-Group',
-        icon: <CIcon icon={cilPlus} customClassName="nav-icon" />,
-      },
-      {
-        component: CNavItem,
-        name: 'All Groups',
-        to: '/Groups',
-        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
-      },
-    ],
-  },
+  
   {
     component: CNavGroup,
     name: 'Key Generator',
@@ -84,10 +66,23 @@ const _nav = [
     icon: <CIcon icon={cilApplications} customClassName="nav-icon" />,
     items: [
       {
-        component: CNavItem,
-        name: 'Jumble Configrations',
-        to: '/Master/JumblingConfig',
-        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+        component: CNavGroup,
+        name: 'Groups',
+        icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
+        items: [
+          {
+            component: CNavItem,
+            name: 'Add Group',
+            to: '/Groups/add-Group',
+            icon: <CIcon icon={cilPlus} customClassName="nav-icon" />,
+          },
+          {
+            component: CNavItem,
+            name: 'All Groups',
+            to: '/Groups',
+            icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+          },
+        ],
       },
       {
         component: CNavItem,
@@ -95,6 +90,20 @@ const _nav = [
         to: '/Master/Sessions',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
       },
+      
+      {
+        component: CNavItem,
+        name: 'Jumble Configrations',
+        to: '/Master/JumblingConfig',
+        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Add Paper',
+        to: '/Master/AddPaper',
+        icon: <CIcon icon={cilNewspaper} customClassName="nav-icon" />,
+      },
+      
     ],
   },
 ]

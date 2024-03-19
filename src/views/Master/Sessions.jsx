@@ -26,7 +26,7 @@ const Sessions = () => {
       setCurrentSession(currentSessionName);
 
       const nextSessionsList = [];
-      for (let i = 1; i <= 5; i++) {
+      for (let i = -5; i <= 0; i++) {
         const nextSessionName = `${currentYear + i}-${(currentYear + i) % 100 + 1}`;
         if (!sessions.find(session => session.session_Name === nextSessionName)) {
           nextSessionsList.push({ value: nextSessionName, label: nextSessionName });
@@ -49,7 +49,6 @@ const Sessions = () => {
 
   return (
     <div>
-      <h2>All Sessions</h2>
       <Row>
         <Col md={6}>
           <h3>Previous Sessions</h3>
@@ -71,7 +70,9 @@ const Sessions = () => {
                   isOptionDisabled={(option) => sessions.find(session => session.session_Name === option.value)}
                 />
               </Form.Group>
-              <Button onClick={addSession}>Add Session</Button>
+             <div className="text-end mt-2">
+             <Button onClick={addSession}>Add Session</Button>
+             </div>
             </Card.Body>
           </Card>
         </Col>

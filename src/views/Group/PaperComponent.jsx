@@ -32,7 +32,7 @@ const PaperComponent = ({ groupId }) => {
     <Card>
       <Card.Header className='d-flex align-items-center justify-content-between'>
         <h4>Papers</h4>
-        <Link to={`/Groups/AddPaper`} className="btn btn-primary">
+        <Link to={`/Master/AddPaper`} className="btn btn-primary">
           Add New Paper
         </Link>
       </Card.Header>

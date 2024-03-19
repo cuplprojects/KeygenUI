@@ -69,17 +69,36 @@ const JumblingConfig = () => {
     filterConfigurations(field, value);
   };
 
-  const filterConfigurations = (field, value) => {
+  const filterConfigurations = () => {
     let filtered = configurations;
-    if (field === 'groupID') {
-      filtered = configurations.filter(config => config.groupID === parseInt(value));
-    } else if (field === 'sessionID') {
-      filtered = configurations.filter(config => config.sessionID === parseInt(value));
-    } else if (field === 'bookletSize') {
-      filtered = configurations.filter(config => config.bookletSize === parseInt(value));
+    if (formData.groupID) {
+      console.log(formData.groupID)
+      filtered = configurations.filter(config =>
+        config.groupID === parseInt(formData.groupID)
+      );
+      console.log(filtered);
     }
+    else if (formData.groupID && formData.sessionID) {
+      console.log(formData.groupID,formData.sessionID)
+      filtered = configurations.filter(config =>
+        config.groupID === parseInt(formData.groupID) &&
+        config.sessionID === parseInt(formData.sessionID)
+      );
+      console.log(filtered);
+    }
+    else if (formData.groupID && formData.sessionID && formData.bookletSize) {
+      console.log(formData.groupID,formData.sessionID)
+      filtered = configurations.filter(config =>
+        config.groupID === parseInt(formData.groupID) &&
+        config.sessionID === parseInt(formData.sessionID) &&
+        config.bookletSize === parseInt(formData.bookletSize)
+      );
+      console.log(filtered);
+    } 
+  
     setFilteredConfigurations(filtered);
   };
+  
 
 
   const handleSubmit = async (e) => {
@@ -268,9 +287,6 @@ const JumblingConfig = () => {
                   {renderStepFields()}
                 </Row>
                 <div className="text-center mt-3">
-                  {/* {filteredConfigurations.length > 0 && (
-                    <p className='text-danger'>Configration alredy defined </p>
-                  )} */}
                   <Button type="submit">Add Configuration</Button>
                 </div>
               </Form>

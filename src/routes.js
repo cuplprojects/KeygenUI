@@ -43,7 +43,7 @@ const routes = [
   { path: '/Groups/add-Group', name: 'Add Group', moduleId: null, permissionType: null, element: <AddGroup /> },
   { path: '/Groups', name: 'All Groups', moduleId: null, permissionType: null, element: <AllGroups /> },
   { path: '/Groups/papers/:groupId', name: 'Papers', moduleId: null, permissionType: null, element: <PaperComponent /> },
-  { path: '/Groups/AddPaper', name: 'Add Paper', moduleId: null, permissionType: null, element: <AddPaper /> },
+  { path: '/Master/AddPaper', name: 'Add Paper', moduleId: null, permissionType: null, element: <AddPaper /> },
   { path: '/Groups/ViewPaper/:paperID', name: 'Add Paper', moduleId: null, permissionType: null, element: <ViewPaper /> },
   { path: '/403', name: 'Access Denied', moduleId: null, permissionType: null, element: <AccessDeniedPage /> },
   { path: '/Groups/ViewGroup/:groupID', name: 'View Group', moduleId: null, permissionType: null, element: <ViewGroup /> },

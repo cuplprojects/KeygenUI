@@ -212,7 +212,7 @@ const AddPaper = () => {
                 options={groups.map(group => ({ label: group.groupName, value: group.groupID }))}
                 value={formData.groupID ? { label: groups.find(s => s.groupID === formData.groupID).groupName, value: formData.groupID } : null}
                 onChange={(selectedOption) => handleChange('groupID', selectedOption ? selectedOption.value : null)}
-                placeholder="Select Session"
+                placeholder="Select Group"
                 isClearable
                 required
               />

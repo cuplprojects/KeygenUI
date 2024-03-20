@@ -12,6 +12,9 @@ export const UserProvider = ({ children }) => {
     const storedKeygenUser = localStorage.getItem('keygenUser');
     if (storedKeygenUser) {
       const { user_ID, ...rest } = JSON.parse(storedKeygenUser);
+      if (typeof user_ID === 'number') {
+        localStorage.removeItem('keygenUser');
+      }
       const decryptedUserId = decrypt(user_ID); // Decrypt the user_ID
       return {
         ...rest,
@@ -20,6 +23,7 @@ export const UserProvider = ({ children }) => {
     }
     return null;
   };
+
 
   const [keygenUser, setKeygenUser] = useState(getKeygenUserFromLocalStorage());
 

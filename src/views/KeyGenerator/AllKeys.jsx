@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Table, Button, Spinner, Alert } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // const apiUrl = process.env.REACT_APP_API_CHANGE_ANSWERKEYS;
 
@@ -51,10 +51,10 @@ const AllKeys = () => {
   return (
     <Container className="userform border border-3 p-4 my-3">
       <div className="d-flex justify-content-between m-3">
-        <h3>Papers</h3>
-        <Button as={Link} to="NewPaper/" className="btn">
+        <h3>All Generated Keys</h3>
+        {/* <Button as={Link} to="NewPaper/" className="btn">
           Add Paper
-        </Button>
+        </Button> */}
       </div>
       <hr />
 

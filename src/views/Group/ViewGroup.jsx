@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Card, Col, Row } from 'react-bootstrap';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import PaperComponent from './PaperComponent';
+import { useSecurity } from './../../context/Security';
 
 const ViewGroup = () => {
+  const { decrypt } = useSecurity();
+
   const { groupID } = useParams();
+  const groupId = decrypt(groupID);
   const [group, setGroup] = useState(null);
   const [loadingGroup, setLoadingGroup] = useState(true);
 
   useEffect(() => {
-    fetch(`http://api2.chandrakala.co.in/api/Group/${groupID}`)
+    fetch(`http://api2.chandrakala.co.in/api/Group/${groupId}`)
       .then(response => response.json())
       .then(data => {
         setGroup(data);
@@ -19,7 +23,7 @@ const ViewGroup = () => {
         console.error('Error fetching group:', error);
         setLoadingGroup(false);
       });
-  }, [groupID]);
+  }, [groupId]);
 
   return (
     <Row>
@@ -48,7 +52,7 @@ const ViewGroup = () => {
         </Card>
       </Col>
       <Col md={6}>
-        <PaperComponent groupId={groupID} />
+        <PaperComponent groupId={groupId} />
       </Col>
     </Row>
   );

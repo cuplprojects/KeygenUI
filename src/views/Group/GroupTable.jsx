@@ -5,8 +5,10 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
+import { useSecurity } from './../../context/Security';
 
 const GroupTable = ({ groups }) => {
+    const { encrypt } = useSecurity();
     return (
         <div className='table-responsive hover'>
             <Table bordered hover striped>
@@ -29,7 +31,7 @@ const GroupTable = ({ groups }) => {
                             <td className='p-2'>{group.city}</td>
                             <td className='p-2'>{group.address}</td>
                             <td className='text-center p-2'>
-                                <Link to={`/Groups/ViewGroup/${group.groupID}`}>
+                                <Link to={`/Groups/ViewGroup/${encrypt(group.groupID)}`}>
                                     <FontAwesomeIcon icon={faEye} />
                                 </Link>
                             </td>

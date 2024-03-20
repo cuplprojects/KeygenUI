@@ -227,7 +227,8 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <div className="d-grid gap-2 mt-4">
                         <Button type="submit" disabled={!editing && formSubmitted}>Upload and Save CSV</Button>
                         {!editing && formSubmitted && (
-                            <Button onClick={handleEdit}>Edit Form</Button>
+                            // <Button onClick={handleEdit}>Edit Form</Button>
+                            <></>
                         )}
                     </div>
                 </Form>

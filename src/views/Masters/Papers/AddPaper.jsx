@@ -137,6 +137,7 @@ const AddPaper = () => {
       }
       setSuccess('Paper added successfully');
       setFormData({
+        createdBy: userId,
         ...formData,
         catchNumber: '',
         paperName: '',

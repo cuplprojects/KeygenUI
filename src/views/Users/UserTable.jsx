@@ -7,7 +7,7 @@ import { CSVLink } from 'react-csv';
 import DefaultAvatar from './../../assets/images/avatars/defaultavatar.jpg';
 import { faEye, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import PropTypes from 'prop-types'; // Import PropTypes
+import PropTypes from 'prop-types';
 import { useSecurity } from "./../../context/Security";
 const baseUrl = process.env.REACT_APP_BASE_URL;
 

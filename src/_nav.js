@@ -62,7 +62,7 @@ const _nav = [
   },
   {
     component: CNavGroup,
-    name: 'Master',
+    name: 'Masters',
     icon: <CIcon icon={cilApplications} customClassName="nav-icon" />,
     items: [
       {
@@ -87,20 +87,20 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Sessions',
-        to: '/Master/Sessions',
+        to: '/Masters/Sessions',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
       },
       
       {
         component: CNavItem,
         name: 'Jumble Configrations',
-        to: '/Master/JumblingConfig',
+        to: '/Masters/JumblingConfig',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
-        name: 'Add Paper',
-        to: '/Master/AddPaper',
+        name: 'Papers',
+        to: '/Masters/papers',
         icon: <CIcon icon={cilNewspaper} customClassName="nav-icon" />,
       },
       

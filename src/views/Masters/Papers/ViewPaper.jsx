@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Alert, Container, Row, Col } from 'react-bootstrap';
-import {  useParams } from 'react-router-dom';
+import { Form, Container, Row, Col } from 'react-bootstrap';
+import { useParams } from 'react-router-dom';
+import { useSecurity } from './../../../context/Security';
 
 const ViewPaper = () => {
-
+  const { decrypt } = useSecurity();
   const { paperID } = useParams();
 
   const [paper, setPaper] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [error, setError] = useState(null); // Define error state
+  const [programs, setPrograms] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [group, setGroup] = useState(null);
+  const [session, setSession] = useState(null);
 
   const handleChange = (name, value) => {
     setPaper({
@@ -19,7 +22,7 @@ const ViewPaper = () => {
   };
 
   const fetchPaper = () => {
-    fetch(`http://api2.chandrakala.co.in/api/Papers/${paperID}`)
+    fetch(`http://api2.chandrakala.co.in/api/Papers/${decrypt(paperID)}`)
       .then(response => response.json())
       .then(data => {
         setPaper(data);
@@ -31,42 +34,93 @@ const ViewPaper = () => {
       });
   };
 
-  const handleEdit = () => {
-    setEditing(true);
+  const fetchPrograms = () => {
+    fetch('http://api2.chandrakala.co.in/api/Program')
+      .then(response => response.json())
+      .then(data => {
+        setPrograms(data);
+      })
+      .catch(error => {
+        console.error('Error fetching programs:', error);
+      });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const response = await fetch('http://api2.chandrakala.co.in/api/Papers', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(paper)
+  const fetchSubjects = () => {
+    fetch('http://api2.chandrakala.co.in/api/Subjects')
+      .then(response => response.json())
+      .then(data => {
+        setSubjects(data);
+      })
+      .catch(error => {
+        console.error('Error fetching subjects:', error);
       });
-      if (!response.ok) {
-        throw new Error('Failed to update paper');
-      }
-      setEditing(false);
-    } catch (error) {
-      console.error('Error updating paper:', error);
-      setError('Failed to update paper. Please try again.');
-      setLoading(false);
-    }
+  };
+
+  const fetchGroup = () => {
+    fetch('http://api2.chandrakala.co.in/api/Group')
+      .then(response => response.json())
+      .then(data => {
+        const groupData = data.find(group => group.groupID === paper.groupID);
+        setGroup(groupData);
+        console.log(groupData)
+      })
+      .catch(error => {
+        console.error('Error fetching group:', error);
+      });
+  };
+
+  const fetchSession = () => {
+    fetch('http://api2.chandrakala.co.in/api/Sessions')
+      .then(response => response.json())
+      .then(data => {
+        const sessionData = data.find(session => session.session_Id === paper.sessionID);
+        setSession(sessionData);
+      })
+      .catch(error => {
+        console.error('Error fetching session:', error);
+      });
   };
 
   useEffect(() => {
     fetchPaper();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (paper) {
+      fetchGroup();
+      fetchSession();
+      fetchPrograms();
+      fetchSubjects();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paper]);
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   return (
     <Container className="userform border border-3 p-4 my-3">
-      <h3>View Paper</h3>
+
+      <div className="d-flex justify-content-between m-3">
+        <h3>View Paper</h3>
+        {group && session && (
+          <>
+            <div><h5>Group Name: {group.groupName}</h5></div>
+            <div><h5>Session: {session.session_Name}</h5></div>
+          </>
+        )}
+      </div>
+      <hr />
       {loading && <div>Loading...</div>}
+
       {paper && (
-        <Form onSubmit={handleSubmit}>
+        <Form>
           <Row className='mb-3'>
             <Col>
               <Form.Group controlId='paperName'>
@@ -76,8 +130,7 @@ const ViewPaper = () => {
                   name='paperName'
                   value={paper.paperName}
                   onChange={(e) => handleChange('paperName', e.target.value)}
-                  required
-                  disabled={!editing}
+                  disabled
                 />
               </Form.Group>
             </Col>
@@ -89,8 +142,7 @@ const ViewPaper = () => {
                   name='catchNumber'
                   value={paper.catchNumber}
                   onChange={(e) => handleChange('catchNumber', e.target.value)}
-                  required
-                  disabled={!editing}
+                  disabled
                 />
               </Form.Group>
             </Col>
@@ -102,8 +154,7 @@ const ViewPaper = () => {
                   name='paperCode'
                   value={paper.paperCode}
                   onChange={(e) => handleChange('paperCode', e.target.value)}
-                  required
-                  disabled={!editing}
+                  disabled
                 />
               </Form.Group>
             </Col>
@@ -113,13 +164,18 @@ const ViewPaper = () => {
               <Form.Group controlId='program'>
                 <Form.Label>Program</Form.Label>
                 <Form.Control
-                  type='text'
+                  as='select'
                   name='program'
-                  value={paper.program}
+                  value={paper.programID}
                   onChange={(e) => handleChange('program', e.target.value)}
-                  required
-                  disabled={!editing}
-                />
+                  disabled
+                >
+                  {programs.map(program => (
+                    <option key={program.programID} value={program.programID}>
+                      {program.programName}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
             </Col>
             <Col>
@@ -130,8 +186,7 @@ const ViewPaper = () => {
                   name='examCode'
                   value={paper.examCode}
                   onChange={(e) => handleChange('examCode', e.target.value)}
-                  required
-                  disabled={!editing}
+                  disabled
                 />
               </Form.Group>
             </Col>
@@ -139,13 +194,18 @@ const ViewPaper = () => {
               <Form.Group controlId='subjectID'>
                 <Form.Label>Subject ID</Form.Label>
                 <Form.Control
-                  type='text'
+                  as='select'
                   name='subjectID'
                   value={paper.subjectID}
                   onChange={(e) => handleChange('subjectID', e.target.value)}
-                  required
-                  disabled={!editing}
-                />
+                  disabled
+                >
+                  {subjects.map(subject => (
+                    <option key={subject.subject_Id} value={subject.subject_Id}>
+                      {subject.subject_Name}
+                    </option>
+                  ))}
+                </Form.Control>
               </Form.Group>
             </Col>
           </Row>
@@ -158,23 +218,21 @@ const ViewPaper = () => {
                   name='paperNumber'
                   value={paper.paperNumber}
                   onChange={(e) => handleChange('paperNumber', e.target.value)}
-                  required
-                  disabled={!editing}
+                  disabled
                 />
               </Form.Group>
             </Col>
             <Col>
-              <Form.Group controlId='examDate'>
-                <Form.Label>Exam Date</Form.Label>
-                <Form.Control
-                  type='date'
-                  name='examDate'
-                  value={paper.examDate}
-                  onChange={(e) => handleChange('examDate', e.target.value)}
-                  required
-                  disabled={!editing}
-                />
-              </Form.Group>
+            <Form.Group controlId='examDate'>
+    <Form.Label>Exam Date</Form.Label>
+    <Form.Control
+      type='text'
+      name='examDate'
+      value={formatDate(paper.examDate)}
+      onChange={(e) => handleChange('examDate', e.target.value)}
+      disabled
+    />
+  </Form.Group>
             </Col>
             <Col>
               <Form.Group controlId='bookletSize'>
@@ -184,23 +242,11 @@ const ViewPaper = () => {
                   name='bookletSize'
                   value={paper.bookletSize}
                   onChange={(e) => handleChange('bookletSize', e.target.value)}
-                  required
-                  disabled={!editing}
+                  disabled
                 />
               </Form.Group>
             </Col>
           </Row>
-          {error && <Alert variant='danger'>{error}</Alert>}
-          {!editing && (
-            <Button variant='primary' onClick={handleEdit}>
-              Edit
-            </Button>
-          )}
-          {editing && (
-            <Button variant='primary' type='submit'>
-              Save
-            </Button>
-          )}
         </Form>
       )}
     </Container>

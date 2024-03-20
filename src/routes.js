@@ -17,11 +17,12 @@ const AllGroups = lazy(() => import('./views/Group/AllGroups'));
 const ViewGroup = lazy(() => import('./views/Group/ViewGroup'));
 // papers 
 const PaperComponent = lazy(() => import('./views/Group/PaperComponent'));
-const AddPaper = lazy(() => import('./views/Group/Papers/AddPaper'));
-const ViewPaper = lazy(() => import('./views/Group/Papers/ViewPaper'));
-// Master 
-const JumblingConfig = lazy(() => import('./views/Master/JumblingConfig'));
-const Sessions = lazy(() => import('./views/Master/Sessions'));
+const AddPaper = lazy(() => import('./views/Masters/Papers/AddPaper'));
+const ViewPaper = lazy(() => import('./views/Masters/Papers/ViewPaper'));
+// Masters
+const JumblingConfig = lazy(() => import('./views/Masters/JumblingConfig'));
+const Sessions = lazy(() => import('./views/Masters/Sessions'));
+const Papers = lazy(() => import('./views/Masters/Papers/Papers'));
 const Reactpdf = lazy(() => import('./views/pages/ReactPdf/Reactpdf'));
 
 const routes = [
@@ -43,12 +44,15 @@ const routes = [
   { path: '/Groups/add-Group', name: 'Add Group', moduleId: null, permissionType: null, element: <AddGroup /> },
   { path: '/Groups', name: 'All Groups', moduleId: null, permissionType: null, element: <AllGroups /> },
   { path: '/Groups/papers/:groupId', name: 'Papers', moduleId: null, permissionType: null, element: <PaperComponent /> },
-  { path: '/Master/AddPaper', name: 'Add Paper', moduleId: null, permissionType: null, element: <AddPaper /> },
+  
+  { path: '/Masters/papers', name: 'All Papers', moduleId: null, permissionType: null, element: <Papers /> },
+  { path: '/Masters/AddPaper', name: 'Add Paper', moduleId: null, permissionType: null, element: <AddPaper /> },
+
   { path: '/Groups/ViewPaper/:paperID', name: 'Add Paper', moduleId: null, permissionType: null, element: <ViewPaper /> },
   { path: '/403', name: 'Access Denied', moduleId: null, permissionType: null, element: <AccessDeniedPage /> },
   { path: '/Groups/ViewGroup/:groupID', name: 'View Group', moduleId: null, permissionType: null, element: <ViewGroup /> },
-  { path: '/Master/JumblingConfig', name: ' JumblingConfig', moduleId: null, permissionType: null, element: <JumblingConfig /> },
-  { path: '/Master/Sessions', name: ' Sessions', moduleId: null, permissionType: null, element: <Sessions /> },
+  { path: '/Masters/JumblingConfig', name: ' JumblingConfig', moduleId: null, permissionType: null, element: <JumblingConfig /> },
+  { path: '/Masters/Sessions', name: ' Sessions', moduleId: null, permissionType: null, element: <Sessions /> },
   { path: '/reactpdf', name: ' reactpdf', moduleId: null, permissionType: null, element: <Reactpdf /> },
 ];
 

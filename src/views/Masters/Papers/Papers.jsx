@@ -3,7 +3,7 @@ import { Container, Spinner } from "react-bootstrap";
 import PaperTable from "./PaperTable.jsx";
 import { Link } from "react-router-dom";
 
-const apiUrl = "http://api2.chandrakala.co.in/api";
+const apiUrl = process.env.REACT_APP_BASE_URL;
 
 const Papers = () => {
   const [papers, setPapers] = useState([]);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Container, Row, Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const ViewPaper = () => {
   const { decrypt } = useSecurity();
@@ -22,7 +23,7 @@ const ViewPaper = () => {
   };
 
   const fetchPaper = () => {
-    fetch(`http://api2.chandrakala.co.in/api/Papers/${decrypt(paperID)}`)
+    fetch(`${baseUrl}/api/Papers/${decrypt(paperID)}`)
       .then(response => response.json())
       .then(data => {
         setPaper(data);
@@ -35,7 +36,7 @@ const ViewPaper = () => {
   };
 
   const fetchPrograms = () => {
-    fetch('http://api2.chandrakala.co.in/api/Program')
+    fetch(`${baseUrl}/api/Program`)
       .then(response => response.json())
       .then(data => {
         setPrograms(data);
@@ -46,7 +47,7 @@ const ViewPaper = () => {
   };
 
   const fetchSubjects = () => {
-    fetch('http://api2.chandrakala.co.in/api/Subjects')
+    fetch(`${baseUrl}/api/Subjects`)
       .then(response => response.json())
       .then(data => {
         setSubjects(data);
@@ -57,7 +58,7 @@ const ViewPaper = () => {
   };
 
   const fetchGroup = () => {
-    fetch('http://api2.chandrakala.co.in/api/Group')
+    fetch(`${baseUrl}/api/Group`)
       .then(response => response.json())
       .then(data => {
         const groupData = data.find(group => group.groupID === paper.groupID);
@@ -70,7 +71,7 @@ const ViewPaper = () => {
   };
 
   const fetchSession = () => {
-    fetch('http://api2.chandrakala.co.in/api/Sessions')
+    fetch(`${baseUrl}/api/Sessions`)
       .then(response => response.json())
       .then(data => {
         const sessionData = data.find(session => session.session_Id === paper.sessionID);

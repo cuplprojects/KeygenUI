@@ -3,6 +3,7 @@ import { Table, Button, Form, Row, Col } from 'react-bootstrap';
 import { CSVLink } from 'react-csv';
 import $ from 'jquery';
 import PropTypes from 'prop-types'; // Import PropTypes
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const KeysTable = ({ keys }) => {
     const [filteredKeys, setFilteredKeys] = useState(keys);
@@ -77,7 +78,7 @@ const KeysTable = ({ keys }) => {
     ];
 
     const downloadFile = (filePath) => {
-        const fullUrl = `http://api2.chandrakala.co.in/${filePath.replace(/^wwwroot\//, '')}`;
+        const fullUrl = `${baseUrl}/${filePath.replace(/^wwwroot\//, '')}`;
         window.open(fullUrl);
     };
 

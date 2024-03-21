@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Table, Button, Spinner, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-
+const baseUrl = process.env.REACT_APP_BASE_URL;
 // const apiUrl = process.env.REACT_APP_API_CHANGE_ANSWERKEYS;
 
 const AllKeys = () => {
@@ -11,7 +11,7 @@ const AllKeys = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://api2.chandrakala.co.in/api/Papers')
+    fetch(`${baseUrl}/api/Papers`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch data");
@@ -19,12 +19,13 @@ const AllKeys = () => {
         return res.json();
       })
       .then(async (data) => {
-        const updatedPapers = await Promise.all(data.map(async (paper) => {
-          const groupResponse = await fetch(`http://api2.chandrakala.co.in/api/Group/${paper.groupID}`);
+        const filteredPapers = data.filter((paper) => paper.keyGenerated === true);
+        const updatedPapers = await Promise.all(filteredPapers.map(async (paper) => {
+          const groupResponse = await fetch(`${baseUrl}/api/Group/${paper.groupID}`);
           const groupData = await groupResponse.json();
-          const sessionResponse = await fetch(`http://api2.chandrakala.co.in/api/Sessions/${paper.sessionID}`);
+          const sessionResponse = await fetch(`${baseUrl}/api/Sessions/${paper.sessionID}`);
           const sessionData = await sessionResponse.json();
-          const subjectResponse = await fetch(`http://api2.chandrakala.co.in/api/Subjects/${paper.subjectID}`);
+          const subjectResponse = await fetch(`${baseUrl}/api/Subjects/${paper.subjectID}`);
           const subjectData = await subjectResponse.json();
           return {
             ...paper,

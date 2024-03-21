@@ -3,7 +3,7 @@ import { Alert, Card, Col, Row } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import PaperComponent from './PaperComponent';
 import { useSecurity } from './../../context/Security';
-
+const baseUrl = process.env.REACT_APP_BASE_URL;
 const ViewGroup = () => {
   const { decrypt } = useSecurity();
 
@@ -13,7 +13,7 @@ const ViewGroup = () => {
   const [loadingGroup, setLoadingGroup] = useState(true);
 
   useEffect(() => {
-    fetch(`http://api2.chandrakala.co.in/api/Group/${groupId}`)
+    fetch(`${baseUrl}/api/Group/${groupId}`)
       .then(response => response.json())
       .then(data => {
         setGroup(data);

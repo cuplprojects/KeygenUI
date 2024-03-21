@@ -5,6 +5,7 @@ import FileUpload from './FileUpload';
 import ShuffleConfig from './ShuffleConfig';
 import Select from 'react-select';
 import PropTypes from 'prop-types';
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [editing, setEditing] = useState(false);
@@ -23,7 +24,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         async function fetchGroups() {
             try {
               
-                const response = await fetch('http://api2.chandrakala.co.in/api/Group');
+                const response = await fetch(`${baseUrl}/api/Group`);
                 if (response.ok) {
                     const data = await response.json();
                     setGroups(data);
@@ -40,7 +41,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchSessions() {
             try {
-                const response = await fetch('http://api2.chandrakala.co.in/api/Sessions');
+                const response = await fetch(`${baseUrl}/api/Sessions`);
                 if (response.ok) {
                     const data = await response.json();
                     setSessions(data);
@@ -58,7 +59,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchPapers() {
             try {
-                const response = await fetch(`http://api2.chandrakala.co.in/api/Papers/${selectedGroup.value}/${selectedSession.value}`);
+                const response = await fetch(`${baseUrl}/api/Papers/${selectedGroup.value}/${selectedSession.value}`);
                 if (response.ok) {
                     const data = await response.json();
                     setPapers(data);
@@ -115,7 +116,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             const formdataForSubmit = new FormData();
             formdataForSubmit.append('file', blob, `file_${Date.now()}.csv`);
 
-            const url = `http://api2.chandrakala.co.in/api/FormData?GroupName=${encodeURIComponent(selectedGroup.label)}&PaperCode=${encodeURIComponent(selectedPaperData.paperCode)}&CatchNumber=${encodeURIComponent(selectedPaperData.catchNumber)}&SubjectID=${selectedPaperData.subjectID}`;
+            const url = `${baseUrl}/api/FormData?GroupName=${encodeURIComponent(selectedGroup.label)}&PaperCode=${encodeURIComponent(selectedPaperData.paperCode)}&CatchNumber=${encodeURIComponent(selectedPaperData.catchNumber)}&SubjectID=${selectedPaperData.subjectID}`;
 
             const response = await fetch(url, {
                 method: 'POST',

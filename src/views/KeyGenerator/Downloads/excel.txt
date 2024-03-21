@@ -1,0 +1,61 @@
+import React from 'react';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import PropTypes from 'prop-types';
+import { Button } from 'react-bootstrap';
+
+const ExportToExcel = ({ data, group, catchno }) => {
+  const exportToExcel = () => {
+    const workbook = XLSX.utils.book_new();
+
+    // Group the data by setID
+    const groupedData = data.reduce((acc, item) => {
+      if (!acc[item.setID]) {
+        acc[item.setID] = [];
+      }
+      acc[item.setID].push(item);
+      return acc;
+    }, {});
+
+    // Iterate over each set
+    Object.entries(groupedData).forEach(([setID, setData]) => {
+      // Add a blank row at the beginning of each set
+      const tableData = setData.map(({ setID, ...rest }) => rest); // Exclude setID from tableData
+
+      const worksheet = XLSX.utils.json_to_sheet(tableData);
+
+      // Apply style to header row
+      if (worksheet['!ref'] && worksheet['!ref'].s && worksheet['!ref'].e) {
+        for (let i = worksheet['!ref'].s.c; i <= worksheet['!ref'].e.c; i++) {
+          const cellAddress = XLSX.utils.encode_cell({ r: 0, c: i });
+          const cell = worksheet[cellAddress];
+          if (cell && cell.v) {
+            cell.s = {
+              alignment: { horizontal: 'center', vertical: 'center' },
+              font: { bold: true, color: { rgb: 'FFFFFF' } },
+              fill: { fgColor: { rgb: '000000' } },
+            };
+          }
+        }
+      }
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, `Set ${setID}`);
+    });
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const excelBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(excelBlob, `${catchno}.xlsx`);
+  };
+
+  return (
+    <Button onClick={exportToExcel}>Export to Excel</Button>
+  );
+};
+
+ExportToExcel.propTypes = {
+  data: PropTypes.array,
+  group: PropTypes.string,
+  catchno: PropTypes.string,
+};
+
+export default ExportToExcel;

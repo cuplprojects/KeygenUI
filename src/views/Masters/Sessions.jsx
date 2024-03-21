@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, Form, Button, Row, Col } from 'react-bootstrap';
 import Select from 'react-select';
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const Sessions = () => {
   const [sessions, setSessions] = useState([]);
@@ -10,7 +11,7 @@ const Sessions = () => {
   const [nextSessions, setNextSessions] = useState([]);
 
   useEffect(() => {
-    axios.get('http://api2.chandrakala.co.in/api/Sessions')
+    axios.get(`${baseUrl}/api/Sessions`)
       .then(response => {
         setSessions(response.data);
       })
@@ -37,7 +38,7 @@ const Sessions = () => {
   }, [sessions]);
 
   const addSession = () => {
-    axios.post('http://api2.chandrakala.co.in/api/Sessions', { session_Name: newSessionName })
+    axios.post(`${baseUrl}/api/Sessions`, { session_Name: newSessionName })
       .then(response => {
         setSessions([...sessions, response.data]);
         setNewSessionName('');

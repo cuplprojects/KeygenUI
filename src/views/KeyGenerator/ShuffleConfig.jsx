@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Form, Button, Spinner, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const ShuffleConfig = ({ selectedPaperData }) => {
   const [paperData, setPaperData] = useState({});
@@ -18,7 +19,7 @@ const ShuffleConfig = ({ selectedPaperData }) => {
         const sessionID = selectedPaperData.sessionID;
         const bookletSize = selectedPaperData.bookletSize;
 
-        const response = await fetch(`http://api2.chandrakala.co.in/api/PaperConfig/Group/Session?groupID=${groupID}&sessionID=${sessionID}&bookletsize=${bookletSize}`);
+        const response = await fetch(`${baseUrl}/api/PaperConfig/Group/Session?groupID=${groupID}&sessionID=${sessionID}&bookletsize=${bookletSize}`);
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
@@ -54,7 +55,7 @@ const ShuffleConfig = ({ selectedPaperData }) => {
       };
       console.log(formData)
 
-      const url = 'http://api2.chandrakala.co.in/api/FormData/GenerateKey';
+      const url = `${baseUrl}/api/FormData/GenerateKey`;
 
       const response = await fetch(url, {
         method: 'POST',

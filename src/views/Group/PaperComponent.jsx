@@ -3,6 +3,7 @@ import { Table, Alert, Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useSecurity } from './../../context/Security';
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const PaperComponent = ({ groupId }) => {
   const { encrypt } = useSecurity();
@@ -11,7 +12,7 @@ const PaperComponent = ({ groupId }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://api2.chandrakala.co.in/api/Papers')
+    fetch(`${baseUrl}/api/Papers`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch papers');

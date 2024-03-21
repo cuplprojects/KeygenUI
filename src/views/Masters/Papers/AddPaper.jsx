@@ -6,6 +6,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import Select from 'react-select';
 import AddProgramModal from './AddProgramModal';
 import AddSubjectModal from './AddSubjectModal';
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const AddPaper = () => {
   const { keygenUser } = useUser();
@@ -32,7 +33,8 @@ const AddPaper = () => {
     examDate: '',
     bookletSize: '',
     createdAt: new Date().toISOString(),
-    createdBy: userId || ''
+    createdBy: userId || '',
+    KeyGenerated: false
   });
 
   const [error, setError] = useState(null);
@@ -49,7 +51,7 @@ const AddPaper = () => {
 
     if (name === 'bookletSize') {
       try {
-        const response = await fetch(`http://api2.chandrakala.co.in/api/PaperConfig/Group/Session?groupID=${formData.groupID}&sessionID=${formData.sessionID}&bookletsize=${value}`);
+        const response = await fetch(`${baseUrl}/api/PaperConfig/Group/Session?groupID=${formData.groupID}&sessionID=${formData.sessionID}&bookletsize=${value}`);
         if (!response.ok) {
           throw new Error('Failed to fetch paper config');
         }
@@ -64,7 +66,7 @@ const AddPaper = () => {
 
   const addProgram = async (programName) => {
     try {
-      const response = await fetch('http://api2.chandrakala.co.in/api/Program', {
+      const response = await fetch(`${baseUrl}/api/Program`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -84,7 +86,7 @@ const AddPaper = () => {
 
   const addSubject = async (subjectName) => {
     try {
-      const response = await fetch('http://api2.chandrakala.co.in/api/Subjects', {
+      const response = await fetch(`${baseUrl}/api/Subjects`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -107,7 +109,7 @@ const AddPaper = () => {
     setLoading(true);
     try {
       // Fetch existing papers
-      const response = await fetch('http://api2.chandrakala.co.in/api/Papers');
+      const response = await fetch(`${baseUrl}/api/Papers`);
       if (!response.ok) {
         throw new Error('Failed to fetch papers');
       }
@@ -125,7 +127,7 @@ const AddPaper = () => {
       }
 
       // Add new paper
-      const addResponse = await fetch('http://api2.chandrakala.co.in/api/Papers', {
+      const addResponse = await fetch(`${baseUrl}/api/Papers`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -147,6 +149,7 @@ const AddPaper = () => {
         paperNumber: '',
         examDate: '',
         bookletSize: '',
+        KeyGenerated: false
       });
       setPaperConfigData(null);
       setLoading(false);
@@ -166,28 +169,28 @@ const AddPaper = () => {
   }, []);
 
   const fetchPrograms = () => {
-    fetch('http://api2.chandrakala.co.in/api/Program')
+    fetch(`${baseUrl}/api/Program`)
       .then(response => response.json())
       .then(data => setPrograms(data))
       .catch(error => console.error('Error fetching programs:', error));
   };
 
   const fetchGroups = () => {
-    fetch('http://api2.chandrakala.co.in/api/Group')
+    fetch(`${baseUrl}/api/Group`)
       .then(response => response.json())
       .then(data => setGroups(data))
       .catch(error => console.error('Error fetching Groups:', error));
   };
 
   const fetchSubjects = () => {
-    fetch('http://api2.chandrakala.co.in/api/Subjects')
+    fetch(`${baseUrl}/api/Subjects`)
       .then(response => response.json())
       .then(data => setSubjects(data))
       .catch(error => console.error('Error fetching subjects:', error));
   };
 
   const fetchSessions = () => {
-    fetch('http://api2.chandrakala.co.in/api/Sessions')
+    fetch(`${baseUrl}/api/Sessions`)
       .then(response => response.json())
       .then(data => setSessions(data))
       .catch(error => console.error('Error fetching sessions:', error));

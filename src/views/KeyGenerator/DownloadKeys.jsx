@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { CSVLink } from 'react-csv';
-import { Col, Row, Table } from 'react-bootstrap';
+import { Button, Col, Row, Table } from 'react-bootstrap';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import KeyPdf from './Downloads/KeyPdf';
+import ExportToExcel from './Downloads/ExportToExcel';
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const DownloadKeys = () => {
-  const [csvData, setCsvData] = useState([]);
   const [apiResponse, setApiResponse] = useState(null);
-  const [groupname, setGroupName] = useState(null)
-  const [catchnumber, setCatchNumber] = useState(null)
-  // const [subjectname, setSubjectName] = useState(null)
+  const [groupName, setGroupName] = useState(null);
+  const [catchNumber, setCatchNumber] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,15 +20,14 @@ const DownloadKeys = () => {
           const { groupName, catchNumber, subject_Name } = JSON.parse(storedData);
           setGroupName(groupName);
           setCatchNumber(catchNumber);
-          // setSubjectName(subject_Name);
           // Make API call with data from localStorage
           const response = await axios.get(
-            `http://api2.chandrakala.co.in/api/FormData/q?GroupName=${groupName}&CatchNumber=${catchNumber}&Subject=${subject_Name}`
+            `${baseUrl}/api/FormData/q?GroupName=${groupName}&CatchNumber=${catchNumber}&Subject=${subject_Name}`
           );
 
           // Set state with API response
+          console.log(response.data)
           setApiResponse(response.data);
-          setCsvData(response.data); // Set CSV data for CSVLink
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -37,23 +37,21 @@ const DownloadKeys = () => {
     fetchData();
   }, []);
 
-  const headers = [
-    { label: 'Page Number', key: 'pageNumber' },
-    { label: 'Question Number', key: 'questionNumber' },
-    { label: 'Answer', key: 'answer' },
-    { label: 'Set ID', key: 'setID' },
-  ];
-
   return (
     <div>
       <div className='d-flex align-items-center justify-content-between'>
         <h3>Keys</h3>
         <span className='border border-2 px-2 rounded'>
           <h5 className="text-primary">
-            Group: <span className="text-info">{groupname}</span> Catch Number: <span className="text-info">{catchnumber}</span>
+            Group: <span className="text-info">{groupName}</span> Catch Number: <span className="text-info">{catchNumber}</span>
           </h5>
         </span>
-        <CSVLink className='btn btn-primary' data={csvData} headers={headers}>Download CSV</CSVLink>
+        <div className='d-flex gap-2'>
+          <ExportToExcel data={apiResponse} group={groupName} catchno={catchNumber}/>
+          <PDFDownloadLink document={<KeyPdf data={apiResponse} group={groupName} catchno={catchNumber} />} fileName={catchNumber}>
+            {({ loading }) => loading ? <Button>Loading...</Button> : <Button>Download PDF</Button>}
+          </PDFDownloadLink>
+        </div>
       </div>
       <hr />
       <Row>
@@ -72,7 +70,7 @@ const DownloadKeys = () => {
               );
               return tables;
             }, []).map((table, index) => (
-              <Col md={3} key={index}> {/* Add key prop here */}
+              <Col md={3} key={index}>
                 <Table striped bordered>
                   <thead>
                     <tr className='text-center'>

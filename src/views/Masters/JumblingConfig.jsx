@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Row, Col, Form, Button, Card, Pagination } from 'react-bootstrap';
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const JumblingConfig = () => {
   const [groups, setGroups] = useState([]);
@@ -19,7 +20,7 @@ const JumblingConfig = () => {
 
   const fetchGroups = async () => {
     try {
-      const response = await axios.get('http://api2.chandrakala.co.in/api/Group');
+      const response = await axios.get(`${baseUrl}/api/Group`);
       setGroups(response.data);
     } catch (error) {
       console.error('Error fetching groups:', error);
@@ -28,7 +29,7 @@ const JumblingConfig = () => {
 
   const fetchSessions = async () => {
     try {
-      const response = await axios.get('http://api2.chandrakala.co.in/api/Sessions');
+      const response = await axios.get(`${baseUrl}/api/Sessions`);
       setSessions(response.data);
     } catch (error) {
       console.error('Error fetching sessions:', error);
@@ -37,7 +38,7 @@ const JumblingConfig = () => {
 
   const fetchConfigurations = async () => {
     try {
-      const response = await axios.get('http://api2.chandrakala.co.in/api/PaperConfig');
+      const response = await axios.get(`${baseUrl}/api/PaperConfig`);
       setConfigurations(response.data);
       setFilteredConfigurations(response.data);
     } catch (error) {
@@ -79,7 +80,7 @@ const JumblingConfig = () => {
       console.log(filtered);
     }
     else if (formData.groupID && formData.sessionID) {
-      console.log(formData.groupID,formData.sessionID)
+      console.log(formData.groupID, formData.sessionID)
       filtered = configurations.filter(config =>
         config.groupID === parseInt(formData.groupID) &&
         config.sessionID === parseInt(formData.sessionID)
@@ -87,18 +88,18 @@ const JumblingConfig = () => {
       console.log(filtered);
     }
     else if (formData.groupID && formData.sessionID && formData.bookletSize) {
-      console.log(formData.groupID,formData.sessionID)
+      console.log(formData.groupID, formData.sessionID)
       filtered = configurations.filter(config =>
         config.groupID === parseInt(formData.groupID) &&
         config.sessionID === parseInt(formData.sessionID) &&
         config.bookletSize === parseInt(formData.bookletSize)
       );
       console.log(filtered);
-    } 
-  
+    }
+
     setFilteredConfigurations(filtered);
   };
-  
+
 
 
   const handleSubmit = async (e) => {
@@ -106,7 +107,7 @@ const JumblingConfig = () => {
     console.log('Submitting form with data:', formData);
 
     try {
-      const response = await axios.post('http://api2.chandrakala.co.in/api/PaperConfig', formData);
+      const response = await axios.post(`${baseUrl}/api/PaperConfig`, formData);
       if (response.status !== 201) {
         throw new Error('Failed to submit form');
       }

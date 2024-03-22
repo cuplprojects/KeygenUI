@@ -13,12 +13,12 @@ const Papers = () => {
     const fetchData = async () => {
       try {
         const [papersData, groupsData, sessionsData, programsData, subjectsData, usersData] = await Promise.all([
-          fetch(`${apiUrl}/Papers`).then(res => res.json()),
-          fetch(`${apiUrl}/Group`).then(res => res.json()),
-          fetch(`${apiUrl}/Sessions`).then(res => res.json()),
-          fetch(`${apiUrl}/Program`).then(res => res.json()),
-          fetch(`${apiUrl}/Subjects`).then(res => res.json()),
-          fetch(`${apiUrl}/Users/GetUsers`).then(res => res.json())
+          fetch(`${apiUrl}/api/Papers`).then(res => res.json()),
+          fetch(`${apiUrl}/api/Group`).then(res => res.json()),
+          fetch(`${apiUrl}/api/Sessions`).then(res => res.json()),
+          fetch(`${apiUrl}/api/Program`).then(res => res.json()),
+          fetch(`${apiUrl}/api/Subjects`).then(res => res.json()),
+          fetch(`${apiUrl}/api/Users/GetUsers`).then(res => res.json())
         ]);
 
         const updatedPapers = papersData.map(paper => ({

@@ -2,30 +2,36 @@ import { useState, useEffect } from "react";
 
 const apiUrl = process.env.REACT_APP_API_USERS;
 const UniUrl = process.env.REACT_APP_API_GROUP;
-// const keyUrl = 'http://api2.chandrakala.co.in/api/Papers';
+const baseUrl = process.env.REACT_APP_BASE_URL;
+const keysUrl = `${baseUrl}/api/Papers`;
 
 const DashboardCardData = () => {
   const [userCount, setUserCount] = useState(0);
   const [uniCount, setUniCount] = useState(0);
-  // const [keyCount, setKeyCount] = useState(0);
+  const [generatedCount, setGeneratedCount] = useState(0);
+  const [allpapersCount, setAllpapersCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [userDataResponse, uniDataResponse] = await Promise.all([
+        const [userDataResponse, uniDataResponse, keysResponse] = await Promise.all([
           fetch(apiUrl),
           fetch(UniUrl),
-          // fetch(keyUrl)
+          fetch(keysUrl)
         ]);
+
         const userData = await userDataResponse.json();
         const uniData = await uniDataResponse.json();
-        // const keyData = await keyDataResponse.json();
+        const keysData = await keysResponse.json();
 
+        const generatedKeys = keysData.filter((key) => key.keyGenerated === true);
+        const allPapers = keysData;
 
         setUserCount(userData.length);
         setUniCount(uniData.length);
-        // setKeyCount(keyData.length);
+        setGeneratedCount(generatedKeys.length);
+        setAllpapersCount(allPapers.length);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -52,18 +58,18 @@ const DashboardCardData = () => {
       title: "Registered Groups",
     },
     {
-      color: "red",
-      iconClass: "fa-file-circle-question",
+      color: "lightgreen",
+      iconClass: "fa-file-circle-check",
       link: "/KeyGenerator",
-      value: 0,
+      value: generatedCount,
       title: "Answer-Keys Generated",
     },
     {
-      color: "lightgreen",
-      iconClass: "fa-clock-rotate-left",
-      link: "/users4",
-      value: 0,
-      title: "Pending Keys",
+      color: "red",
+      iconClass: "fa-note-sticky",
+      link: "/Masters/papers",
+      value: allpapersCount,
+      title: "All Papers",
     },
   ];
 

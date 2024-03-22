@@ -16,7 +16,7 @@ const AddGroup = lazy(() => import('./views/Group/AddGroup'));
 const AllGroups = lazy(() => import('./views/Group/AllGroups'));
 const ViewGroup = lazy(() => import('./views/Group/ViewGroup'));
 // papers 
-const PaperComponent = lazy(() => import('./views/Group/PaperComponent'));
+// const PaperComponent = lazy(() => import('./views/Group/PaperComponent'));
 const AddPaper = lazy(() => import('./views/Masters/Papers/AddPaper'));
 const ViewPaper = lazy(() => import('./views/Masters/Papers/ViewPaper'));
 // Masters
@@ -38,21 +38,24 @@ const routes = [
 
   { path: '/users/AddPermissions/:userId', name: 'Add Permissions', moduleId: 1, permissionType: 'can_Add', element: <Permission /> },
   
-  { path: '/KeyGenerator', name: 'Key Generator', moduleId: null, permissionType: null, element: <AllKeys /> },
-  { path: '/KeyGenerator/Newkey', name: 'New Key', moduleId: null, permissionType: null, element: <NewKey /> },
-  { path: '/KeyGenerator/download-keys', name: 'Download Keys', moduleId: null, permissionType: null, element: <DownloadKeys /> },
-  { path: '/Groups/add-Group', name: 'Add Group', moduleId: null, permissionType: null, element: <AddGroup /> },
-  { path: '/Groups', name: 'All Groups', moduleId: null, permissionType: null, element: <AllGroups /> },
-  { path: '/Groups/papers/:groupId', name: 'Papers', moduleId: null, permissionType: null, element: <PaperComponent /> },
-  
-  { path: '/Masters/papers', name: 'All Papers', moduleId: null, permissionType: null, element: <Papers /> },
-  { path: '/Masters/AddPaper', name: 'Add Paper', moduleId: null, permissionType: null, element: <AddPaper /> },
+  { path: '/KeyGenerator', name: 'Key Generator', moduleId: 2, permissionType: 'can_View', element: <AllKeys /> },
+  { path: '/KeyGenerator/Newkey', name: 'New Key', moduleId: 2, permissionType: 'can_Add', element: <NewKey /> },
+  { path: '/KeyGenerator/download-keys', name: 'Download Keys', moduleId: 2, permissionType: 'can_View', element: <DownloadKeys /> },
 
-  { path: '/Groups/ViewPaper/:paperID', name: 'Add Paper', moduleId: null, permissionType: null, element: <ViewPaper /> },
+  { path: '/Groups', name: 'All Groups', moduleId: 3, permissionType: 'can_View', element: <AllGroups /> },
+  { path: '/Groups/add-Group', name: 'Add Group', moduleId: 3, permissionType: 'can_Add', element: <AddGroup /> },
+  { path: '/Groups/ViewGroup/:groupID', name: 'View Group', moduleId: 3, permissionType: 'can_View', element: <ViewGroup /> },
+
+  // { path: '/Groups/papers/:groupId', name: 'Papers', moduleId: null, permissionType: null, element: <PaperComponent /> },
+  
+  { path: '/Masters/papers', name: 'All Papers', moduleId: 3, permissionType: 'can_View', element: <Papers /> },
+  { path: '/Masters/AddPaper', name: 'Add Paper', moduleId: 3, permissionType: 'can_Add', element: <AddPaper /> },
+  { path: '/Masters/JumblingConfig', name: ' JumblingConfig', moduleId: 3, permissionType: 'can_Add', element: <JumblingConfig /> },
+  { path: '/Masters/Sessions', name: ' Sessions', moduleId: 3, permissionType: 'can_Add', element: <Sessions /> },
+  
+  { path: '/Groups/ViewPaper/:paperID', name: 'Add Paper', moduleId: 3, permissionType: 'can_View', element: <ViewPaper /> },
+
   { path: '/403', name: 'Access Denied', moduleId: null, permissionType: null, element: <AccessDeniedPage /> },
-  { path: '/Groups/ViewGroup/:groupID', name: 'View Group', moduleId: null, permissionType: null, element: <ViewGroup /> },
-  { path: '/Masters/JumblingConfig', name: ' JumblingConfig', moduleId: null, permissionType: null, element: <JumblingConfig /> },
-  { path: '/Masters/Sessions', name: ' Sessions', moduleId: null, permissionType: null, element: <Sessions /> },
   { path: '/reactpdf', name: ' reactpdf', moduleId: null, permissionType: null, element: <Reactpdf /> },
 ];
 

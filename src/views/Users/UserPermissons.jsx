@@ -33,6 +33,7 @@ const UserPermissions = () => {
           can_Update: false,
           can_Delete: false,
         })));
+        console.log(modulePermissions)
       })
       .catch(error => console.error(error));
   }, []);

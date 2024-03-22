@@ -29,7 +29,6 @@ const ViewUser = () => {
     designation: "",
     profilePicturePath: "",
   });
-  const address = "My Address";
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showBtn, setShowBtn] = useState(false);
@@ -51,6 +50,31 @@ const ViewUser = () => {
       .then(res => {
         const permissionsData = res.data;
         setPermissions(permissionsData);
+
+        // Check if any module is missing permissions
+        const missingPermissions = modules.filter(module => !permissionsData.some(permission => permission.module_Id === module.module_Id));
+        if (missingPermissions.length > 0) {
+          // Post permissions with all fields set to false for missing modules
+          const postPermissions = missingPermissions.map(module => ({
+            user_Id: decodedUserId,
+            module_Id: module.module_Id,
+            can_Add: false,
+            can_View: false,
+            can_Update: false,
+            can_Delete: false,
+          }));
+          axios.post(permissionApi, postPermissions)
+            .then(response => {
+              // Fetch permissions again after posting
+              axios.get(`${apiPermissionsByUser}/${decodedUserId}`)
+                .then(res => {
+                  const updatedPermissionsData = res.data;
+                  setPermissions(updatedPermissionsData);
+                })
+                .catch(err => console.log(err));
+            })
+            .catch(err => console.log(err));
+        }
       })
       .catch(err => console.log(err));
 
@@ -61,7 +85,7 @@ const ViewUser = () => {
         setModules(modulesData);
       })
       .catch(err => console.log(err));
-  }, [decodedUserId]);
+  }, [decodedUserId, modules]);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -98,52 +122,44 @@ const ViewUser = () => {
   };
 
   const handlePermissionUpdate = (permissionId, field) => {
-    let updatedPermissions = [...permissions];
-  
-    // Update the permission
-    updatedPermissions = updatedPermissions.map(permission => {
+    const updatedPermissionsCopy = permissions.map(permission => {
       if (permission.permission_Id === permissionId) {
         return { ...permission, [field]: !permission[field] };
       }
       return permission;
     });
   
-    // Get the module ID for the updated permission
-    const updatedPermission = updatedPermissions.find(p => p.permission_Id === permissionId);
-    if (updatedPermission) {
-      const moduleId = updatedPermission.module_Id;
-      const modulePermissions = updatedPermissions.filter(p => p.module_Id === moduleId);
-  
-      if (field === "can_Delete" && updatedPermission.can_Delete) {
-        // Grant view, add, and update permissions if delete permission is granted
-        modulePermissions.forEach(permission => {
-          permission.can_View = true;
-          permission.can_Add = true;
-          permission.can_Update = true;
-          permission.can_Delete = true;
-        });
-      } else if (field === "can_Update" && updatedPermission.can_Update) {
-        // Grant view and add permissions if update permission is granted
-        modulePermissions.forEach(permission => {
-          permission.can_View = true;
-          permission.can_Add = true;
-        });
-      } else if (field === "can_Add" && updatedPermission.can_Add) {
-        // Grant view permission if add permission is granted
-        modulePermissions.forEach(permission => {
-          permission.can_View = true;
-        });
-      }
-    }
-  
-    setPermissions(updatedPermissions);
-  
     // Update permissions in the API
-    axios.put(`${permissionApi}/${permissionId}`, updatedPermissions.find(p => p.permission_Id === permissionId))
+    axios.put(`${permissionApi}/${permissionId}`, updatedPermissionsCopy.find(p => p.permission_Id === permissionId))
       .then(res => {
-        // console.log("Permission updated successfully");
+        const updatedPermission = updatedPermissionsCopy.find(p => p.permission_Id === permissionId);
+        let updatedModulePermissions = updatedPermissionsCopy.filter(p => p.module_Id === updatedPermission.module_Id);
+  
+        if (field === "can_Delete" && updatedPermission.can_Delete) {
+          updatedModulePermissions.forEach(p => {
+            p.can_View = true;
+            p.can_Add = true;
+            p.can_Update = true;
+            p.can_Delete = true;
+          });
+        } else if (field === "can_Update" && updatedPermission.can_Update) {
+          updatedModulePermissions.forEach(p => {
+            p.can_View = true;
+            p.can_Add = true;
+          });
+        } else if (field === "can_Add" && updatedPermission.can_Add) {
+          updatedModulePermissions.forEach(p => {
+            p.can_View = true;
+          });
+        }
+  
+        // Update state only if API call is successful
+        setPermissions(updatedPermissionsCopy);
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        console.log(err);
+        // Optionally, handle the error here
+      });
   };
   
 
@@ -154,7 +170,7 @@ const ViewUser = () => {
           <Col className="col-12 col-md-4 border-end">
             <Container className="my-4 text-center text-capitalize">
               <div className="upload">
-              <img src={user.profilePicturePath ? `${baseUrl}/${user.profilePicturePath}?${new Date().getTime()}`.replace('wwwroot/', '') : DefaultAvatar} alt="" />
+                <img src={user.profilePicturePath ? `${baseUrl}/${user.profilePicturePath}?${new Date().getTime()}`.replace('wwwroot/', '') : DefaultAvatar} alt="" />
                 <div className="round">
                   <input type="file" onChange={handleImageChange} />
                   <i className="fa fa-pencil" style={{ color: "#fff" }} ></i>
@@ -182,16 +198,6 @@ const ViewUser = () => {
                   <i className="fa-solid fa-envelope text-primary me-2"></i>
                   {user.emailAddress}
                 </Link>
-              </li>
-              <li className="fs-5">
-                {address ? (
-                  <>
-                    <i className="fa-solid fa-location-dot text-primary me-2"></i>
-                    {address}
-                  </>
-                ) : (
-                  ""
-                )}
               </li>
             </div>
           </Col>

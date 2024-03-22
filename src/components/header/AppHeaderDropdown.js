@@ -3,7 +3,7 @@ import { useUser } from './../../context/UserContext';
 import { fetchUserData } from './../../context/UserData';
 import DefaultAvatar from './../../assets/images/avatars/defaultavatar.jpg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faGear } from '@fortawesome/free-solid-svg-icons';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
 import {
   CAvatar,
   CDropdown,
@@ -61,10 +61,10 @@ const AppHeaderDropdown = () => {
           <FontAwesomeIcon icon={faUser} className='me-3' />
           Profile
         </CDropdownItem>
-        <CDropdownItem className='c-pointer'>
+        {/* <CDropdownItem className='c-pointer'>
           <FontAwesomeIcon icon={faGear}  className='me-3'/>
           Settings
-        </CDropdownItem>
+        </CDropdownItem> */}
         <CDropdownDivider />
         <CDropdownItem className='c-pointer' onClick={handleLogout}>
           <i className="icon-arrow-thick-to-right me-2"></i>

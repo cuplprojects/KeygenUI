@@ -1,3 +1,4 @@
+// FormComponent.jsx
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import FormDataComponent from './FormDataComponent';
@@ -9,7 +10,6 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [editing, setEditing] = useState(false);
-    const [numberOfQuestions, setNumberOfQuestions] = useState(0);
     const [formData, setFormData] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState('');
     const [selectedSession, setSelectedSession] = useState('');
@@ -18,12 +18,12 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [sessions, setSessions] = useState([]);
     const [papers, setPapers] = useState([]);
     const [selectedPaperData, setSelectedPaperData] = useState(null);
-    
+    const [bookletSize, setBookletSize] = useState(null);
+    const [numberOfQuestions, setNumberOfQuestions] = useState(0);
 
     useEffect(() => {
         async function fetchGroups() {
             try {
-              
                 const response = await fetch(`${baseUrl}/api/Group`);
                 if (response.ok) {
                     const data = await response.json();
@@ -54,7 +54,6 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         }
         fetchSessions();
     }, []);
-    
 
     useEffect(() => {
         async function fetchPapers() {
@@ -75,6 +74,32 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             fetchPapers();
         }
     }, [selectedGroup, selectedSession]);
+
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const response = await fetch(`${baseUrl}/api/PaperConfig/Group/Session?groupID=${selectedGroup.value}&sessionID=${selectedSession.value}&bookletsize=${bookletSize}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setNumberOfQuestions(data.paperConfig.numberofQuestions);
+                    setFormData(Array.from({ length: data.paperConfig.numberofQuestions }, (_, index) => ({
+                        sn: index + 1,
+                        page: '',
+                        qNumber: '',
+                        key: '',
+                    })));
+                } else {
+                    console.error('Failed to fetch data:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        if (selectedGroup.value && selectedSession.value && bookletSize) {
+            fetchData();
+        }
+    }, [selectedGroup, selectedSession, bookletSize]);
 
     const handleNumberOfQuestionsChange = (e) => {
         const inputNumber = e.target.value;
@@ -183,6 +208,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                                         setSelectedPaper(selectedOption);
                                         const paperData = papers.find((paper) => paper.paperID === selectedOption.value);
                                         setSelectedPaperData(paperData);
+                                        setBookletSize(paperData.bookletSize);
                                     }}
                                     placeholder="Select the paper"
                                     isDisabled={!editing && formSubmitted}

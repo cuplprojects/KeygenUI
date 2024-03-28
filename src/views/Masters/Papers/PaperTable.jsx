@@ -2,14 +2,24 @@ import React, { useEffect, useRef } from 'react';
 import { Table } from 'react-bootstrap';
 import PropTypes from 'prop-types';
 import $ from 'jquery';
+import { useNavigate } from 'react-router-dom';
+import { useSecurity } from './../../../context/Security';
 
 const PaperTable = ({ papers }) => {
+  const {encrypt} = useSecurity();
   const tableRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Initialize DataTable
     $(tableRef.current).DataTable();
   }, []);
+
+  
+  const handleRowClick = (paperID) => {
+    navigate(`/Masters/papers/ViewPaper/${encrypt(paperID)}`);
+  };
+
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -18,6 +28,7 @@ const PaperTable = ({ papers }) => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+
   const formatDateTime = (dateTimeString) => {
     const date = new Date(dateTimeString);
     const day = date.getDate();
@@ -51,7 +62,7 @@ const PaperTable = ({ papers }) => {
         </thead>
         <tbody>
           {papers.map((paper) => (
-            <tr key={paper.paperID}>
+            <tr className='c-pointer' key={paper.paperID} onClick={() => handleRowClick(paper.paperID)}>
               {/* <td>{paper.paperID}</td> */}
               {/* <td>{paper.paperName}</td> */}
               <td>{paper.groupName}</td>

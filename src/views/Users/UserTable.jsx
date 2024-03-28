@@ -1,7 +1,7 @@
 // UserTable.js
 import React, { useEffect, useRef } from 'react';
 import { Table } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import $ from 'jquery';
 import { CSVLink } from 'react-csv';
 import DefaultAvatar from './../../assets/images/avatars/defaultavatar.jpg';
@@ -13,6 +13,7 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const UserTable = ({ users, hasPermission }) => {
   const { encrypt } = useSecurity();
+  const navigate = useNavigate();
   const tableRef = useRef(null);
 
   useEffect(() => {
@@ -27,6 +28,11 @@ const UserTable = ({ users, hasPermission }) => {
     { label: 'Email Address', key: 'email' },
     { label: 'Designation', key: 'designation' }
   ];
+
+  const handleRowClick = (paperID) => {
+    navigate(`view-user/${encrypt(paperID)}`);
+  };
+
 
   return (
     <>
@@ -45,7 +51,8 @@ const UserTable = ({ users, hasPermission }) => {
           </thead>
           <tbody className='text-center'>
             {users.map((user) => (
-              <tr key={user.userId}>
+              
+              <tr className='c-pointer' key={user.userId} onClick={() => handleRowClick(user.userId)}>
                 <td>{user.userId}</td>
                 <td><img className="rounded-circle" src={user.profilePicturePath ? `${baseUrl}/${user.profilePicturePath}` : DefaultAvatar} alt="" width="50px" height='50px' /></td>
                 <td className='text-capitalize'>{user.name}</td>

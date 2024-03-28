@@ -27,7 +27,7 @@ const Sessions = () => {
       setCurrentSession(currentSessionName);
 
       const nextSessionsList = [];
-      for (let i = -5; i <= 0; i++) {
+      for (let i = -5; i < 0; i++) {
         const nextSessionName = `${currentYear + i}-${(currentYear + i) % 100 + 1}`;
         if (!sessions.find(session => session.session_Name === nextSessionName)) {
           nextSessionsList.push({ value: nextSessionName, label: nextSessionName });

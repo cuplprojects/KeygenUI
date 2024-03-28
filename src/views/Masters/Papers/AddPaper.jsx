@@ -33,7 +33,7 @@ const AddPaper = () => {
     examDate: '',
     bookletSize: '',
     createdAt: new Date().toISOString(),
-    createdBy: userId || '',
+    createdByID: userId || '',
     KeyGenerated: false
   });
 
@@ -139,7 +139,7 @@ const AddPaper = () => {
       }
       setSuccess('Paper added successfully');
       setFormData({
-        createdBy: userId,
+        createdByID: userId,
         ...formData,
         catchNumber: '',
         paperName: '',

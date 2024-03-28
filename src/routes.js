@@ -31,7 +31,7 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', moduleId: null, permissionType: null, element: <Dashboard /> },
   { path: '/Profile', name: 'Profile', moduleId: null, permissionType: null, element: <Profile /> },
 
-  { path: '/users', name: 'All Users', moduleId: null, permissionType: null, element: <AllUsers /> },
+  { path: '/users', name: 'All Users', moduleId: 1, permissionType: 'can_View', element: <AllUsers /> },
   { path: '/users/view-user/:userId', name: 'View User', moduleId: 1, permissionType: 'can_View', element: <ViewUser /> },
   { path: '/users/add-user', name: 'Add User', moduleId: 1, permissionType: 'can_Add', element: <AddUser /> },
   { path: '/users/update-user/:userId', name: 'Update User', moduleId: 1, permissionType: 'can_Update', element: <UpdateUser /> },
@@ -53,7 +53,7 @@ const routes = [
   { path: '/Masters/JumblingConfig', name: ' JumblingConfig', moduleId: 3, permissionType: 'can_Add', element: <JumblingConfig /> },
   { path: '/Masters/Sessions', name: ' Sessions', moduleId: 3, permissionType: 'can_Add', element: <Sessions /> },
   
-  { path: '/Groups/ViewPaper/:paperID', name: 'Add Paper', moduleId: 3, permissionType: 'can_View', element: <ViewPaper /> },
+  { path: '/Masters/papers/ViewPaper/:paperID', name: 'View Paper', moduleId: 3, permissionType: 'can_View', element: <ViewPaper /> },
 
   { path: '/403', name: 'Access Denied', moduleId: null, permissionType: null, element: <AccessDeniedPage /> },
   { path: '/reactpdf', name: ' reactpdf', moduleId: null, permissionType: null, element: <Reactpdf /> },

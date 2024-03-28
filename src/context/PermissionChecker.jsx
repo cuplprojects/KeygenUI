@@ -1,5 +1,5 @@
 // PermissionChecker.js
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types'; // Import PropTypes
 import { useUser } from './UserContext';
 import axios from 'axios';

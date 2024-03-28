@@ -1,17 +1,31 @@
 // GroupTable.js
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Table } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
 import PropTypes from 'prop-types';
+import $ from 'jquery';
 import { useSecurity } from './../../context/Security';
 
 const GroupTable = ({ groups }) => {
     const { encrypt } = useSecurity();
+    const tableRef = useRef(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Initialize DataTable
+        $(tableRef.current).DataTable();
+      }, []);
+
+      const handleRowClick = (groupID) => {
+        navigate(`/Groups/ViewGroup/${encrypt(groupID)}`);
+      };
+    
+
     return (
         <div className='table-responsive hover'>
-            <Table bordered hover striped>
+            <Table bordered hover striped ref={tableRef}>
                 <thead>
                     <tr>
                         <th className='text-center'>Group ID</th>
@@ -24,7 +38,7 @@ const GroupTable = ({ groups }) => {
                 </thead>
                 <tbody>
                     {groups.map((group) => (
-                        <tr key={group.groupID}>
+                        <tr className='c-pointer' key={group.groupID} onClick={()=>handleRowClick(group.groupID)}>
                             <td className='p-2'>{group.groupID}</td>
                             <td className='p-2'>{group.groupName}</td>
                             <td className='p-2'>{group.region}</td>

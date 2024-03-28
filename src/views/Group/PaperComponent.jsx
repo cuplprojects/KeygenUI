@@ -61,7 +61,7 @@ const PaperComponent = ({ groupId }) => {
                   <td>{paper.catchNumber}</td>
                   <td>{paper.paperCode}</td>
                   <td>
-                    <Link to={`/Groups/ViewPaper/${encrypt(paper.paperID)}`} className='btn btn-primary'>View</Link>
+                    <Link to={`/Masters/papers/ViewPaper/${encrypt(paper.paperID)}`} className='btn btn-primary'>View</Link>
                   </td>
                 </tr>
               ))}

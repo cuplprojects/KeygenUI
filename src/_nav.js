@@ -25,6 +25,8 @@ const _nav = [
     component: CNavGroup,
     name: 'Users',
     icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
+    module: 1,
+    permission: 'can_View',
     items: [
       {
         component: CNavItem,
@@ -45,6 +47,8 @@ const _nav = [
     component: CNavGroup,
     name: 'Key Generator',
     icon: <CIcon icon={cilNewspaper} customClassName="nav-icon" />,
+    module: 2,
+    permission: 'can_View',
     items: [
       {
         component: CNavItem,
@@ -64,6 +68,8 @@ const _nav = [
     component: CNavGroup,
     name: 'Masters',
     icon: <CIcon icon={cilApplications} customClassName="nav-icon" />,
+    module: 3,
+    permission: 'can_View',
     items: [
       {
         component: CNavGroup,

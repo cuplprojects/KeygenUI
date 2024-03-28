@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Container, Table, Button, Spinner, Alert } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Container, Spinner, Alert } from "react-bootstrap";
+import KeysTable from "./KeysTable";
+
 const baseUrl = process.env.REACT_APP_BASE_URL;
-// const apiUrl = process.env.REACT_APP_API_CHANGE_ANSWERKEYS;
 
 const AllKeys = () => {
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`${baseUrl}/api/Papers`)
@@ -44,18 +43,10 @@ const AllKeys = () => {
       });
   }, []);
 
-  const handleViewClick = (groupName, catchNumber, subjectName) => {
-    localStorage.setItem('generatedKeys', JSON.stringify({ groupName, catchNumber, subject_Name: subjectName }));
-    navigate('/KeyGenerator/download-keys');
-  };
-
   return (
     <Container className="userform border border-3 p-4 my-3">
       <div className="d-flex justify-content-between m-3">
         <h3>All Generated Keys</h3>
-        {/* <Button as={Link} to="NewPaper/" className="btn">
-          Add Paper
-        </Button> */}
       </div>
       <hr />
 
@@ -66,28 +57,7 @@ const AllKeys = () => {
       ) : error ? (
         <Alert variant="danger">{error}</Alert>
       ) : (
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Group Name</th>
-              <th>Session Name</th>
-              <th>Catch Number</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {papers.map((paper) => (
-              <tr key={paper.paperID}>
-                <td>{paper.paperID}</td>
-                <td>{paper.groupName}</td>
-                <td>{paper.sessionName}</td>
-                <td>{paper.catchNumber}</td>
-                <td><Button onClick={() => handleViewClick(paper.groupName, paper.catchNumber, paper.subjectName)}>View</Button></td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <KeysTable papers={papers} />
       )}
     </Container>
   );

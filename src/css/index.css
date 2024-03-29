@@ -142,6 +142,15 @@ input[type=file]::-webkit-file-upload-button {
     display: block;
     transition: all 0.3s ease 0s;
 }
+.counter-value1{
+    color: #555;
+    font-size: 30px;
+    font-weight: 600;
+    line-height: 20px;
+    margin: 0 0 20px;
+    display: block;
+    transition: all 0.3s ease 0s;
+}
 .counter:hover .counter-value{ text-shadow: 2px 2px 0 #d1d8e0; }
 .counter h3{
     font-size: 17px;

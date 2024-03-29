@@ -35,6 +35,7 @@ export const AppSidebarNav = ({ items }) => {
   const navGroup = (item, index) => {
     const { component, name, icon, items, module, permissiontype, to, ...rest } = item;
     const Component = component;
+    
     return (
       <PermissionChecker key={index}>
         {({ hasPermission }) => (

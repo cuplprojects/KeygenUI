@@ -1,83 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Card, Form, Button, Row, Col } from 'react-bootstrap';
-import Select from 'react-select';
+import { Table, Card, Form, Button } from 'react-bootstrap';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const Sessions = () => {
   const [sessions, setSessions] = useState([]);
-  const [newSessionName, setNewSessionName] = useState('');
-  const [currentSession, setCurrentSession] = useState('');
-  const [nextSessions, setNextSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedSession, setSelectedSession] = useState('');
+  const [existingSessions, setExistingSessions] = useState([]);
 
   useEffect(() => {
-    axios.get(`${baseUrl}/api/Sessions`)
-      .then(response => {
+    fetchSessions();
+  }, [sessions]); // Fetch sessions whenever there's a change in the sessions state
+
+  const fetchSessions = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/api/Sessions`);
+      if (response.data) {
         setSessions(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching sessions:', error);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (sessions.length > 0) {
-      const currentYear = new Date().getFullYear();
-      const currentSessionName = `${currentYear}-${(currentYear % 100) + 1}`;
-      setCurrentSession(currentSessionName);
-
-      const nextSessionsList = [];
-      for (let i = -5; i < 0; i++) {
-        const nextSessionName = `${currentYear + i}-${(currentYear + i) % 100 + 1}`;
-        if (!sessions.find(session => session.session_Name === nextSessionName)) {
-          nextSessionsList.push({ value: nextSessionName, label: nextSessionName });
-        }
+        setLoading(false);
+        const existing = response.data.map(session => session.session_Name);
+        setExistingSessions(existing);
       }
-      setNextSessions(nextSessionsList);
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
     }
-  }, [sessions]);
+  };
 
-  const addSession = () => {
-    axios.post(`${baseUrl}/api/Sessions`, { session_Name: newSessionName })
-      .then(response => {
-        setSessions([...sessions, response.data]);
-        setNewSessionName('');
-      })
-      .catch(error => {
-        console.error('Error adding session:', error);
-      });
+  const handleAddSession = async () => {
+    try {
+      const response = await axios.post(`${baseUrl}/api/Sessions`, { session_Name: selectedSession });
+      if (response.status === 200) {
+        setSelectedSession(''); // Clear the selected session
+      }
+    } catch (error) {
+      console.error('Error adding session:', error);
+    }
   };
 
   return (
-    <div>
-      <Row>
-        <Col md={6}>
-          <h3>Previous Sessions</h3>
-          <ul>
-            {sessions.map(session => (
-              <li key={session.session_Id}>{session.session_Name}</li>
-            ))}
-          </ul>
-        </Col>
-        <Col md={6}>
+    <div className="container mt-3">
+      <div className="row">
+        <div className="col-md-6">
+          <h3 className="text-center mb-3">Sessions</h3>
+          <Table striped bordered hover>
+            <thead>
+              <tr>
+                <th>Session ID</th>
+                <th>Session Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sessions.map((session) => (
+                <tr key={session.session_Id}>
+                  <td>{session.session_Id}</td>
+                  <td>{session.session_Name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </div>
+        <div className="col-md-6">
           <Card>
             <Card.Body>
-              <h3>Add New Session</h3>
-              <Form.Group controlId="formNewSession">
-                <Select
-                  options={[{ value: currentSession, label: currentSession }, ...nextSessions]}
-                  onChange={(selectedOption) => setNewSessionName(selectedOption.value)}
-                  value={{ value: newSessionName, label: newSessionName }}
-                  isOptionDisabled={(option) => sessions.find(session => session.session_Name === option.value)}
-                />
-              </Form.Group>
-             <div className="text-end mt-2">
-             <Button onClick={addSession}>Add Session</Button>
-             </div>
+              <h5 className="card-title">Add Session</h5>
+              <Form>
+                <Form.Group controlId="formSession">
+                  <Form.Select
+                    value={selectedSession}
+                    onChange={(e) => setSelectedSession(e.target.value)}
+                  >
+                    <option value="">Select Session</option>
+                    {[...Array(5)].map((_, index) => {
+                      const year = new Date().getFullYear() - index;
+                      const label = `${year}-${String(year + 1).slice(-2)}`;
+                      const isDisabled = existingSessions.includes(label);
+                      return <option key={index} value={label} disabled={isDisabled}>{label}</option>;
+                    })}
+                  </Form.Select>
+                </Form.Group>
+                <div className='mt-4 text-end'>
+                  <Button variant="primary" onClick={handleAddSession}>Add Session</Button>
+                </div>
+              </Form>
             </Card.Body>
           </Card>
-        </Col>
-      </Row>
+        </div>
+      </div>
     </div>
   );
 };

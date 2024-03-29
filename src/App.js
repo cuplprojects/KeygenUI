@@ -6,6 +6,7 @@ import { CSpinner, useColorModes } from '@coreui/react';
 import { UserProvider } from './context/UserContext';
 import PrivateRoute from './components/PrivateRoute'; // Import PrivateRoute component
 import './scss/style.scss';
+import { SkeletonTheme } from 'react-loading-skeleton';
 // import AccessDeniedPage from './views/pages/page403/AccessDeniedPage';
 
 // Containers
@@ -45,33 +46,34 @@ const App = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    // Wrap the app with 'UserProvider' for seamless user context in authentication and state.
-    <UserProvider>
-      {/* HashRouter to manage navigation */}
-      <HashRouter>
-        {/* Suspense for lazy loading and loading fallback */}
-        <Suspense
-          fallback={
-            <div className="vh-100 vw-100 d-flex align-items-center justify-content-center">
-              <CSpinner color="primary" variant="grow" />
-            </div>
-          }
-        >
-          {/* Define the routes using 'Routes' component */}
-          <Routes>
-            <Route exact path="/" element={<Navigate to="/dashboard" />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/ForgotPassword" element={<ForgotPassword />} />
-            
-            {/* Private route for authenticated users */}
-            {/* <Route path="/403" element={<PrivateRoute element={<AccessDeniedPage />} />} /> */}
-            <Route path="/ChangePassword" element={<PrivateRoute element={<ChangePassword />} />} />
-            <Route path="*" element={<PrivateRoute element={<DefaultLayout />} />} />
+    <SkeletonTheme baseColor="#ff0000" highlightColor="#00ff00">
+      <UserProvider>
+        {/* HashRouter to manage navigation */}
+        <HashRouter>
+          {/* Suspense for lazy loading and loading fallback */}
+          <Suspense
+            fallback={
+              <div className="vh-100 vw-100 d-flex align-items-center justify-content-center">
+                <CSpinner color="primary" variant="grow" />
+              </div>
+            }
+          >
+            {/* Define the routes using 'Routes' component */}
+            <Routes>
+              <Route exact path="/" element={<Navigate to="/dashboard" />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/ForgotPassword" element={<ForgotPassword />} />
 
-          </Routes>
-        </Suspense>
-      </HashRouter>
-    </UserProvider>
+              {/* Private route for authenticated users */}
+              {/* <Route path="/403" element={<PrivateRoute element={<AccessDeniedPage />} />} /> */}
+              <Route path="/ChangePassword" element={<PrivateRoute element={<ChangePassword />} />} />
+              <Route path="*" element={<PrivateRoute element={<DefaultLayout />} />} />
+
+            </Routes>
+          </Suspense>
+        </HashRouter>
+      </UserProvider>
+    </SkeletonTheme>
   );
 };
 

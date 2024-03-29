@@ -61,7 +61,8 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                 const response = await fetch(`${baseUrl}/api/Papers/${selectedGroup.value}/${selectedSession.value}`);
                 if (response.ok) {
                     const data = await response.json();
-                    setPapers(data);
+                    const filteredPapers = data.filter((paper) => paper.keyGenerated === false);
+                    setPapers(filteredPapers);
                     setSelectedPaperData(null);
                 } else {
                     console.error('Failed to fetch papers:', response.statusText);
@@ -174,7 +175,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <Row>
                         <Col md={6}>
                             <Form.Group className='mb-2'>
-                                <Form.Label><span className="text-danger">*</span>Select Group:</Form.Label>
+                                <Form.Label>Select Group:<span className="text-danger">*</span></Form.Label>
                                 <Select
                                     options={groups.map((group) => ({ value: group.groupID, label: group.groupName }))}
                                     value={selectedGroup}
@@ -186,7 +187,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                         </Col>
                         <Col md={6}>
                             <Form.Group className='mb-2'>
-                                <Form.Label><span className="text-danger">*</span>Select Session:</Form.Label>
+                                <Form.Label>Select Session:<span className="text-danger">*</span></Form.Label>
                                 <Select
                                     options={sessions.map((session) => ({ value: session.session_Id, label: session.session_Name }))}
                                     value={selectedSession}
@@ -200,7 +201,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <Row>
                         <Col md={6}>
                             <Form.Group className='mb-2'>
-                                <Form.Label><span className="text-danger">*</span>Select Paper:</Form.Label>
+                                <Form.Label>Select Paper:<span className="text-danger">*</span></Form.Label>
                                 <Select
                                     options={papers.map((paper) => ({ value: paper.paperID, label: paper.catchNumber }))}
                                     value={selectedPaper}
@@ -240,7 +241,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
 
                     <center className='text-danger fw-bold'>OR</center>
                     <Form.Group>
-                        <Form.Label><span className="text-danger">*</span>Enter Number of Questions:</Form.Label>
+                        <Form.Label>Enter Number of Questions:<span className="text-danger">*</span></Form.Label>
                         <Form.Control
                             type="number"
                             value={numberOfQuestions}
@@ -248,7 +249,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                             min="0"
                             placeholder="Enter the number of questions"
                             required
-                            disabled={!editing && formSubmitted}
+                            disabled={true || formSubmitted}
                         />
                     </Form.Group>
                     <div className="d-grid gap-2 mt-4">
@@ -268,7 +269,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                 {numberOfQuestions > 0 && (
                     <Form className="rounded">
                         <Form.Group className='mt-2'>
-                            <Form.Label><span className="text-danger">*</span>Fill Master Data:</Form.Label>
+                            <Form.Label>Fill Master Data:<span className="text-danger">*</span></Form.Label>
                             <FormDataComponent formData={formData} handleInputChange={handleInputChange} disabled={!editing && formSubmitted} />
                         </Form.Group>
                     </Form>

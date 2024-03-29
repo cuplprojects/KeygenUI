@@ -227,56 +227,57 @@ const ViewUser = () => {
                           <td>{getModuleNameById(permission.module_Id)}</td>
                           <td>
                             <div className="toggle-button">
+                             
+                              <FontAwesomeIcon
+                                icon={faCircleXmark}
+                                className={`text-danger toggle-icon ${!permission.can_View ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_View")}
+                              /> 
                               <FontAwesomeIcon
                                 icon={faCircleCheck}
                                 className={`text-success toggle-icon ${permission.can_View ? 'active' : ''}`}
                                 onClick={() => handlePermissionUpdate(permission.permission_Id, "can_View")}
                               />
-                              <FontAwesomeIcon
-                                icon={faCircleXmark}
-                                className={`text-danger toggle-icon ${!permission.can_View ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_View")}
-                              />
                             </div>
                           </td>
                           <td>
                             <div className="toggle-button">
-                              <FontAwesomeIcon
-                                icon={faCircleCheck}
-                                className={`text-success toggle-icon ${permission.can_Add ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Add")}
-                              />
                               <FontAwesomeIcon
                                 icon={faCircleXmark}
                                 className={`text-danger toggle-icon ${!permission.can_Add ? 'active' : ''}`}
                                 onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Add")}
                               />
+                              <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                className={`text-success toggle-icon ${permission.can_Add ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Add")}
+                              />
                             </div>
                           </td>
                           <td>
                             <div className="toggle-button">
-                              <FontAwesomeIcon
-                                icon={faCircleCheck}
-                                className={`text-success toggle-icon ${permission.can_Update ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Update")}
-                              />
                               <FontAwesomeIcon
                                 icon={faCircleXmark}
                                 className={`text-danger toggle-icon ${!permission.can_Update ? 'active' : ''}`}
                                 onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Update")}
                               />
+                              <FontAwesomeIcon
+                                icon={faCircleCheck}
+                                className={`text-success toggle-icon ${permission.can_Update ? 'active' : ''}`}
+                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Update")}
+                              />
                             </div>
                           </td>
                           <td>
                             <div className="toggle-button">
                               <FontAwesomeIcon
-                                icon={faCircleCheck}
-                                className={`text-success toggle-icon ${permission.can_Delete ? 'active' : ''}`}
+                                icon={faCircleXmark}
+                                className={`text-danger toggle-icon ${!permission.can_Delete ? 'active' : ''}`}
                                 onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Delete")}
                               />
                               <FontAwesomeIcon
-                                icon={faCircleXmark}
-                                className={`text-danger toggle-icon ${!permission.can_Delete ? 'active' : ''}`}
+                                icon={faCircleCheck}
+                                className={`text-success toggle-icon ${permission.can_Delete ? 'active' : ''}`}
                                 onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Delete")}
                               />
                             </div>

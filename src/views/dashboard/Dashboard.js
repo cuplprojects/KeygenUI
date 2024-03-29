@@ -5,7 +5,7 @@ import DashboardCardData from './DashboardCardData'; // Import DashboardCardData
 import PropTypes from 'prop-types';
 
 const Dashboard = () => {
-  const { cardData, loading } = DashboardCardData(); // Call DashboardCardData component to get the card data
+  const { cardData } = DashboardCardData(); // Call DashboardCardData component to get the card data
 
   return (
     <>
@@ -13,7 +13,7 @@ const Dashboard = () => {
         {/* cards */}
         <div className="container">
           <div className="row">
-            {!loading && cardData.map((card, index) => (
+            {cardData.map((card, index) => (
               <DashboardCard key={index} {...card} />
             ))}
           </div>

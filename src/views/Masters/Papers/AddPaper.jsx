@@ -28,6 +28,7 @@ const AddPaper = () => {
     paperCode: '',
     programID: '',
     examCode: '',
+    examType: '',
     subjectID: '',
     paperNumber: '',
     examDate: '',
@@ -145,6 +146,7 @@ const AddPaper = () => {
         paperName: '',
         paperCode: '',
         examCode: '',
+        examType: '',
         subjectID: '',
         paperNumber: '',
         examDate: '',
@@ -299,6 +301,18 @@ const AddPaper = () => {
                 name='examCode'
                 value={formData.examCode}
                 onChange={(e) => handleChange('examCode', e.target.value)}
+                required
+              />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group controlId='examType'>
+              <Form.Label>Exam Type<span className='text-danger'>*</span></Form.Label>
+              <Form.Control
+                type='text'
+                name='examType'
+                value={formData.examType}
+                onChange={(e) => handleChange('examType', e.target.value)}
                 required
               />
             </Form.Group>

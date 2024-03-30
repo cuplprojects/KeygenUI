@@ -72,28 +72,21 @@ const _nav = [
     permissiontype: 'can_View',
     items: [
       {
-        component: CNavGroup,
+        component: CNavItem,
         name: 'Groups',
+        to: '/Groups',
         icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
-        items: [
-          {
-            component: CNavItem,
-            name: 'Add Group',
-            to: '/Groups/add-Group',
-            icon: <CIcon icon={cilPlus} customClassName="nav-icon" />,
-          },
-          {
-            component: CNavItem,
-            name: 'All Groups',
-            to: '/Groups',
-            icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
-          },
-        ],
       },
       {
         component: CNavItem,
         name: 'Sessions',
         to: '/Masters/Sessions',
+        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Programs',
+        to: '/Masters/Programs',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
       },
       

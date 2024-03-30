@@ -15,8 +15,8 @@ const KeysTable = ({ papers }) => {
     $(tableRef.current).DataTable();
   }, []);
 
-  const handleViewClick = (groupName, catchNumber, subjectName) => {
-    localStorage.setItem('generatedKeys', JSON.stringify({ groupName, catchNumber, subject_Name: subjectName }));
+  const handleViewClick = (groupName, catchNumber, subjectName, groupID, sessionID, bookletSize, examType) => {
+    localStorage.setItem('generatedKeys', JSON.stringify({ groupName, catchNumber, subject_Name: subjectName,  groupID, sessionID, bookletSize, examType }));
     navigate('/KeyGenerator/download-keys');
   };
 
@@ -34,13 +34,13 @@ const KeysTable = ({ papers }) => {
       </thead>
       <tbody>
         {papers.map((paper) => (
-          <tr className="c-pointer" key={paper.paperID} onClick={() => handleViewClick(paper.groupName, paper.catchNumber, paper.subjectName)}>
+          <tr className="c-pointer" key={paper.paperID} onClick={() => handleViewClick(paper.groupName, paper.catchNumber, paper.subjectName, paper.groupID, paper.sessionID, paper.bookletSize, paper.examType)}>
             <td>{paper.paperID}</td>
             <td>{paper.groupName}</td>
             <td>{paper.sessionName}</td>
             <td>{paper.catchNumber}</td>
             <td>{ paper.subjectName}</td>
-            <td className="text-center text-success"><FontAwesomeIcon icon={faEye} onClick={() => handleViewClick(paper.groupName, paper.catchNumber, paper.subjectName)} /></td>
+            <td className="text-center text-success"><FontAwesomeIcon icon={faEye} onClick={() => handleViewClick(paper.groupName, paper.catchNumber, paper.subjectName, paper.groupID, paper.sessionID, paper.bookletSize, paper.examType)} /></td>
           </tr>
         ))}
       </tbody>

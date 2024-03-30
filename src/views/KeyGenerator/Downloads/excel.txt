@@ -1,61 +1,106 @@
-import React from 'react';
-import * as XLSX from 'xlsx';
+import React, { useState } from 'react';
 import { saveAs } from 'file-saver';
 import PropTypes from 'prop-types';
+import ExcelJS from 'exceljs';
 import { Button } from 'react-bootstrap';
 
 const ExportToExcel = ({ data, group, catchno }) => {
-  const exportToExcel = () => {
-    const workbook = XLSX.utils.book_new();
+    const [loading, setLoading] = useState(false);
 
-    // Group the data by setID
-    const groupedData = data.reduce((acc, item) => {
-      if (!acc[item.setID]) {
-        acc[item.setID] = [];
-      }
-      acc[item.setID].push(item);
-      return acc;
-    }, {});
+    const exportToExcel = async () => {
+        setLoading(true);
 
-    // Iterate over each set
-    Object.entries(groupedData).forEach(([setID, setData]) => {
-      // Add a blank row at the beginning of each set
-      const tableData = setData.map(({ setID, ...rest }) => rest); // Exclude setID from tableData
+        const workbook = new ExcelJS.Workbook();
 
-      const worksheet = XLSX.utils.json_to_sheet(tableData);
+        // Group data by setID
+        const groupedData = data.reduce((acc, item) => {
+            if (!acc[item.setID]) {
+                acc[item.setID] = [];
+            }
+            acc[item.setID].push(item);
+            return acc;
+        }, {});
 
-      // Apply style to header row
-      if (worksheet['!ref'] && worksheet['!ref'].s && worksheet['!ref'].e) {
-        for (let i = worksheet['!ref'].s.c; i <= worksheet['!ref'].e.c; i++) {
-          const cellAddress = XLSX.utils.encode_cell({ r: 0, c: i });
-          const cell = worksheet[cellAddress];
-          if (cell && cell.v) {
-            cell.s = {
-              alignment: { horizontal: 'center', vertical: 'center' },
-              font: { bold: true, color: { rgb: 'FFFFFF' } },
-              fill: { fgColor: { rgb: '000000' } },
-            };
-          }
-        }
-      }
+        // Iterate over each setID
+        Object.entries(groupedData).forEach(([setID, setData]) => {
+            const sheet = workbook.addWorksheet(`Set ${setID}`);
 
-      XLSX.utils.book_append_sheet(workbook, worksheet, `Set ${setID}`);
-    });
+            // Add group name row
+            // Add group name row (fixed)
+            const groupRow = sheet.addRow([`${group} & Catch No: ${catchno} & Set ID: ${setID}`]);
+            groupRow.eachCell((cell) => {
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.font = { color: { argb: 'FFFFFFFF' } }; // Set text color to white
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF000000' } }; // Set background color to black
+                cell.border = {
+                    top: { style: 'thin', color: { argb: '00000000' } },
+                    left: { style: 'thin', color: { argb: '00000000' } },
+                    bottom: { style: 'thin', color: { argb: '00000000' } },
+                    right: { style: 'thin', color: { argb: '00000000' } },
+                };
+            });
+            sheet.mergeCells(`A${sheet.lastRow.number}:C${sheet.lastRow.number}`);
+            groupRow.state = { state: 'frozen', ySplit: 2 };
 
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const excelBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(excelBlob, `${catchno}.xlsx`);
-  };
+            // Add headers row (fixed)
+            const headersRow = sheet.addRow(['Page Number', 'Question Number', 'Answer']);
+            headersRow.eachCell((cell) => {
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                cell.font = { color: { argb: '000' } }; // Set text color to white
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'dadada' } };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: '00000000' } },
+                    left: { style: 'thin', color: { argb: '00000000' } },
+                    bottom: { style: 'thin', color: { argb: '00000000' } },
+                    right: { style: 'thin', color: { argb: '00000000' } },
+                };
+            });
+            headersRow.state = { state: 'frozen', ySplit: 2 };
 
-  return (
-    <Button onClick={exportToExcel}>Export to Excel</Button>
-  );
+            // Add data rows for the current setID
+            setData.forEach((item) => {
+                const dataRow = sheet.addRow([item.pageNumber, item.questionNumber, item.answer]);
+                dataRow.eachCell((cell) => {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    cell.border = {
+                        top: { style: 'thin', color: { argb: '00000000' } },
+                        left: { style: 'thin', color: { argb: '00000000' } },
+                        bottom: { style: 'thin', color: { argb: '00000000' } },
+                        right: { style: 'thin', color: { argb: '00000000' } },
+                    };
+                });
+            });
+
+            // Set column widths
+            sheet.columns.forEach((column) => {
+                column.width = 20; // Set the width of all columns to 20
+            });
+        });
+
+        // Write workbook to buffer and download
+        const excelBuffer = await workbook.xlsx.writeBuffer();
+        const excelBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        saveAs(excelBlob, `${catchno}.xlsx`);
+
+        setLoading(false);
+    };
+
+    return (
+        <Button onClick={exportToExcel}>
+            {loading ? 'Loading' : 'Export To Excel'}
+        </Button>
+    );
 };
 
 ExportToExcel.propTypes = {
-  data: PropTypes.array,
-  group: PropTypes.string,
-  catchno: PropTypes.string,
+    data: PropTypes.arrayOf(PropTypes.shape({
+        setID: PropTypes.number.isRequired,
+        pageNumber: PropTypes.number.isRequired,
+        questionNumber: PropTypes.number.isRequired,
+        answer: PropTypes.string.isRequired,
+    })).isRequired,
+    group: PropTypes.string.isRequired,
+    catchno: PropTypes.string.isRequired,
 };
 
 export default ExportToExcel;

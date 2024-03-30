@@ -9,7 +9,12 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 const DownloadKeys = () => {
   const [apiResponse, setApiResponse] = useState(null);
   const [groupName, setGroupName] = useState(null);
+  const [groupid, setGroupid] = useState(null);
+  const [sessionid, setSessionid] = useState(null);
+  const [bookletsize, setBookletsize] = useState(null);
+  const [examType, setExamType] = useState(null);
   const [catchNumber, setCatchNumber] = useState(null);
+  const [setOrders, setSetOrders] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -17,9 +22,13 @@ const DownloadKeys = () => {
         // Retrieve data from localStorage
         const storedData = localStorage.getItem('generatedKeys');
         if (storedData) {
-          const { groupName, catchNumber, subject_Name } = JSON.parse(storedData);
+          const { groupName, catchNumber, subject_Name, groupID, sessionID, bookletSize, examType } = JSON.parse(storedData);
           setGroupName(groupName);
           setCatchNumber(catchNumber);
+          setGroupid(groupID);
+          setSessionid(sessionID);
+          setBookletsize(bookletSize);
+          setExamType(examType);
           // Make API call with data from localStorage
           const response = await axios.get(
             `${baseUrl}/api/FormData/q?GroupName=${groupName}&CatchNumber=${catchNumber}&Subject=${subject_Name}`
@@ -28,6 +37,15 @@ const DownloadKeys = () => {
           // Set state with API response
           console.log(response.data)
           setApiResponse(response.data);
+
+          // Make API call to get set orders
+          const setOrdersResponse = await axios.get(
+            `${baseUrl}/api/PaperConfig/Group/Session?groupID=${groupid}&sessionID=${sessionid}&bookletsize=${bookletsize}`
+          );
+          if (setOrdersResponse.data && setOrdersResponse.data.paperConfig) {
+            const setOrder = setOrdersResponse.data.paperConfig.setOrder.split(',');
+            setSetOrders(setOrder);
+          }
         }
       } catch (error) {
         console.error('Error fetching data:', error);

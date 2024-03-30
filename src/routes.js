@@ -22,6 +22,7 @@ const ViewPaper = lazy(() => import('./views/Masters/Papers/ViewPaper'));
 // Masters
 const JumblingConfig = lazy(() => import('./views/Masters/JumblingConfig'));
 const Sessions = lazy(() => import('./views/Masters/Sessions'));
+const Programs = lazy(() => import('./views/Masters/Programs/Programs'));
 const Papers = lazy(() => import('./views/Masters/Papers/Papers'));
 const Reactpdf = lazy(() => import('./views/pages/ReactPdf/Reactpdf'));
 
@@ -52,6 +53,7 @@ const routes = [
   { path: '/Masters/AddPaper', name: 'Add Paper', moduleId: 3, permissionType: 'can_Add', element: <AddPaper /> },
   { path: '/Masters/JumblingConfig', name: ' JumblingConfig', moduleId: 3, permissionType: 'can_Add', element: <JumblingConfig /> },
   { path: '/Masters/Sessions', name: ' Sessions', moduleId: 3, permissionType: 'can_Add', element: <Sessions /> },
+  { path: '/Masters/Programs', name: ' Programs', moduleId: 3, permissionType: 'can_Add', element: <Programs /> },
   
   { path: '/Masters/papers/ViewPaper/:paperID', name: 'View Paper', moduleId: 3, permissionType: 'can_View', element: <ViewPaper /> },
 

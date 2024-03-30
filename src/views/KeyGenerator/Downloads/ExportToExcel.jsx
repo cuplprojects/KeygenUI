@@ -1,106 +1,131 @@
-import React, { useState } from 'react';
-import { saveAs } from 'file-saver';
-import PropTypes from 'prop-types';
-import ExcelJS from 'exceljs';
-import { Button } from 'react-bootstrap';
+import React, { useState } from 'react'
+import { saveAs } from 'file-saver'
+import PropTypes from 'prop-types'
+import ExcelJS from 'exceljs'
+import { Button } from 'react-bootstrap'
 
 const ExportToExcel = ({ data, group, catchno }) => {
-    const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
 
-    const exportToExcel = async () => {
-        setLoading(true);
+  const exportToExcel = async () => {
+    setLoading(true)
 
-        const workbook = new ExcelJS.Workbook();
+    const workbook = new ExcelJS.Workbook()
+    const worksheet = workbook.addWorksheet('Sheet1')
 
-        // Group data by setID
-        const groupedData = data.reduce((acc, item) => {
-            if (!acc[item.setID]) {
-                acc[item.setID] = [];
-            }
-            acc[item.setID].push(item);
-            return acc;
-        }, {});
+    const lastObject = data.slice(-1)[0]
+    const lastobjectid = lastObject.setID
 
-        // Iterate over each setID
-        Object.entries(groupedData).forEach(([setID, setData]) => {
-            const sheet = workbook.addWorksheet(`Set ${setID}`);
+    let masterheadcolstcount = 65
+    let masterheadcolendcount = 67
+    let chunkedData = []
+    const dividedData = data.reduce((acc, item) => {
+      if (acc.length && acc[acc.length - 1].setID === item.setID) {
+        acc[acc.length - 1].data.push(item)
+      } else {
+        acc.push({ setID: item.setID, data: [item] })
+      }
+      return acc
+    }, chunkedData)
 
-            // Add group name row
-            // Add group name row (fixed)
-            const groupRow = sheet.addRow([`${group} & Catch No: ${catchno} & Set ID: ${setID}`]);
-            groupRow.eachCell((cell) => {
-                cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                cell.font = { color: { argb: 'FFFFFFFF' } }; // Set text color to white
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF000000' } }; // Set background color to black
-                cell.border = {
-                    top: { style: 'thin', color: { argb: '00000000' } },
-                    left: { style: 'thin', color: { argb: '00000000' } },
-                    bottom: { style: 'thin', color: { argb: '00000000' } },
-                    right: { style: 'thin', color: { argb: '00000000' } },
-                };
-            });
-            sheet.mergeCells(`A${sheet.lastRow.number}:C${sheet.lastRow.number}`);
-            groupRow.state = { state: 'frozen', ySplit: 2 };
+    for (let i = 0; i < lastobjectid; i++) {
+      const masterheadercolumnstart = String.fromCharCode(masterheadcolstcount)
+      const masterheadercolumnend = String.fromCharCode(masterheadcolendcount)
 
-            // Add headers row (fixed)
-            const headersRow = sheet.addRow(['Page Number', 'Question Number', 'Answer']);
-            headersRow.eachCell((cell) => {
-                cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                cell.font = { color: { argb: '000' } }; // Set text color to white
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'dadada' } };
-                cell.border = {
-                    top: { style: 'thin', color: { argb: '00000000' } },
-                    left: { style: 'thin', color: { argb: '00000000' } },
-                    bottom: { style: 'thin', color: { argb: '00000000' } },
-                    right: { style: 'thin', color: { argb: '00000000' } },
-                };
-            });
-            headersRow.state = { state: 'frozen', ySplit: 2 };
+      worksheet.mergeCells(`${masterheadercolumnstart}1:${masterheadercolumnend}1`)
+      const masterHeaderCell = worksheet.getCell(`${masterheadercolumnstart}1`)
+      masterHeaderCell.value = `Answer key for Group: ${group}, Catch Number: ${catchno}, Set: ${i + 1}`
+      masterHeaderCell.alignment = { horizontal: 'center', vertical: 'middle' }
+      masterHeaderCell.font = { bold: true, color: { argb: 'FFFFFFFF' } }
+      masterHeaderCell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF000000' } // Black background color
+      }
 
-            // Add data rows for the current setID
-            setData.forEach((item) => {
-                const dataRow = sheet.addRow([item.pageNumber, item.questionNumber, item.answer]);
-                dataRow.eachCell((cell) => {
-                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                    cell.border = {
-                        top: { style: 'thin', color: { argb: '00000000' } },
-                        left: { style: 'thin', color: { argb: '00000000' } },
-                        bottom: { style: 'thin', color: { argb: '00000000' } },
-                        right: { style: 'thin', color: { argb: '00000000' } },
-                    };
-                });
-            });
+      for (let j = 0; j < 3; j++) {
+        const subheadercolcount = masterheadcolstcount + j
+        const subheadercolumn = String.fromCharCode(subheadercolcount)
+        worksheet.getColumn(subheadercolumn).width = 25
+        const subheaderCell = worksheet.getCell(`${subheadercolumn}2`)
+        subheaderCell.alignment = { horizontal: 'center', vertical: 'middle' }
+        subheaderCell.font = { bold: true }
+        subheaderCell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFDADADA' } // Black background color
+        }
+        subheaderCell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        }
+        if (j === 0) {
+          subheaderCell.value = 'Page Number'
+        } else if (j === 1) {
+          subheaderCell.value = 'Question Number'
+        } else {
+          subheaderCell.value = 'Answer'
+        }
+      }
 
-            // Set column widths
-            sheet.columns.forEach((column) => {
-                column.width = 20; // Set the width of all columns to 20
-            });
-        });
+      const dataLength = chunkedData[i].data.length
+      for (let j = 0; j < dataLength; j++) {
+        for (let k = 0; k < 3; k++) {
+          const subheadercolcount = masterheadcolstcount + k
+          const subheadercolumn = String.fromCharCode(subheadercolcount)
+          const dataItem = chunkedData[i].data[j]
+          const dataCell = worksheet.getCell(`${subheadercolumn}${j + 3}`)
+          dataCell.alignment = { horizontal: 'center', vertical: 'middle' }
+          dataCell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFFFFF' } // White background color
+          }
+          dataCell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          }
+          if (k === 0) {
+            dataCell.value = dataItem.pageNumber
+          } else if (k === 1) {
+            dataCell.value = dataItem.questionNumber
+          } else {
+            dataCell.value = dataItem.answer
+          }
+        }
+      }
 
-        // Write workbook to buffer and download
-        const excelBuffer = await workbook.xlsx.writeBuffer();
-        const excelBlob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(excelBlob, `${catchno}.xlsx`);
+      masterheadcolstcount += 4
+      masterheadcolendcount += 4
+    }
 
-        setLoading(false);
-    };
+    const excelBuffer = await workbook.xlsx.writeBuffer()
+    const excelBlob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    })
+    saveAs(excelBlob, `${catchno}.xlsx`)
 
-    return (
-        <Button onClick={exportToExcel}>
-            {loading ? 'Loading' : 'Export To Excel'}
-        </Button>
-    );
-};
+    setLoading(false)
+  }
+
+  return <Button onClick={exportToExcel}>{loading ? 'Loading' : 'Export To Excel'}</Button>
+}
 
 ExportToExcel.propTypes = {
-    data: PropTypes.arrayOf(PropTypes.shape({
-        setID: PropTypes.number.isRequired,
-        pageNumber: PropTypes.number.isRequired,
-        questionNumber: PropTypes.number.isRequired,
-        answer: PropTypes.string.isRequired,
-    })).isRequired,
-    group: PropTypes.string.isRequired,
-    catchno: PropTypes.string.isRequired,
-};
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      setID: PropTypes.number.isRequired,
+      pageNumber: PropTypes.number.isRequired,
+      questionNumber: PropTypes.number.isRequired,
+      answer: PropTypes.string.isRequired
+    })
+  ).isRequired,
+  group: PropTypes.string.isRequired,
+  catchno: PropTypes.string.isRequired
+}
 
-export default ExportToExcel;
+export default ExportToExcel

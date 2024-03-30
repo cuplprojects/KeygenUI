@@ -69,7 +69,15 @@ const ShuffleConfig = ({ selectedPaperData }) => {
         const responseData = await response.json();
         console.log('Data sent successfully!');
 
-        localStorage.setItem('generatedKeys', JSON.stringify(responseData));
+        const updatedResponseData = {
+          ...responseData,
+          groupID: selectedPaperData.groupID,
+          sessionID: selectedPaperData.sessionID,
+          bookletSize: selectedPaperData.bookletSize,
+          examType: selectedPaperData.examType
+        };
+      
+        localStorage.setItem('generatedKeys', JSON.stringify(updatedResponseData));
 
         navigate('/KeyGenerator/download-keys');
       } else {

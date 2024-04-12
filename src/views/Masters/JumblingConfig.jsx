@@ -196,7 +196,7 @@ const JumblingConfig = () => {
                       <Form.Control as="select" value={formData.programID} onChange={(e) => handleInputChange('programID', e.target.value)} required>
                         <option value="">Select a program</option>
                         {programs.map((program) => (
-                          <option key={program.programmeID} value={program.programmeID}>{program.programmeID}</option>
+                          <option key={program.programmeID} value={program.programmeID}>{program.programName}</option>
                         ))}
                       </Form.Control>
                     </Form.Group>

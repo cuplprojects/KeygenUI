@@ -1,5 +1,6 @@
 import React, { lazy } from 'react';
 import AccessDeniedPage from './views/pages/page403/AccessDeniedPage';
+import CTypeComponent from './views/Masters/CTypeComponent/CTypeComponent';
 
 const AllUsers = lazy(() => import('./views/Users/AllUsers'));
 const Dashboard = lazy(() => import('./views/dashboard/Dashboard'));
@@ -59,6 +60,7 @@ const routes = [
   { path: '/Masters/Courses', name: ' Courses', moduleId: 3, permissionType: 'can_Add', element: <Courses /> },
   { path: '/Masters/Subjects', name: ' Subjects', moduleId: 3, permissionType: 'can_Add', element: <Subjects /> },
   { path: '/Masters/Programs', name: ' Programs', moduleId: 3, permissionType: 'can_Add', element: <Programs /> },
+  { path: '/Masters/ExamType', name: ' ExamType', moduleId: 3, permissionType: 'can_Add', element: <CTypeComponent /> },
   
   { path: '/Masters/papers/ViewPaper/:paperID', name: 'View Paper', moduleId: 3, permissionType: 'can_View', element: <ViewPaper /> },
 

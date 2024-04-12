@@ -104,6 +104,13 @@ const _nav = [
       
       {
         component: CNavItem,
+        name: 'Exam Type',
+        to: '/Masters/ExamType',
+        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+      },
+      
+      {
+        component: CNavItem,
         name: 'Jumble Configrations',
         to: '/Masters/JumblingConfig',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,

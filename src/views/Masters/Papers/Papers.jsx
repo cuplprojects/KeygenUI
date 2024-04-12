@@ -7,28 +7,31 @@ import { useUser } from "./../../../context/UserContext.js";
 const apiUrl = process.env.REACT_APP_BASE_URL;
 
 const Papers = () => {
-  const {keygenUser} = useUser
+  const {keygenUser} = useUser();
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [papersData, groupsData, sessionsData, programsData, subjectsData, usersData] = await Promise.all([
+        const [papersData, programsData, coursesData, subjectsData, usersData] = await Promise.all([
           fetch(`${apiUrl}/api/Papers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
-          fetch(`${apiUrl}/api/Group`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
-          fetch(`${apiUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
-          fetch(`${apiUrl}/api/Program`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Programmes`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          // fetch(`${apiUrl}/api/Groups`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          // fetch(`${apiUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Courses`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
           fetch(`${apiUrl}/api/Subjects`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
           fetch(`${apiUrl}/api/Users/GetUsers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json())
         ]);
+        console.log(usersData);
 
         const updatedPapers = papersData.map(paper => ({
           ...paper,
-          groupName: groupsData.find(group => group.groupID === paper.groupID)?.groupName || "",
-          sessionName: sessionsData.find(session => session.session_Id === paper.sessionID)?.session_Name || "",
-          programName: programsData.find(program => program.programID === paper.programID)?.programName || "",
-          subjectName: subjectsData.find(subject => subject.subject_Id === paper.subjectID)?.subject_Name || "",
+          // groupName: groupsData.find(group => group.groupID === paper.groupID)?.groupName || "",
+          // sessionName: sessionsData.find(session => session.session_Id === paper.sessionID)?.session_Name || "",
+          programmeName: programsData.find(program => program.programmeID === paper.programmeID)?.programmeName || "",
+          courseName: coursesData.find(course => course.courseID === paper.courseID)?.courseName || "--",
+          subjectName: subjectsData.find(subject => subject.subject_Id === paper.subjectID)?.subject_Name || "--",
           createdBy: usersData.find(user => user.userID === paper.createdByID)?.firstName || ""
         }));
 

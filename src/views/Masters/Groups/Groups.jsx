@@ -10,7 +10,6 @@ const Groups = () => {
   const [loading, setLoading] = useState(true);
   const [groupName, setGroupName] = useState('');
   const [existingGroups, setExistingGroups] = useState([]);
-
   // Fetch groups on component mount and whenever groups state changes
   useEffect(() => {
     fetchGroups();

@@ -3,6 +3,7 @@ import { Form, Container, Row, Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
 import { useUser } from './../../../context/UserContext';
+import axios from 'axios';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const ViewPaper = () => {
@@ -13,14 +14,30 @@ const ViewPaper = () => {
   const [loading, setLoading] = useState(true);
   const [programs, setPrograms] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  const [group, setGroup] = useState(null);
-  const [session, setSession] = useState(null);
+  const [formDisabled, setFormDisabled] = useState(true);
+  const [buttonText, setButtonText] = useState('Update');
+  // const [session, setSession] = useState(null);
 
   const handleChange = (name, value) => {
     setPaper({
       ...paper,
       [name]: value
     });
+  };
+
+  const updatePaper = () => {
+    axios.put(`${baseUrl}/api/Papers/${decrypt(paperID)}`, paper, {
+      headers: { Authorization: `Bearer ${keygenUser?.token}` }
+    })
+      .then(response => {
+        console.log('Paper updated successfully:', response.data);
+        setFormDisabled(true);
+        setButtonText('Update');
+      })
+      .catch(error => {
+        console.error('Error updating paper:', error);
+        // Handle error appropriately, such as displaying an error message to the user
+      });
   };
 
   const fetchPaper = () => {
@@ -37,7 +54,7 @@ const ViewPaper = () => {
   };
 
   const fetchPrograms = () => {
-    fetch(`${baseUrl}/api/Program`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+    fetch(`${baseUrl}/api/Programmes`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
         setPrograms(data);
@@ -58,30 +75,19 @@ const ViewPaper = () => {
       });
   };
 
-  const fetchGroup = () => {
-    fetch(`${baseUrl}/api/Group`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-      .then(response => response.json())
-      .then(data => {
-        const groupData = data.find(group => group.groupID === paper.groupID);
-        setGroup(groupData);
-        console.log(groupData)
-      })
-      .catch(error => {
-        console.error('Error fetching group:', error);
-      });
-  };
+  
 
-  const fetchSession = () => {
-    fetch(`${baseUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-      .then(response => response.json())
-      .then(data => {
-        const sessionData = data.find(session => session.session_Id === paper.sessionID);
-        setSession(sessionData);
-      })
-      .catch(error => {
-        console.error('Error fetching session:', error);
-      });
-  };
+  // const fetchSession = () => {
+  //   fetch(`${baseUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       const sessionData = data.find(session => session.session_Id === paper.sessionID);
+  //       setSession(sessionData);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching session:', error);
+  //     });
+  // };
 
   useEffect(() => {
     fetchPaper();
@@ -90,8 +96,6 @@ const ViewPaper = () => {
 
   useEffect(() => {
     if (paper) {
-      fetchGroup();
-      fetchSession();
       fetchPrograms();
       fetchSubjects();
     }
@@ -111,12 +115,12 @@ const ViewPaper = () => {
 
       <div className="d-flex justify-content-between m-3">
         <h3>View Paper</h3>
-        {group && session && (
+        {/* {group && session && (
           <>
             <div><h5>Group Name: {group.groupName}</h5></div>
             <div><h5>Session: {session.session_Name}</h5></div>
           </>
-        )}
+        )} */}
       </div>
       <hr />
       {loading && <div>Loading...</div>}
@@ -168,13 +172,13 @@ const ViewPaper = () => {
                 <Form.Control
                   as='select'
                   name='program'
-                  value={paper.programID}
+                  value={paper.programmeID}
                   onChange={(e) => handleChange('program', e.target.value)}
                   disabled
                 >
                   {programs.map(program => (
-                    <option key={program.programID} value={program.programID}>
-                      {program.programName}
+                    <option key={program.programmeID} value={program.programmeID}>
+                      {program.programmeName}
                     </option>
                   ))}
                 </Form.Control>
@@ -194,7 +198,7 @@ const ViewPaper = () => {
             </Col>
             <Col>
               <Form.Group controlId='subjectID'>
-                <Form.Label>Subject ID</Form.Label>
+                <Form.Label>Subject</Form.Label>
                 <Form.Control
                   as='select'
                   name='subjectID'
@@ -203,8 +207,8 @@ const ViewPaper = () => {
                   disabled
                 >
                   {subjects.map(subject => (
-                    <option key={subject.subject_Id} value={subject.subject_Id}>
-                      {subject.subject_Name}
+                    <option key={subject.subjectID} value={subject.subjectID}>
+                      {subject.subjectName}
                     </option>
                   ))}
                 </Form.Control>
@@ -251,6 +255,14 @@ const ViewPaper = () => {
           </Row>
         </Form>
       )}
+      <button className="btn btn-primary" onClick={() => {
+        if (formDisabled) {
+          setFormDisabled(false);
+          setButtonText('Submit');
+        } else {
+          updatePaper();
+        }
+      }}>{buttonText}</button>
     </Container>
   );
 };

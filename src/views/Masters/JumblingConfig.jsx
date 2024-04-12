@@ -6,32 +6,31 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const JumblingConfig = () => {
   const { keygenUser } = useUser();
-  const [groups, setGroups] = useState([]);
+  const [programs, setPrograms] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [configurations, setConfigurations] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [configurationsPerPage] = useState(2);
   const [filteredConfigurations, setFilteredConfigurations] = useState([]);
 
-
   useEffect(() => {
-    fetchGroups();
+    fetchPrograms();
     fetchSessions();
     fetchConfigurations();
   }, []);
 
-  const fetchGroups = async () => {
+  const fetchPrograms = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/Group`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-      setGroups(response.data);
+      const response = await axios.get(`${baseUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+      setPrograms(response.data);
     } catch (error) {
-      console.error('Error fetching groups:', error);
+      console.error('Error fetching programs:', error);
     }
   };
 
   const fetchSessions = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+      const response = await axios.get(`${baseUrl}/api/Sessions`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       setSessions(response.data);
     } catch (error) {
       console.error('Error fetching sessions:', error);
@@ -40,7 +39,7 @@ const JumblingConfig = () => {
 
   const fetchConfigurations = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/PaperConfig`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+      const response = await axios.get(`${baseUrl}/api/PaperConfig`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       setConfigurations(response.data);
       setFilteredConfigurations(response.data);
     } catch (error) {
@@ -48,21 +47,16 @@ const JumblingConfig = () => {
     }
   };
 
-
   const [formData, setFormData] = useState({
-    id: 0,
-    groupID: '', // Changed from null to empty string
-    sessionID: '', // Changed from null to empty string
+    programID: '', // Changed from null to empty string
     sets: 0,
     setOrder: '',
     masterName: '',
     numberofQuestions: 0,
     bookletSize: 0,
     numberofJumblingSteps: 0,
-    setofStepsID: 0,
     setofSteps: ['']
   });
-
 
   const handleInputChange = (field, value) => {
     setFormData({
@@ -74,58 +68,33 @@ const JumblingConfig = () => {
 
   const filterConfigurations = () => {
     let filtered = configurations;
-    if (formData.groupID) {
-      console.log(formData.groupID)
+    if (formData.programID) {
       filtered = configurations.filter(config =>
-        config.groupID === parseInt(formData.groupID)
+        config.programID === parseInt(formData.programID)
       );
-      console.log(filtered);
     }
-    else if (formData.groupID && formData.sessionID) {
-      console.log(formData.groupID, formData.sessionID)
-      filtered = configurations.filter(config =>
-        config.groupID === parseInt(formData.groupID) &&
-        config.sessionID === parseInt(formData.sessionID)
-      );
-      console.log(filtered);
-    }
-    else if (formData.groupID && formData.sessionID && formData.bookletSize) {
-      console.log(formData.groupID, formData.sessionID)
-      filtered = configurations.filter(config =>
-        config.groupID === parseInt(formData.groupID) &&
-        config.sessionID === parseInt(formData.sessionID) &&
-        config.bookletSize === parseInt(formData.bookletSize)
-      );
-      console.log(filtered);
-    }
-
     setFilteredConfigurations(filtered);
   };
-
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Submitting form with data:', formData);
 
     try {
-      const response = await axios.post(`${baseUrl}/api/PaperConfig`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }, formData);
+      const response = await axios.post(`${baseUrl}/api/PaperConfig`, formData, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       if (response.status !== 201) {
         throw new Error('Failed to submit form');
       }
 
       // Reset form data if submission was successful
       setFormData({
-        id: 0,
-        groupID: '',
-        sessionID: '',
+        programID: '',
         sets: 0,
         setOrder: '',
         masterName: '',
         numberofQuestions: 0,
         bookletSize: 0,
         numberofJumblingSteps: 0,
-        setofStepsID: 0,
         setofSteps: ['']
       });
 
@@ -134,7 +103,6 @@ const JumblingConfig = () => {
       console.error('Error submitting form:', error);
     }
   };
-
 
   const renderStepFields = () => {
     const fields = [];
@@ -166,7 +134,6 @@ const JumblingConfig = () => {
     });
   };
 
-
   const indexOfLastConfiguration = currentPage * configurationsPerPage;
   const indexOfFirstConfiguration = indexOfLastConfiguration - configurationsPerPage;
   const currentConfigurations = filteredConfigurations.slice(indexOfFirstConfiguration, indexOfLastConfiguration);
@@ -190,8 +157,7 @@ const JumblingConfig = () => {
                         <Card className='mt-2'>
                           <Card.Body>
                             <strong>Master Name:</strong> {config.masterName} <br />
-                            <strong>Group Name:</strong> {groups.find((group) => group.groupID === config.groupID)?.groupName} <br />
-                            <strong>Session Name:</strong> {sessions.find((session) => session.session_Id === config.sessionID)?.session_Name} <br />
+                            <strong>Program Name:</strong> {programs.find((program) => program.programmeID === config.programID)?.programName} <br />
                             <strong>Number of Questions:</strong> {config.numberofQuestions} <br />
                             <strong>Booklet Size:</strong> {config.bookletSize} <br />
                             <strong>Number of Jumbling Steps:</strong> {config.numberofJumblingSteps} <br />
@@ -204,7 +170,6 @@ const JumblingConfig = () => {
                   <div className="d-flex align-items-center gap-3 justify-content-center mt-3">
                     <Pagination>
                       <Pagination.First onClick={() => paginate(1)} />
-                      {/* <Pagination.Prev onClick={() => paginate(currentPage - 1)} /> */}
                       {currentPage > 2 && <Pagination.Ellipsis />}
                       {currentPage > 1 && <Pagination.Item onClick={() => paginate(currentPage - 1)}>{currentPage - 1}</Pagination.Item>}
                       <Pagination.Item active>{currentPage}</Pagination.Item>
@@ -223,29 +188,15 @@ const JumblingConfig = () => {
           <Card>
             <Card.Body>
               <h3 className='text-center'>Create new configuration</h3>
-              {/* <Alert variant="info">
-                Create new configuration.
-              </Alert> */}
               <Form onSubmit={handleSubmit}>
                 <Row className='row-cols-1 row-cols-md-2'>
                   <Col>
-                    <Form.Group controlId="groupID">
-                      <Form.Label>Group</Form.Label>
-                      <Form.Control as="select" value={formData.groupID} onChange={(e) => handleInputChange('groupID', e.target.value)} required>
-                        <option value="">Select a group</option>
-                        {groups.map((group) => (
-                          <option key={group.groupID} value={group.groupID}>{group.groupName}</option>
-                        ))}
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="sessionID">
-                      <Form.Label>Session</Form.Label>
-                      <Form.Control as="select" value={formData.sessionID} onChange={(e) => handleInputChange('sessionID', e.target.value)} required>
-                        <option value="">Select a session</option>
-                        {sessions.map((session) => (
-                          <option key={session.session_Id} value={session.session_Id}>{session.session_Name}</option>
+                    <Form.Group controlId="programID">
+                      <Form.Label>Program</Form.Label>
+                      <Form.Control as="select" value={formData.programID} onChange={(e) => handleInputChange('programID', e.target.value)} required>
+                        <option value="">Select a program</option>
+                        {programs.map((program) => (
+                          <option key={program.programmeID} value={program.programmeID}>{program.programmeID}</option>
                         ))}
                       </Form.Control>
                     </Form.Group>
@@ -286,7 +237,6 @@ const JumblingConfig = () => {
                       <Form.Control type="number" value={formData.numberofJumblingSteps} onChange={(e) => handleInputChange('numberofJumblingSteps', e.target.value)} required />
                     </Form.Group>
                   </Col>
-
                   {renderStepFields()}
                 </Row>
                 <div className="text-center mt-3">

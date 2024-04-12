@@ -8,7 +8,7 @@ const Programs = () => {
   const { keygenUser } = useUser();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [programName, setProgramName] = useState('');
+  const [programmeName, setProgrammeName] = useState('');
   const [existingPrograms, setExistingPrograms] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState('');
   const [selectedSession, setSelectedSession] = useState('');
@@ -27,13 +27,13 @@ const Programs = () => {
 
   const fetchPrograms = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/Programs`, {
+      const response = await axios.get(`${baseUrl}/api/Programmes`, {
         headers: { Authorization: `Bearer ${keygenUser?.token}` },
       });
       if (response.data) {
         setPrograms(response.data);
         setLoading(false);
-        const existing = response.data.map((program) => program.programName.toLowerCase());
+        const existing = response.data.map((program) => program.programmeName.toLowerCase());
         setExistingPrograms(existing);
       }
     } catch (error) {
@@ -69,7 +69,7 @@ const Programs = () => {
 
   const fetchTypes = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/Types`, {
+      const response = await axios.get(`${baseUrl}/api/CTypes`, {
         headers: { Authorization: `Bearer ${keygenUser?.token}` },
       });
       if (response.data) {
@@ -82,10 +82,10 @@ const Programs = () => {
 
   const handleAddProgram = async () => {
     try {
+      
       const response = await axios.post(
-        `${baseUrl}/api/Programs`,
+        `${baseUrl}/api/Programmes`,
         {
-          programName,
           groupID: selectedGroup,
           sessionID: selectedSession,
           typeID: selectedType,
@@ -95,11 +95,11 @@ const Programs = () => {
         }
       );
       if (response.status === 201) {
-        setProgramName('');
+        setProgrammeName('');
         setSelectedGroup('');
         setSelectedSession('');
         setSelectedType('');
-        setExistingPrograms([...existingPrograms, programName.toLowerCase()]); // Clear the input field
+        setExistingPrograms([...existingPrograms, programmeName.toLowerCase()]); // Clear the input field
         fetchPrograms(); // Refresh the programs list after adding a new program
       } else {
         // Handle potential API errors here (e.g., display error message to user)
@@ -129,8 +129,8 @@ const Programs = () => {
                 <tbody>
                   {programs.map((program) => (
                     <tr key={program.programID}>
-                      <td>{program.programID}</td>
-                      <td>{program.programName}</td>
+                      <td>{program.programmeID}</td>
+                      <td>{program.programmeName}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -145,14 +145,14 @@ const Programs = () => {
             </Card.Header>
             <Card.Body>
               <Form>
-                <Form.Group controlId="formProgram">
+                {/* <Form.Group controlId="formProgram">
                   <Form.Control
                     type="text"
                     placeholder="Enter program name"
-                    value={programName}
-                    onChange={(e) => setProgramName(e.target.value)}
+                    value={programmeName}
+                    onChange={(e) => setProgrammeName(e.target.value)}
                   />
-                </Form.Group>
+                </Form.Group> */}
                 <Form.Group controlId="formGroup">
                   <Form.Select
                     value={selectedGroup}
@@ -196,7 +196,7 @@ const Programs = () => {
                   <Button
                     variant="primary"
                     onClick={handleAddProgram}
-                    disabled={existingPrograms.includes(programName.toLowerCase())}
+                    disabled={existingPrograms.includes(programmeName.toLowerCase())}
                   >
                     Add Program
                   </Button>

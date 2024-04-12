@@ -36,19 +36,22 @@ const CTypeComponent = () => {
 
     const handleAddType = async () => {
         try {
-            const response = await axios.post(`${baseUrl}/api/Types`, { typeName }, {
+            const response = await axios.post(`${baseUrl}/api/CTypes`, { typeName }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            if (response.status === 200) {
+            if (response.status >= 200 && response.status < 300) {
+                setTypes([...types, response.data]); // Update types state with the new type
                 setTypeName(''); // Clear the input field
+            } else {
+                console.error('Failed to add type:', response);
             }
         } catch (error) {
             console.error('Error adding type:', error);
         }
     };
-
+    
     return (
         <div className="container mt-3">
             <div className="row">

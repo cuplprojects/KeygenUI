@@ -22,8 +22,6 @@ const Login = () => {
   const [passwordError, setPasswordError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
-
-  // State variable to track loading state
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -40,21 +38,16 @@ const Login = () => {
     checkUserAndRedirect();
   }, [keygenUser, isLoggedIn, navigate]);
 
-  // Handle the login process
   const handleLogin = async () => {
     if (emailError || passwordError || !email || !password || loading) {
       return;
     }
 
     try {
-      // Set loading to true when the login process starts
       setLoading(true);
-
-      // Make an API call to authenticate the user
       const response = await axios.post(LoginApi, { email, password });
 
       if (response && response.data) {
-        // If successful, log in the user and redirect
         login(response.data);
       } else {
         console.error('Invalid API response', response);
@@ -62,36 +55,32 @@ const Login = () => {
     } catch (error) {
       console.error('Error during login:', error);
       setEmailError('');
-      setShowErrorAlert(true)
+      setShowErrorAlert(true);
     } finally {
-      // Set loading back to false when the login process completes
       setLoading(false);
     }
   };
 
-  // Check if the email format is valid
   const isEmailValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Handle changes in the email input
   const handleEmailChange = (value) => {
     setEmail(value);
     setEmailError(!value ? 'Email is required' : !isEmailValid(value) ? 'Invalid email format' : '');
-    setShowErrorAlert(false)
+    setShowErrorAlert(false);
   };
 
-  // Handle changes in the password input
   const handlePasswordChange = (value) => {
     setPassword(value);
-    setPasswordError(
-      !value
-        ? 'Password is required'
-        : ''
-    );
+    setPasswordError(!value ? 'Password is required' : '');
   };
 
-  // Toggle visibility of the password
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleLogin();
   };
 
   return (
@@ -103,7 +92,7 @@ const Login = () => {
         </div>
       ) : (
         <>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <h1>Login</h1>
             <p >Sign In to your account</p>
             <div className="mb-3">
@@ -116,7 +105,6 @@ const Login = () => {
                   Email or password you entered is incorrect
                 </Alert>
               )}
-              {/* Email Input */}
               <InputGroup hasValidation>
                 <InputGroup.Text>
                   <CIcon icon={cilEnvelopeOpen} />
@@ -134,7 +122,6 @@ const Login = () => {
               </InputGroup>
             </div>
             <div className="mb-4">
-              {/* Password Input */}
               <InputGroup hasValidation>
                 <InputGroup.Text>
                   <CIcon icon={cilLockLocked} />
@@ -148,7 +135,6 @@ const Login = () => {
                   isInvalid={!!passwordError}
                   required
                 />
-                {/* Toggle Password Visibility */}
                 <InputGroup.Text onClick={togglePasswordVisibility} className='hovericon'>
                   {showPassword ? <i className="fa-solid fa-eye"></i> : <i className="fa-solid fa-eye-slash"></i>}
                 </InputGroup.Text>
@@ -157,14 +143,12 @@ const Login = () => {
             </div>
             <Row className='align-items-center'>
               <Col xs={12} sm={6} className='text-center text-sm-center text-md-start mb-2 mb-sm-0'>
-                {/* Login Button */}
-                <Button color="primary" className="px-4 w-100" onClick={handleLogin} disabled={loading}>
+                <Button typeof='submit' color="primary" className="px-4 w-100" onClick={handleLogin} disabled={loading}>
                   {loading ? <Spinner animation="border" size="sm" className="me-2" /> : null}
                   Login
                 </Button>
               </Col>
               <Col xs={12} sm={6} className='text-center text-sm-center text-md-end'>
-                {/* Forgot Password Link */}
                 <Link to={'/ForgotPassword'} className="d-block">Forgot password?</Link>
               </Col>
             </Row>

@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Container, Spinner } from "react-bootstrap";
 import PaperTable from "./PaperTable.jsx";
 import { Link } from "react-router-dom";
+import { useUser } from "./../../../context/UserContext.js";
 
 const apiUrl = process.env.REACT_APP_BASE_URL;
 
 const Papers = () => {
+  const {keygenUser} = useUser
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,12 +15,12 @@ const Papers = () => {
     const fetchData = async () => {
       try {
         const [papersData, groupsData, sessionsData, programsData, subjectsData, usersData] = await Promise.all([
-          fetch(`${apiUrl}/api/Papers`).then(res => res.json()),
-          fetch(`${apiUrl}/api/Group`).then(res => res.json()),
-          fetch(`${apiUrl}/api/Sessions`).then(res => res.json()),
-          fetch(`${apiUrl}/api/Program`).then(res => res.json()),
-          fetch(`${apiUrl}/api/Subjects`).then(res => res.json()),
-          fetch(`${apiUrl}/api/Users/GetUsers`).then(res => res.json())
+          fetch(`${apiUrl}/api/Papers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Group`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Program`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Subjects`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Users/GetUsers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json())
         ]);
 
         const updatedPapers = papersData.map(paper => ({
@@ -27,7 +29,7 @@ const Papers = () => {
           sessionName: sessionsData.find(session => session.session_Id === paper.sessionID)?.session_Name || "",
           programName: programsData.find(program => program.programID === paper.programID)?.programName || "",
           subjectName: subjectsData.find(subject => subject.subject_Id === paper.subjectID)?.subject_Name || "",
-          createdBy: usersData.find(user => user.user_ID === paper.createdByID)?.firstName || ""
+          createdBy: usersData.find(user => user.userID === paper.createdByID)?.firstName || ""
         }));
 
         setPapers(updatedPapers);

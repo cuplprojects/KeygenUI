@@ -7,6 +7,7 @@ import { useSecurity } from './../../context/Security';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import './viewuser.css'
+import { useUser } from "./../../context/UserContext";
 
 const permissionApi = process.env.REACT_APP_API_PERMISSION;
 const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -16,6 +17,7 @@ const apiPermissionsByUser = `${permissionApi}/ByUser`;
 const apiModules = process.env.REACT_APP_API_MODULES;
 
 const ViewUser = () => {
+  const { keygenUser } = useUser();
   const { decrypt } = useSecurity();
   const { userId } = useParams();
   const decodedUserId = decrypt(userId);
@@ -37,55 +39,56 @@ const ViewUser = () => {
   const [activeTab, setActiveTab] = useState("permissions");
 
   useEffect(() => {
-    // Fetch user data based on userId and update the state
-    axios.get(`${apiUserbyid}/${decodedUserId}`)
-      .then(res => {
-        const userData = res.data;
-        setUser(userData);
-      })
-      .catch(err => console.log(err));
+    const fetchUserData = async () => {
+      try {
+        const userResponse = await axios.get(`${apiUserbyid}/${decodedUserId}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+        setUser(userResponse.data);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
 
-    // Fetch permissions for the user
-    axios.get(`${apiPermissionsByUser}/${decodedUserId}`)
-      .then(res => {
-        const permissionsData = res.data;
+    const fetchPermissions = async () => {
+      try {
+        const permissionsResponse = await axios.get(`${apiPermissionsByUser}/${decodedUserId}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+        const permissionsData = permissionsResponse.data;
         setPermissions(permissionsData);
 
         // Check if any module is missing permissions
-        const missingPermissions = modules.filter(module => !permissionsData.some(permission => permission.module_Id === module.module_Id));
+        const missingPermissions = modules.filter(module => !permissionsData.some(permission => permission.moduleID === module.moduleID));
         if (missingPermissions.length > 0) {
-          // Post permissions with all fields set to false for missing modules
           const postPermissions = missingPermissions.map(module => ({
-            user_Id: decodedUserId,
-            module_Id: module.module_Id,
+            userId: decodedUserId,
+            moduleID: module.moduleID,
             can_Add: false,
             can_View: false,
             can_Update: false,
             can_Delete: false,
           }));
-          axios.post(permissionApi, postPermissions)
-            .then(response => {
-              // Fetch permissions again after posting
-              axios.get(`${apiPermissionsByUser}/${decodedUserId}`)
-                .then(res => {
-                  const updatedPermissionsData = res.data;
-                  setPermissions(updatedPermissionsData);
-                })
-                .catch(err => console.log(err));
-            })
-            .catch(err => console.log(err));
+          await axios.post(permissionApi, postPermissions, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+          const updatedPermissionsResponse = await axios.get(`${apiPermissionsByUser}/${decodedUserId}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+          const updatedPermissionsData = updatedPermissionsResponse.data;
+          setPermissions(updatedPermissionsData);
         }
-      })
-      .catch(err => console.log(err));
+      } catch (error) {
+        console.error('Error fetching permissions:', error);
+      }
+    };
 
-    // Fetch modules for the user
-    axios.get(apiModules)
-      .then(res => {
-        const modulesData = res.data;
+    const fetchModules = async () => {
+      try {
+        const modulesResponse = await axios.get(apiModules, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+        const modulesData = modulesResponse.data;
         setModules(modulesData);
-      })
-      .catch(err => console.log(err));
-  }, [decodedUserId, modules]);
+      } catch (error) {
+        console.error('Error fetching modules:', error);
+      }
+    };
+
+    fetchUserData();
+    fetchPermissions();
+    fetchModules();
+  }, [decodedUserId, modules, keygenUser]);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -93,48 +96,43 @@ const ViewUser = () => {
     setShowBtn(true);
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (selectedImage) {
       setLoading(true);
 
       const formData = new FormData();
       formData.append('image', selectedImage);
 
-      axios.post(`${baseUrl}/api/Users/upload/${decodedUserId}`, formData)
-        .then(response => {
-          setUser(prevUser => ({ ...prevUser, profilePicturePath: response.data.filePath }));
-          setShowBtn(false);
-        })
-        .catch(error => {
-          console.error('Error updating profile picture:', error);
-        })
-        .finally(() => {
-          setLoading(false);
-          setShowBtn(false);
-        });
+      try {
+        const response = await axios.post(`${baseUrl}/api/Users/upload/${decodedUserId}`, formData, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+        setUser(prevUser => ({ ...prevUser, profilePicturePath: response.data.filePath }));
+        setShowBtn(false);
+      } catch (error) {
+        console.error('Error updating profile picture:', error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  // Function to get module name based on module ID
   const getModuleNameById = (moduleId) => {
-    const module = modules.find(m => m.module_Id === moduleId);
-    return module ? module.module_Name : 'Unknown';
+    const module = modules.find(m => m.moduleID === moduleId);
+    return module ? module.moduleName : 'Unknown';
   };
 
   const handlePermissionUpdate = (permissionId, field) => {
     const updatedPermissionsCopy = permissions.map(permission => {
-      if (permission.permission_Id === permissionId) {
+      if (permission.permissionID === permissionId) {
         return { ...permission, [field]: !permission[field] };
       }
       return permission;
     });
-  
-    // Update permissions in the API
-    axios.put(`${permissionApi}/${permissionId}`, updatedPermissionsCopy.find(p => p.permission_Id === permissionId))
+
+    axios.put(`${permissionApi}/${permissionId}`, updatedPermissionsCopy.find(p => p.permissionID === permissionId), { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(res => {
-        const updatedPermission = updatedPermissionsCopy.find(p => p.permission_Id === permissionId);
-        let updatedModulePermissions = updatedPermissionsCopy.filter(p => p.module_Id === updatedPermission.module_Id);
-  
+        const updatedPermission = updatedPermissionsCopy.find(p => p.permissionID === permissionId);
+        let updatedModulePermissions = updatedPermissionsCopy.filter(p => p.moduleID === updatedPermission.moduleID);
+
         if (field === "can_Delete" && updatedPermission.can_Delete) {
           updatedModulePermissions.forEach(p => {
             p.can_View = true;
@@ -152,16 +150,14 @@ const ViewUser = () => {
             p.can_View = true;
           });
         }
-  
-        // Update state only if API call is successful
+
         setPermissions(updatedPermissionsCopy);
       })
       .catch(err => {
         console.log(err);
-        // Optionally, handle the error here
       });
   };
-  
+
 
   return (
     <Card>
@@ -223,20 +219,20 @@ const ViewUser = () => {
                     </thead>
                     <tbody>
                       {permissions.map(permission => (
-                        <tr key={permission.permission_Id}>
-                          <td>{getModuleNameById(permission.module_Id)}</td>
+                        <tr key={permission.permissionID}>
+                          <td>{getModuleNameById(permission.moduleID)}</td>
                           <td>
                             <div className="toggle-button">
                              
                               <FontAwesomeIcon
                                 icon={faCircleXmark}
                                 className={`text-danger toggle-icon ${!permission.can_View ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_View")}
+                                onClick={() => handlePermissionUpdate(permission.permissionID, "can_View")}
                               /> 
                               <FontAwesomeIcon
                                 icon={faCircleCheck}
                                 className={`text-success toggle-icon ${permission.can_View ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_View")}
+                                onClick={() => handlePermissionUpdate(permission.permissionID, "can_View")}
                               />
                             </div>
                           </td>
@@ -245,12 +241,12 @@ const ViewUser = () => {
                               <FontAwesomeIcon
                                 icon={faCircleXmark}
                                 className={`text-danger toggle-icon ${!permission.can_Add ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Add")}
+                                onClick={() => handlePermissionUpdate(permission.permissionID, "can_Add")}
                               />
                               <FontAwesomeIcon
                                 icon={faCircleCheck}
                                 className={`text-success toggle-icon ${permission.can_Add ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Add")}
+                                onClick={() => handlePermissionUpdate(permission.permissionID, "can_Add")}
                               />
                             </div>
                           </td>
@@ -259,12 +255,12 @@ const ViewUser = () => {
                               <FontAwesomeIcon
                                 icon={faCircleXmark}
                                 className={`text-danger toggle-icon ${!permission.can_Update ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Update")}
+                                onClick={() => handlePermissionUpdate(permission.permissionID, "can_Update")}
                               />
                               <FontAwesomeIcon
                                 icon={faCircleCheck}
                                 className={`text-success toggle-icon ${permission.can_Update ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Update")}
+                                onClick={() => handlePermissionUpdate(permission.permissionID, "can_Update")}
                               />
                             </div>
                           </td>
@@ -273,12 +269,12 @@ const ViewUser = () => {
                               <FontAwesomeIcon
                                 icon={faCircleXmark}
                                 className={`text-danger toggle-icon ${!permission.can_Delete ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Delete")}
+                                onClick={() => handlePermissionUpdate(permission.permissionID, "can_Delete")}
                               />
                               <FontAwesomeIcon
                                 icon={faCircleCheck}
                                 className={`text-success toggle-icon ${permission.can_Delete ? 'active' : ''}`}
-                                onClick={() => handlePermissionUpdate(permission.permission_Id, "can_Delete")}
+                                onClick={() => handlePermissionUpdate(permission.permissionID, "can_Delete")}
                               />
                             </div>
                           </td>

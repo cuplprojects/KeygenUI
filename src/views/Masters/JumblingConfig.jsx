@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Row, Col, Form, Button, Card, Pagination } from 'react-bootstrap';
+import { useUser } from './../../context/UserContext';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const JumblingConfig = () => {
+  const { keygenUser } = useUser();
   const [groups, setGroups] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [configurations, setConfigurations] = useState([]);
@@ -20,7 +22,7 @@ const JumblingConfig = () => {
 
   const fetchGroups = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/Group`);
+      const response = await axios.get(`${baseUrl}/api/Group`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       setGroups(response.data);
     } catch (error) {
       console.error('Error fetching groups:', error);
@@ -29,7 +31,7 @@ const JumblingConfig = () => {
 
   const fetchSessions = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/Sessions`);
+      const response = await axios.get(`${baseUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       setSessions(response.data);
     } catch (error) {
       console.error('Error fetching sessions:', error);
@@ -38,7 +40,7 @@ const JumblingConfig = () => {
 
   const fetchConfigurations = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/PaperConfig`);
+      const response = await axios.get(`${baseUrl}/api/PaperConfig`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       setConfigurations(response.data);
       setFilteredConfigurations(response.data);
     } catch (error) {
@@ -107,7 +109,7 @@ const JumblingConfig = () => {
     console.log('Submitting form with data:', formData);
 
     try {
-      const response = await axios.post(`${baseUrl}/api/PaperConfig`, formData);
+      const response = await axios.post(`${baseUrl}/api/PaperConfig`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }, formData);
       if (response.status !== 201) {
         throw new Error('Failed to submit form');
       }

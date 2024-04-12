@@ -8,39 +8,39 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const { encrypt, decrypt } = useSecurity();
 
-  const getKeygenUserFromLocalStorage = () => {
-    const storedKeygenUser = localStorage.getItem('keygenUser');
+  const getKeygenUserFromSessionStorage = () => {
+    const storedKeygenUser = sessionStorage.getItem('keygenUser');
     if (storedKeygenUser) {
-      const { user_ID, ...rest } = JSON.parse(storedKeygenUser);
-      if (typeof user_ID === 'number') {
-        localStorage.removeItem('keygenUser');
+      const { userID, ...rest } = JSON.parse(storedKeygenUser);
+      if (typeof userID === 'number') {
+        sessionStorage.removeItem('keygenUser');
       }
-      const decryptedUserId = decrypt(user_ID); // Decrypt the user_ID
+      const decryptedUserId = decrypt(userID); // Decrypt the userID
       return {
         ...rest,
-        user_ID: decryptedUserId
+        userID: decryptedUserId
       };
     }
     return null;
   };
 
 
-  const [keygenUser, setKeygenUser] = useState(getKeygenUserFromLocalStorage());
+  const [keygenUser, setKeygenUser] = useState(getKeygenUserFromSessionStorage());
 
   const login = (userData) => {
-    // Encrypt the user_ID before storing it in localStorage
-    const encryptedUserData = { ...userData, user_ID: encrypt(userData.user_ID) };
-    localStorage.setItem('keygenUser', JSON.stringify(encryptedUserData));
+    // Encrypt the userID before storing it in sessionStorage
+    const encryptedUserData = { ...userData, userID: encrypt(userData.userID) };
+    sessionStorage.setItem('keygenUser', JSON.stringify(encryptedUserData));
 
-    // Decrypt the user_ID before updating the keygenUser state
-    const decryptedUserId = decrypt(encryptedUserData.user_ID);
-    const decryptedUserData = { ...encryptedUserData, user_ID: decryptedUserId };
+    // Decrypt the userID before updating the keygenUser state
+    const decryptedUserId = decrypt(encryptedUserData.userID);
+    const decryptedUserData = { ...encryptedUserData, userID: decryptedUserId };
     setKeygenUser(decryptedUserData);
   };
 
   const logout = () => {
     setKeygenUser(null);
-    localStorage.removeItem('keygenUser');
+    sessionStorage.removeItem('keygenUser');
   };
 
   const isLoggedIn = () => {

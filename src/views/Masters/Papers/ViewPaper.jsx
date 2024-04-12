@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Form, Container, Row, Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
+import { useUser } from './../../../context/UserContext';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const ViewPaper = () => {
+  const {keygenUser} = useUser();
   const { decrypt } = useSecurity();
   const { paperID } = useParams();
-
   const [paper, setPaper] = useState(null);
   const [loading, setLoading] = useState(true);
   const [programs, setPrograms] = useState([]);
@@ -23,7 +24,7 @@ const ViewPaper = () => {
   };
 
   const fetchPaper = () => {
-    fetch(`${baseUrl}/api/Papers/${decrypt(paperID)}`)
+    fetch(`${baseUrl}/api/Papers/${decrypt(paperID)}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
         setPaper(data);
@@ -36,7 +37,7 @@ const ViewPaper = () => {
   };
 
   const fetchPrograms = () => {
-    fetch(`${baseUrl}/api/Program`)
+    fetch(`${baseUrl}/api/Program`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
         setPrograms(data);
@@ -47,7 +48,7 @@ const ViewPaper = () => {
   };
 
   const fetchSubjects = () => {
-    fetch(`${baseUrl}/api/Subjects`)
+    fetch(`${baseUrl}/api/Subjects`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
         setSubjects(data);
@@ -58,7 +59,7 @@ const ViewPaper = () => {
   };
 
   const fetchGroup = () => {
-    fetch(`${baseUrl}/api/Group`)
+    fetch(`${baseUrl}/api/Group`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
         const groupData = data.find(group => group.groupID === paper.groupID);
@@ -71,7 +72,7 @@ const ViewPaper = () => {
   };
 
   const fetchSession = () => {
-    fetch(`${baseUrl}/api/Sessions`)
+    fetch(`${baseUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
         const sessionData = data.find(session => session.session_Id === paper.sessionID);

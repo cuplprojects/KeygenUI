@@ -3,8 +3,10 @@ import React, { useState } from "react";
 import { Form, Button, Row, Col, Container, Alert } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useSecurity } from "./../../context/Security";
+import { useUser } from "./../../context/UserContext";
 
 const AddUser = () => {
+  const {keygenUser} = useUser();
   const { encrypt } = useSecurity();
   const apiUrl = process.env.REACT_APP_API_USER_BY_ID;
   const navigate = useNavigate();
@@ -33,7 +35,7 @@ const AddUser = () => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post(apiUrl, formData);
+      const res = await axios.post(apiUrl,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }, formData);
       setShowSuccessAlert(true);
       setShowErrorAlert(false);
       setErrorText("");
@@ -47,7 +49,7 @@ const AddUser = () => {
         profilePicturePath: "",
       });
 
-      navigate(`/users/AddPermissions/${encrypt(res.data.user_ID)}`);
+      navigate(`/users/AddPermissions/${encrypt(res.data.userID)}`);
     } catch (error) {
       if (error.response && error.response.status === 500) {
         console.error("Duplicate entry error:", error.response.data);

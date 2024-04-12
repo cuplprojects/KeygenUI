@@ -3,10 +3,14 @@ import axios from 'axios';
 import { Button, Col, Row, Table } from 'react-bootstrap';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import KeyPdf from './Downloads/KeyPdf';
+import { useUser } from './../../context/UserContext';
+
 import ExportToExcel from './Downloads/ExportToExcel';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const DownloadKeys = () => {
+  const { keygenUser } = useUser
+  const [apiResponseold, setApiResponseold] = useState(null);
   const [apiResponse, setApiResponse] = useState(null);
   const [groupName, setGroupName] = useState(null);
   const [groupid, setGroupid] = useState(null);
@@ -19,7 +23,6 @@ const DownloadKeys = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Retrieve data from localStorage
         const storedData = localStorage.getItem('generatedKeys');
         if (storedData) {
           const { groupName, catchNumber, subject_Name, groupID, sessionID, bookletSize, examType } = JSON.parse(storedData);
@@ -29,23 +32,11 @@ const DownloadKeys = () => {
           setSessionid(sessionID);
           setBookletsize(bookletSize);
           setExamType(examType);
-          // Make API call with data from localStorage
+
           const response = await axios.get(
-            `${baseUrl}/api/FormData/q?GroupName=${groupName}&CatchNumber=${catchNumber}&Subject=${subject_Name}`
+            `${baseUrl}/api/FormData/q?GroupName=${groupName}&CatchNumber=${catchNumber}&Subject=${subject_Name}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }
           );
-
-          // Set state with API response
-          console.log(response.data)
-          setApiResponse(response.data);
-
-          // Make API call to get set orders
-          const setOrdersResponse = await axios.get(
-            `${baseUrl}/api/PaperConfig/Group/Session?groupID=${groupid}&sessionID=${sessionid}&bookletsize=${bookletsize}`
-          );
-          if (setOrdersResponse.data && setOrdersResponse.data.paperConfig) {
-            const setOrder = setOrdersResponse.data.paperConfig.setOrder.split(',');
-            setSetOrders(setOrder);
-          }
+          setApiResponseold(response.data);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -55,6 +46,42 @@ const DownloadKeys = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchSetOrders = async () => {
+      try {
+        const setOrdersResponse = await axios.get(
+          `${baseUrl}/api/PaperConfig/Group/Session?groupID=${groupid}&sessionID=${sessionid}&bookletsize=${bookletsize}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }
+        );
+        if (setOrdersResponse.data && setOrdersResponse.data.paperConfig) {
+          const setOrder = setOrdersResponse.data.paperConfig.setOrder.split(',');
+          setSetOrders(setOrder);
+        }
+      } catch (error) {
+        console.error('Error fetching set orders:', error);
+      }
+    };
+
+    if (groupid && sessionid && bookletsize) {
+      fetchSetOrders();
+    }
+  }, [groupid, sessionid, bookletsize]);
+
+console.log(setOrders)
+
+useEffect(() => {
+  if (apiResponseold && setOrders.length > 0) {
+    console.log(apiResponseold)
+    const updatedApiResponse = apiResponseold.map(item => {
+      return {
+        ...item,
+        setID: setOrders[item.setID - 1]
+      };
+    });
+    setApiResponse(updatedApiResponse);
+    console.log(updatedApiResponse)
+  }
+}, [apiResponseold, setOrders]);
+console.log(apiResponse)
   return (
     <div>
       <div className='d-flex align-items-center justify-content-between'>
@@ -65,48 +92,50 @@ const DownloadKeys = () => {
           </h5>
         </span>
         <div className='d-flex gap-2'>
-          <ExportToExcel data={apiResponse} group={groupName} catchno={catchNumber}/>
-          <PDFDownloadLink document={<KeyPdf data={apiResponse} group={groupName} catchno={catchNumber} />} fileName={catchNumber}>
+          <ExportToExcel data={apiResponse} group={groupName} catchno={catchNumber} setlen={setOrders.length}/>
+          <PDFDownloadLink document={<KeyPdf data={apiResponse} group={groupName} catchno={catchNumber}  />} fileName={catchNumber}>
             {({ loading }) => loading ? <Button>Loading...</Button> : <Button>Download PDF</Button>}
           </PDFDownloadLink>
         </div>
       </div>
       <hr />
       <Row>
-        {apiResponse && (
-          <>
-            {apiResponse.reduce((tables, item) => {
-              if (!tables[item.setID]) {
-                tables[item.setID] = [];
-              }
-              tables[item.setID].push(
-                <tr key={tables[item.setID].length}>
-                  <td>{item.pageNumber}</td>
-                  <td>{item.questionNumber}</td>
-                  <td>{item.answer}</td>
-                </tr>
-              );
-              return tables;
-            }, []).map((table, index) => (
-              <Col md={3} key={index}>
-                <Table striped bordered>
-                  <thead>
-                    <tr className='text-center'>
-                      <th colSpan="3">Set {index}</th>
-                    </tr>
-                    <tr>
-                      <th>Page Number</th>
-                      <th>Question Number</th>
-                      <th>Answer</th>
-                    </tr>
-                  </thead>
-                  <tbody>{table}</tbody>
-                </Table>
-              </Col>
-            ))}
-          </>
-        )}
-      </Row>
+  {apiResponse && (
+    <>
+      {apiResponse.reduce((tables, item) => {
+        const setIdNum = setOrders.indexOf(item.setID); // Get the index of setID in setOrders and add 1 (assuming setOrders is 1-indexed)
+        if (!tables[setIdNum]) {
+          tables[setIdNum] = [];
+        }
+        tables[setIdNum].push(
+          <tr key={tables[setIdNum].length}>
+            <td>{item.pageNumber}</td>
+            <td>{item.questionNumber}</td>
+            <td>{item.answer}</td>
+          </tr>
+        );
+        return tables;
+      }, []).map((table, index) => (
+        <Col md={3} key={index}>
+          <Table striped bordered>
+            <thead>
+              <tr className='text-center'>
+                <th colSpan="3">Set {setOrders[index]}</th>
+              </tr>
+              <tr>
+                <th>Page Number</th>
+                <th>Question Number</th>
+                <th>Answer</th>
+              </tr>
+            </thead>
+            <tbody>{table}</tbody>
+          </Table>
+        </Col>
+      ))}
+    </>
+  )}
+</Row>
+
     </div>
   );
 };

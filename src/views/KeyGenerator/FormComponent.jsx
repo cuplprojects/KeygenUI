@@ -6,9 +6,11 @@ import FileUpload from './FileUpload';
 import ShuffleConfig from './ShuffleConfig';
 import Select from 'react-select';
 import PropTypes from 'prop-types';
+import { useUser } from './../../context/UserContext';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
+    const {keygenUser} = useUser();
     const [editing, setEditing] = useState(false);
     const [formData, setFormData] = useState([]);
     const [selectedGroup, setSelectedGroup] = useState('');
@@ -22,9 +24,10 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [numberOfQuestions, setNumberOfQuestions] = useState(0);
 
     useEffect(() => {
+
         async function fetchGroups() {
             try {
-                const response = await fetch(`${baseUrl}/api/Group`);
+                const response = await fetch(`${baseUrl}/api/Group`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
                 if (response.ok) {
                     const data = await response.json();
                     setGroups(data);
@@ -41,7 +44,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchSessions() {
             try {
-                const response = await fetch(`${baseUrl}/api/Sessions`);
+                const response = await fetch(`${baseUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
                 if (response.ok) {
                     const data = await response.json();
                     setSessions(data);
@@ -58,7 +61,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchPapers() {
             try {
-                const response = await fetch(`${baseUrl}/api/Papers/${selectedGroup.value}/${selectedSession.value}`);
+                const response = await fetch(`${baseUrl}/api/Papers/${selectedGroup.value}/${selectedSession.value}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
                 if (response.ok) {
                     const data = await response.json();
                     const filteredPapers = data.filter((paper) => paper.keyGenerated === false);
@@ -79,7 +82,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await fetch(`${baseUrl}/api/PaperConfig/Group/Session?groupID=${selectedGroup.value}&sessionID=${selectedSession.value}&bookletsize=${bookletSize}`);
+                const response = await fetch(`${baseUrl}/api/PaperConfig/Group/Session?groupID=${selectedGroup.value}&sessionID=${selectedSession.value}&bookletsize=${bookletSize}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
                 if (response.ok) {
                     const data = await response.json();
                     setNumberOfQuestions(data.paperConfig.numberofQuestions);
@@ -144,7 +147,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
 
             const url = `${baseUrl}/api/FormData?GroupName=${encodeURIComponent(selectedGroup.label)}&PaperCode=${encodeURIComponent(selectedPaperData.paperCode)}&CatchNumber=${encodeURIComponent(selectedPaperData.catchNumber)}&SubjectID=${selectedPaperData.subjectID}`;
 
-            const response = await fetch(url, {
+            const response = await fetch(url,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }, {
                 method: 'POST',
                 body: formdataForSubmit,
             });

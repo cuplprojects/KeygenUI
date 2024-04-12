@@ -29,8 +29,8 @@ const UserTable = ({ users, hasPermission }) => {
     { label: 'Designation', key: 'designation' }
   ];
 
-  const handleRowClick = (paperID) => {
-    navigate(`view-user/${encrypt(paperID)}`);
+  const handleRowClick = (userID) => {
+    // navigate(`view-user/${encrypt(userID)}`);
   };
 
 

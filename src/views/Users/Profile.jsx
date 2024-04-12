@@ -23,7 +23,7 @@ const Profile = () => {
             try {
                 if (keygenUser) {
                     setLoading(true);
-                    const userData = await fetchUserData(keygenUser.user_ID);
+                    const userData = await fetchUserData(keygenUser.userID);
                     setUserData(userData);
                     setProfilePicturePath(userData.profilePicturePath ? `${BaseUrl}/${userData.profilePicturePath}?${new Date().getTime()}` : DefaultAvatar);
                     setLoading(false);
@@ -46,8 +46,8 @@ const Profile = () => {
         if (selectedImage && keygenUser) {
             setLoading(true);
             try {
-                await updateProfilePicture(keygenUser.user_ID, selectedImage);
-                const updatedUserData = await fetchUserData(keygenUser.user_ID);
+                await updateProfilePicture(keygenUser.userID, selectedImage, keygenUser.token);
+                const updatedUserData = await fetchUserData(keygenUser.userID);
                 setUserData(updatedUserData);
                 setProfilePicturePath(`${BaseUrl}/${updatedUserData.profilePicturePath}?${new Date().getTime()}`);
             } catch (error) {

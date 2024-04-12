@@ -10,7 +10,7 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const AddPaper = () => {
   const { keygenUser } = useUser();
-  const userId = keygenUser?.user_ID;
+  const userId = keygenUser?.userID;
 
   const [groups, setGroups] = useState([]);
   const [programs, setPrograms] = useState([]);
@@ -52,7 +52,9 @@ const AddPaper = () => {
 
     if (name === 'bookletSize') {
       try {
-        const response = await fetch(`${baseUrl}/api/PaperConfig/Group/Session?groupID=${formData.groupID}&sessionID=${formData.sessionID}&bookletsize=${value}`);
+        const response = await fetch(`${baseUrl}/api/PaperConfig/Group/Session?groupID=${formData.groupID}&sessionID=${formData.sessionID}&bookletsize=${value}`,
+          { headers: { Authorization: `Bearer ${keygenUser?.token}` } }
+        );
         if (!response.ok) {
           throw new Error('Failed to fetch paper config');
         }
@@ -70,6 +72,7 @@ const AddPaper = () => {
       const response = await fetch(`${baseUrl}/api/Program`, {
         method: 'POST',
         headers: {
+          Authorization: `Bearer ${keygenUser?.token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ programName })
@@ -90,6 +93,7 @@ const AddPaper = () => {
       const response = await fetch(`${baseUrl}/api/Subjects`, {
         method: 'POST',
         headers: {
+          Authorization: `Bearer ${keygenUser?.token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ subject_Name: subjectName })
@@ -110,7 +114,7 @@ const AddPaper = () => {
     setLoading(true);
     try {
       // Fetch existing papers
-      const response = await fetch(`${baseUrl}/api/Papers`);
+      const response = await fetch(`${baseUrl}/api/Papers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       if (!response.ok) {
         throw new Error('Failed to fetch papers');
       }
@@ -131,6 +135,7 @@ const AddPaper = () => {
       const addResponse = await fetch(`${baseUrl}/api/Papers`, {
         method: 'POST',
         headers: {
+          Authorization: `Bearer ${keygenUser?.token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
@@ -171,28 +176,28 @@ const AddPaper = () => {
   }, []);
 
   const fetchPrograms = () => {
-    fetch(`${baseUrl}/api/Program`)
+    fetch(`${baseUrl}/api/Program`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => setPrograms(data))
       .catch(error => console.error('Error fetching programs:', error));
   };
 
   const fetchGroups = () => {
-    fetch(`${baseUrl}/api/Group`)
+    fetch(`${baseUrl}/api/Group`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => setGroups(data))
       .catch(error => console.error('Error fetching Groups:', error));
   };
 
   const fetchSubjects = () => {
-    fetch(`${baseUrl}/api/Subjects`)
+    fetch(`${baseUrl}/api/Subjects`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => setSubjects(data))
       .catch(error => console.error('Error fetching subjects:', error));
   };
 
   const fetchSessions = () => {
-    fetch(`${baseUrl}/api/Sessions`)
+    fetch(`${baseUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => setSessions(data))
       .catch(error => console.error('Error fetching sessions:', error));

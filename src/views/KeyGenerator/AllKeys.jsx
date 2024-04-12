@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Container, Spinner, Alert } from "react-bootstrap";
 import KeysTable from "./KeysTable";
+import { useUser } from "./../../context/UserContext";
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const AllKeys = () => {
+  const {keygenUser} = useUser();
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${baseUrl}/api/Papers`)
+    fetch(`${baseUrl}/api/Papers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch data");
@@ -20,11 +22,11 @@ const AllKeys = () => {
       .then(async (data) => {
         const filteredPapers = data.filter((paper) => paper.keyGenerated === true);
         const updatedPapers = await Promise.all(filteredPapers.map(async (paper) => {
-          const groupResponse = await fetch(`${baseUrl}/api/Group/${paper.groupID}`);
+          const groupResponse = await fetch(`${baseUrl}/api/Group/${paper.groupID}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
           const groupData = await groupResponse.json();
-          const sessionResponse = await fetch(`${baseUrl}/api/Sessions/${paper.sessionID}`);
+          const sessionResponse = await fetch(`${baseUrl}/api/Sessions/${paper.sessionID}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
           const sessionData = await sessionResponse.json();
-          const subjectResponse = await fetch(`${baseUrl}/api/Subjects/${paper.subjectID}`);
+          const subjectResponse = await fetch(`${baseUrl}/api/Subjects/${paper.subjectID}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
           const subjectData = await subjectResponse.json();
           return {
             ...paper,

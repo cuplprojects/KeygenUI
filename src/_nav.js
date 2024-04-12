@@ -85,6 +85,18 @@ const _nav = [
       },
       {
         component: CNavItem,
+        name: 'Courses',
+        to: '/Masters/Courses',
+        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Subjects',
+        to: '/Masters/Subjects',
+        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
         name: 'Programs',
         to: '/Masters/Programs',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,

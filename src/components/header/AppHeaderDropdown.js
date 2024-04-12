@@ -27,7 +27,7 @@ const AppHeaderDropdown = () => {
     const fetchData = async () => {
       try {
         if (keygenUser) {
-          const userData = await fetchUserData(keygenUser.user_ID);
+          const userData = await fetchUserData(keygenUser.userID, keygenUser.token);
           const relativePath = userData.profilePicturePath;
         
           // Set profile picture path based on condition

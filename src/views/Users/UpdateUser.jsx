@@ -3,10 +3,12 @@ import React, { useState, useEffect } from "react";
 import { Form, Button, Row, Col, Container, Alert } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { useSecurity } from "./../../context/Security";
+import { useUser } from "./../../context/UserContext";
 
 const apiUserById = process.env.REACT_APP_API_USER_BY_ID;
 
 const UpdateUser = () => {
+  const { keygenUser } = useUser();
   const { userId } = useParams();
   const { decrypt } = useSecurity();
   const decryptid = decrypt(userId);
@@ -19,7 +21,7 @@ const UpdateUser = () => {
 
   useEffect(() => {
     axios
-      .get(`${apiUserById}/${decryptid}`)
+      .get(`${apiUserById}/${decryptid}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then((res) => {
         setUserData(res.data);
       })
@@ -40,7 +42,7 @@ const UpdateUser = () => {
     setUpdateSuccess(false);
 
     try {
-      await axios.put(`${apiUserById}/${decryptid}`, userData);
+      await axios.put(`${apiUserById}/${decryptid}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }, userData);
       setUpdateSuccess(true);
       setApiError('');
     } catch (error) {

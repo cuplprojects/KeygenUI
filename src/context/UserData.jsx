@@ -4,13 +4,18 @@ import axios from 'axios';
 const BaseUrl = process.env.REACT_APP_BASE_URL;
 const apiUserById = process.env.REACT_APP_API_USER_BY_ID;
 
-export const fetchUserData = async (user_Id) => {
+export const fetchUserData = async (userId,token) => {
+
     try {
-        if (!user_Id) {
+        if (!userId) {
             return null;
         }
 
-        const response = await fetch(`${apiUserById}/${user_Id}`);
+        const response = await fetch(`${apiUserById}/${userId}`,{
+            headers:{
+              Authorization: `Bearer ${token}`
+            }
+          });
         const data = await response.json();
 
         return data;
@@ -20,12 +25,16 @@ export const fetchUserData = async (user_Id) => {
     }
 };
 
-export const updateProfilePicture = async (user_Id, image) => {
+export const updateProfilePicture = async (userId, image, token) => {
     try {
         const formData = new FormData();
         formData.append('image', image);
 
-        const response = await axios.post(`${BaseUrl}/api/Users/upload/${user_Id}`, formData);
+        const response = await axios.post(`${BaseUrl}/api/Users/upload/${userId}`, formData,{
+            headers:{
+              Authorization: `Bearer ${token}`
+            }
+          });
         return response.data;
     } catch (error) {
         console.error('Error updating profile picture:', error);

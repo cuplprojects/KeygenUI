@@ -3,16 +3,35 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import PropTypes from 'prop-types'; // Import PropTypes
 import { useUser } from '../context/UserContext';
+import { jwtDecode } from 'jwt-decode';
 
 const PrivateRoute = ({ element }) => {
-  const { keygenUser } = useUser();
+  const { keygenUser, logout } = useUser();
 
-  // Check if the user is authenticated, otherwise redirect to the login page
+  // Check if the user is authenticated 
   if (!keygenUser) {
     return <Navigate to="/login" />;
   }
 
-  // If authenticated, render the provided element (which could be a Route or any other component)
+  // Check if the JWT token has expired
+  const token = keygenUser.token;
+  if (token) {
+
+    try {
+      const decodedToken = jwtDecode(token);
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (decodedToken.exp < currentTime) {
+        // Token has expired, log the user out
+        console.log("Session Expired")
+        logout();
+        return <Navigate to="/login" />;
+      }
+    } catch (error) {
+      console.error('Error decoding token:', error);
+    }
+  }
+
+  // If authenticated and token not expired, render the provided element
   return element;
 };
 

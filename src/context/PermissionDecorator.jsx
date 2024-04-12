@@ -14,8 +14,12 @@ const PermissionDecorator = ({ element, moduleId, permissionType }) => {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const userId = keygenUser.user_ID; // Assuming you are using a fixed userId for now
-        const response = await axios.get(`${BaseUrl}/api/Permissions/ByUser/${userId}`);
+        const userId = keygenUser.userID; // Assuming you are using a fixed userId for now
+        const response = await axios.get(`${BaseUrl}/api/Permissions/ByUser/${userId}`,{
+          headers:{
+            Authorization: `Bearer ${keygenUser?.token}`
+          }
+        });
         setPermissions(response.data);
         setLoading(false);
         // console.log(response.data);
@@ -33,7 +37,7 @@ const PermissionDecorator = ({ element, moduleId, permissionType }) => {
   }
 
   const canAccess = (moduleId, permissionType) => {
-    const permission = permissions.find(p => p.module_Id === moduleId);
+    const permission = permissions.find(p => p.moduleID === moduleId);
     return permission && permission[permissionType];
   };
 

@@ -91,7 +91,7 @@ const ChangePassword = () => {
     setLoading(true);
 
     try {
-      const userId = keygenUser.user_ID; // Replace with the actual user ID
+      const userId = keygenUser.userID; // Replace with the actual user ID
       const response = await axios.put(`${ChangePasswordApi}/${userId}`, {
         oldPassword: passwords.oldPassword,
         newPassword: passwords.newPassword,

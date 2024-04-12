@@ -3,19 +3,21 @@ import UserTable from "./UserTable";
 import { Link } from "react-router-dom";
 import { Container, Button, Spinner } from "react-bootstrap";
 import PermissionChecker from "./../../context/PermissionChecker";
+import { useUser } from "./../../context/UserContext";
 
 const apiUrl = process.env.REACT_APP_API_USERS; // Your API URL
 
 const AllUsers = () => {
+  const {keygenUser} = useUser();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(apiUrl)
+    fetch(apiUrl,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then((res) => res.json())
       .then((data) => {
         const mappedUsers = data.map((user) => ({
-          userId: user.user_ID,
+          userId: user.userID,
           email: user.emailAddress,
           name: `${user.firstName} ${user.middleName} ${user.lastName}`,
           mobileNumber: user.phoneNumber,

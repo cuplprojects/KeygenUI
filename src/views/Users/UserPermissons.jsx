@@ -3,11 +3,13 @@ import { Container, Table, Form, Button, Alert } from 'react-bootstrap';
 import axios from 'axios';
 import { Link, useParams } from 'react-router-dom';
 import { useSecurity } from "./../../context/Security";
+import { useUser } from './../../context/UserContext';
 const moduleApi = process.env.REACT_APP_API_MODULES;
 const permissionApi = process.env.REACT_APP_API_PERMISSION;
 
 
 const UserPermissions = () => {
+  const {keygenUser} = useUser();
   const { userId } = useParams();
   const { decrypt } = useSecurity();
   const decryptid = decrypt(userId)
@@ -21,13 +23,13 @@ const UserPermissions = () => {
 
 
   useEffect(() => {
-    axios.get(moduleApi)
+    axios.get(moduleApi,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => {
         // setModules(response.data);
         // Initialize modulePermissions based on modules
         setModulePermissions(response.data.map(module => ({
-          module_Id: module.module_Id,
-          module_Name: module.module_Name,
+          moduleID: module.moduleID,
+          moduleName: module.moduleName,
           can_Add: false,
           can_View: false,
           can_Update: false,
@@ -39,10 +41,10 @@ const UserPermissions = () => {
   }, []);
 
 
-  const handleInputChange = (module_Id, permissionType, checked) => {
+  const handleInputChange = (moduleID, permissionType, checked) => {
     setModulePermissions((prevPermissions) =>
       prevPermissions.map((module) =>
-        module.module_Id === module_Id
+        module.moduleID === moduleID
           ? {
               ...module,
               [permissionType]: checked,
@@ -62,9 +64,9 @@ const UserPermissions = () => {
   
 
   const onAddPermissions = () => {
-    const permissionsArray = modulePermissions.map(({ module_Id, can_Add, can_View, can_Update, can_Delete }) => ({
-      user_Id: decryptid,
-      module_Id,
+    const permissionsArray = modulePermissions.map(({ moduleID, can_Add, can_View, can_Update, can_Delete }) => ({
+      userId: decryptid,
+      moduleID,
       can_Add,
       can_View,
       can_Update,
@@ -74,7 +76,7 @@ const UserPermissions = () => {
     console.log('Adding permissions for user:', decryptid);
     console.log('Permissions to be added:', permissionsArray);
 
-    axios.post(permissionApi, permissionsArray)
+    axios.post(permissionApi,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }, permissionsArray)
       .then(response => {
         console.log('Permissions added successfully:', response.data);
         setSuccess(true);
@@ -145,15 +147,15 @@ const UserPermissions = () => {
               </thead>
               <tbody>
                 {modulePermissions.map((module) => (
-                  <tr key={module.module_Id}>
-                    <td>{module.module_Name}</td>
+                  <tr key={module.moduleID}>
+                    <td>{module.moduleName}</td>
                     <td>
                       <Form.Check
                         type="checkbox"
                         checked={module.can_Add}
                         onChange={(e) =>
                           handleInputChange(
-                            module.module_Id,
+                            module.moduleID,
                             'can_Add',
                             e.target.checked
                           )
@@ -166,7 +168,7 @@ const UserPermissions = () => {
                         checked={module.can_View}
                         onChange={(e) =>
                           handleInputChange(
-                            module.module_Id,
+                            module.moduleID,
                             'can_View',
                             e.target.checked
                           )
@@ -179,7 +181,7 @@ const UserPermissions = () => {
                         checked={module.can_Update}
                         onChange={(e) =>
                           handleInputChange(
-                            module.module_Id,
+                            module.moduleID,
                             'can_Update',
                             e.target.checked
                           )
@@ -192,7 +194,7 @@ const UserPermissions = () => {
                         checked={module.can_Delete}
                         onChange={(e) =>
                           handleInputChange(
-                            module.module_Id,
+                            module.moduleID,
                             'can_Delete',
                             e.target.checked
                           )

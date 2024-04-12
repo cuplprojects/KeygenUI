@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import ExcelJS from 'exceljs'
 import { Button } from 'react-bootstrap'
 
-const ExportToExcel = ({ data, group, catchno }) => {
+const ExportToExcel = ({ data, group, catchno, setlen }) => {
   const [loading, setLoading] = useState(false)
 
   const exportToExcel = async () => {
@@ -13,8 +13,9 @@ const ExportToExcel = ({ data, group, catchno }) => {
     const workbook = new ExcelJS.Workbook()
     const worksheet = workbook.addWorksheet('Sheet1')
 
-    const lastObject = data.slice(-1)[0]
-    const lastobjectid = lastObject.setID
+    // const lastObject = data.slice(-1)[0]
+    const lastobjectid = setlen
+
 
     let masterheadcolstcount = 65
     let masterheadcolendcount = 67
@@ -34,7 +35,8 @@ const ExportToExcel = ({ data, group, catchno }) => {
 
       worksheet.mergeCells(`${masterheadercolumnstart}1:${masterheadercolumnend}1`)
       const masterHeaderCell = worksheet.getCell(`${masterheadercolumnstart}1`)
-      masterHeaderCell.value = `Answer key for Group: ${group}, Catch Number: ${catchno}, Set: ${i + 1}`
+
+      masterHeaderCell.value = `Answer key for Group: ${group}, Catch Number: ${catchno}, Set: ${chunkedData[i].setID}`
       masterHeaderCell.alignment = { horizontal: 'center', vertical: 'middle' }
       masterHeaderCell.font = { bold: true, color: { argb: 'FFFFFFFF' } }
       masterHeaderCell.fill = {
@@ -46,7 +48,7 @@ const ExportToExcel = ({ data, group, catchno }) => {
       for (let j = 0; j < 3; j++) {
         const subheadercolcount = masterheadcolstcount + j
         const subheadercolumn = String.fromCharCode(subheadercolcount)
-        worksheet.getColumn(subheadercolumn).width = 25
+        worksheet.getColumn(subheadercolumn).width = 10
         const subheaderCell = worksheet.getCell(`${subheadercolumn}2`)
         subheaderCell.alignment = { horizontal: 'center', vertical: 'middle' }
         subheaderCell.font = { bold: true }
@@ -118,12 +120,13 @@ const ExportToExcel = ({ data, group, catchno }) => {
 ExportToExcel.propTypes = {
   data: PropTypes.arrayOf(
     PropTypes.shape({
-      setID: PropTypes.number.isRequired,
+      setID: PropTypes.string.isRequired,
       pageNumber: PropTypes.number.isRequired,
       questionNumber: PropTypes.number.isRequired,
-      answer: PropTypes.string.isRequired
+      answer: PropTypes.string.isRequired,
     })
   ).isRequired,
+  setlen: PropTypes.number.isRequired,
   group: PropTypes.string.isRequired,
   catchno: PropTypes.string.isRequired
 }

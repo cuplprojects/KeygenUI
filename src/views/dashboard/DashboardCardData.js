@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUser } from "./../../context/UserContext";
 
 const apiUrl = process.env.REACT_APP_API_USERS;
 const UniUrl = process.env.REACT_APP_API_GROUP;
@@ -6,6 +7,7 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 const keysUrl = `${baseUrl}/api/Papers`;
 
 const DashboardCardData = () => {
+  const { keygenUser } = useUser();
   const [userCount, setUserCount] = useState(0);
   const [uniCount, setUniCount] = useState(0);
   const [generatedCount, setGeneratedCount] = useState(0);
@@ -16,9 +18,9 @@ const DashboardCardData = () => {
     const fetchData = async () => {
       try {
         const [userDataResponse, uniDataResponse, keysResponse] = await Promise.all([
-          fetch(apiUrl),
-          fetch(UniUrl),
-          fetch(keysUrl)
+          fetch(apiUrl,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }),
+          fetch(UniUrl,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }),
+          fetch(keysUrl,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
         ]);
 
         const userData = await userDataResponse.json();
@@ -40,7 +42,7 @@ const DashboardCardData = () => {
     };
 
     fetchData();
-  }, []);
+  }, [keygenUser]);
 
   const cardData = [
     {

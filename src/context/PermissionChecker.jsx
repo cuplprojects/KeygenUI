@@ -13,8 +13,12 @@ const PermissionChecker = ({ children }) => {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const userId = keygenUser.user_ID; // Assuming you are using a fixed userId for now
-        const response = await axios.get(`${BaseUrl}/api/Permissions/ByUser/${userId}`);
+        const userId = keygenUser.userID; // Assuming you are using a fixed userId for now
+        const response = await axios.get(`${BaseUrl}/api/Permissions/ByUser/${userId}`,{
+          headers:{
+            Authorization: `Bearer ${keygenUser?.token}`
+          }
+        });
         setUserPermissions(response.data);
         setLoading(false);
         // console.log(response.data);
@@ -28,7 +32,7 @@ const PermissionChecker = ({ children }) => {
   }, [keygenUser]);
 
   const hasPermission = (moduleId, permissionType) => {
-    const modulePermissions = userPermissions.find(p => p.module_Id === moduleId);
+    const modulePermissions = userPermissions.find(p => p.moduleID === moduleId);
     return modulePermissions && modulePermissions[permissionType];
   };
 

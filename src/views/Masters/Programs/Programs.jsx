@@ -13,11 +13,17 @@ const Programs = () => {
   const [selectedGroup, setSelectedGroup] = useState('');
   const [selectedSession, setSelectedSession] = useState('');
   const [selectedType, setSelectedType] = useState('');
+  const [groups, setGroups] = useState([]);
+  const [sessions, setSessions] = useState([]);
+  const [types, setTypes] = useState([]);
 
-  // Fetch programs on component mount and whenever programs state changes
+  // Fetch programs, groups, sessions, and types on component mount
   useEffect(() => {
     fetchPrograms();
-  }, [programs]);
+    fetchGroups();
+    fetchSessions();
+    fetchTypes();
+  }, []);
 
   const fetchPrograms = async () => {
     try {
@@ -27,7 +33,7 @@ const Programs = () => {
       if (response.data) {
         setPrograms(response.data);
         setLoading(false);
-        const existing = response.data.map(program => program.programName.toLowerCase());
+        const existing = response.data.map((program) => program.programName.toLowerCase());
         setExistingPrograms(existing);
       }
     } catch (error) {
@@ -35,16 +41,59 @@ const Programs = () => {
     }
   };
 
-  const handleAddProgram = async () => {
+  const fetchGroups = async () => {
     try {
-      const response = await axios.post(`${baseUrl}/api/Programs`, {
-        programName,
-        groupID: selectedGroup,
-        sessionID: selectedSession,
-        typeID: selectedType
-      }, {
+      const response = await axios.get(`${baseUrl}/api/Groups`, {
         headers: { Authorization: `Bearer ${keygenUser?.token}` },
       });
+      if (response.data) {
+        setGroups(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+    }
+  };
+
+  const fetchSessions = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/api/Sessions`, {
+        headers: { Authorization: `Bearer ${keygenUser?.token}` },
+      });
+      if (response.data) {
+        setSessions(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+    }
+  };
+
+  const fetchTypes = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/api/Types`, {
+        headers: { Authorization: `Bearer ${keygenUser?.token}` },
+      });
+      if (response.data) {
+        setTypes(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching types:', error);
+    }
+  };
+
+  const handleAddProgram = async () => {
+    try {
+      const response = await axios.post(
+        `${baseUrl}/api/Programs`,
+        {
+          programName,
+          groupID: selectedGroup,
+          sessionID: selectedSession,
+          typeID: selectedType,
+        },
+        {
+          headers: { Authorization: `Bearer ${keygenUser?.token}` },
+        }
+      );
       if (response.status === 201) {
         setProgramName('');
         setSelectedGroup('');
@@ -110,7 +159,11 @@ const Programs = () => {
                     onChange={(e) => setSelectedGroup(e.target.value)}
                   >
                     <option value="">Select Group</option>
-                    {/* Populate the select options with groups */}
+                    {groups.map((group) => (
+                      <option key={group.groupID} value={group.groupID}>
+                        {group.groupName}
+                      </option>
+                    ))}
                   </Form.Select>
                 </Form.Group>
                 <Form.Group controlId="formSession">
@@ -119,7 +172,11 @@ const Programs = () => {
                     onChange={(e) => setSelectedSession(e.target.value)}
                   >
                     <option value="">Select Session</option>
-                    {/* Populate the select options with sessions */}
+                    {sessions.map((session) => (
+                      <option key={session.sessionID} value={session.sessionID}>
+                        {session.sessionName}
+                      </option>
+                    ))}
                   </Form.Select>
                 </Form.Group>
                 <Form.Group controlId="formType">
@@ -128,11 +185,19 @@ const Programs = () => {
                     onChange={(e) => setSelectedType(e.target.value)}
                   >
                     <option value="">Select Type</option>
-                    {/* Populate the select options with types */}
+                    {types.map((type) => (
+                      <option key={type.typeID} value={type.typeID}>
+                        {type.typeName}
+                      </option>
+                    ))}
                   </Form.Select>
                 </Form.Group>
-                <div className='mt-4 text-end'>
-                  <Button variant="primary" onClick={handleAddProgram} disabled={existingPrograms.includes(programName.toLowerCase())}>
+                <div className="mt-4 text-end">
+                  <Button
+                    variant="primary"
+                    onClick={handleAddProgram}
+                    disabled={existingPrograms.includes(programName.toLowerCase())}
+                  >
                     Add Program
                   </Button>
                 </div>

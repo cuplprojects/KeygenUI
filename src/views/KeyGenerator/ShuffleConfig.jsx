@@ -17,18 +17,17 @@ const ShuffleConfig = ({ selectedPaperData }) => {
   useEffect(() => {
     const fetchPaperData = async () => {
       try {
-        const groupID = selectedPaperData.groupID;
-        const sessionID = selectedPaperData.sessionID;
-        const bookletSize = selectedPaperData.bookletSize;
+        const programme2 = selectedPaperData.programmeID;
+        const bookletSize2 = selectedPaperData.bookletSize;
 
-        const response = await fetch(`${baseUrl}/api/PaperConfig/Group/Session?groupID=${groupID}&sessionID=${sessionID}&bookletsize=${bookletSize}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-        if (!response.ok) {
+        const progconfigforjumble = await fetch(`${baseUrl}/api/ProgConfigs/Programme/${programme2}/${bookletSize2}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+        if (!progconfigforjumble.ok) {
           throw new Error('Failed to fetch data');
         }
-        const data = await response.json();
+        const data = await progconfigforjumble.json();
         setPaperData(data);
-        setCopies(data.paperConfig.sets.toString());
-        setIterations(data.paperConfig.numberofJumblingSteps.toString());
+        setCopies(data[0].sets.toString());
+        setIterations(data[0].numberofJumblingSteps.toString());
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('An error occurred while fetching data. Please try again later.');
@@ -36,13 +35,13 @@ const ShuffleConfig = ({ selectedPaperData }) => {
     };
 
     fetchPaperData();
-  }, [selectedPaperData.groupID, selectedPaperData.sessionID, selectedPaperData.bookletSize]);
+  }, [selectedPaperData.programmeID, selectedPaperData.bookletSize]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
+    const setofsteps = [];
     try {
       console.log(paperData)
       const formData = {

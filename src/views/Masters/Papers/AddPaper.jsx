@@ -1,38 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Alert, Container, Row, Col, Card } from 'react-bootstrap';
+import { Form, Button, Alert, Container, Row, Col } from 'react-bootstrap';
+import Select from 'react-select';
 import { useUser } from '../../../context/UserContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import Select from 'react-select';
 import AddProgramModal from './AddProgramModal';
 import AddSubjectModal from './AddSubjectModal';
+import axios from 'axios';
+import ImportData from './ImportData';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const AddPaper = () => {
   const { keygenUser } = useUser();
   const userId = keygenUser?.userID;
 
-  const [groups, setGroups] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  const [sessions, setSessions] = useState([]);
-  const [showAddProgramModal, setShowAddProgramModal] = useState(false);
-  const [showAddSubjectModal, setShowAddSubjectModal] = useState(false);
-  const [paperConfigData, setPaperConfigData] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [selecedfile, setSelecedfile] = useState(false);
   const [formData, setFormData] = useState({
     paperID: 0,
-    sessionID: '',
-    groupID: '',
-    catchNumber: '',
+    programmeID: 0,
     paperName: '',
+    catchNumber: '',
     paperCode: '',
-    programID: '',
-    examCode: '',
+    courseID: '',
     examType: '',
     subjectID: '',
     paperNumber: '',
     examDate: '',
-    bookletSize: '',
+    bookletSize: 0,
     createdAt: new Date().toISOString(),
     createdByID: userId || '',
     KeyGenerated: false
@@ -41,126 +38,40 @@ const AddPaper = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-
-
-  const handleChange = async (name, value) => {
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-
-    if (name === 'bookletSize') {
-      try {
-        const response = await fetch(`${baseUrl}/api/PaperConfig/Group/Session?groupID=${formData.groupID}&sessionID=${formData.sessionID}&bookletsize=${value}`,
-          { headers: { Authorization: `Bearer ${keygenUser?.token}` } }
-        );
-        if (!response.ok) {
-          throw new Error('Failed to fetch paper config');
-        }
-        const paperConfigData = await response.json();
-        setPaperConfigData(paperConfigData);
-      } catch (error) {
-        console.error('Error fetching paper config:', error);
-        setPaperConfigData(null);
-      }
-    }
-  };
-
-  const addProgram = async (programName) => {
-    try {
-      const response = await fetch(`${baseUrl}/api/Program`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${keygenUser?.token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ programName })
-      });
-      if (!response.ok) {
-        throw new Error('Failed to add program');
-      }
-      const newProgram = await response.json();
-      setPrograms([...programs, newProgram]);
-      handleChange('programID', newProgram.programID);
-    } catch (error) {
-      console.error('Error adding program:', error);
-    }
-  };
-
-  const addSubject = async (subjectName) => {
-    try {
-      const response = await fetch(`${baseUrl}/api/Subjects`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${keygenUser?.token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ subject_Name: subjectName })
-      });
-      if (!response.ok) {
-        throw new Error('Failed to add subject');
-      }
-      const newSubject = await response.json();
-      setSubjects([...subjects, newSubject]);
-      handleChange('subjectID', newSubject.subject_Id);
-    } catch (error) {
-      console.error('Error adding subject:', error);
-    }
-  };
 
   const handleSubmit = async (e) => {
+    if (!formData.catchNumber) {
+      return;
+    }
     e.preventDefault();
     setLoading(true);
+    console.log(formData);
+    // Add new paper
     try {
-      // Fetch existing papers
-      const response = await fetch(`${baseUrl}/api/Papers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-      if (!response.ok) {
-        throw new Error('Failed to fetch papers');
-      }
-      const papers = await response.json(); // Check for duplicate
-      const isDuplicate = papers.some(paper =>
-        paper.catchNumber.toLowerCase() === formData.catchNumber.toLowerCase() &&
-        parseInt(paper.groupID) === parseInt(formData.groupID) &&
-        parseInt(paper.sessionID) === parseInt(formData.sessionID) &&
-        parseInt(paper.subjectID) === parseInt(formData.subjectID)
-      );
-      if (isDuplicate) {
-        setError('Duplicate paper. Please check the details.');
-        setLoading(false);
-        return;
-      }
-
-      // Add new paper
-      const addResponse = await fetch(`${baseUrl}/api/Papers`, {
-        method: 'POST',
+      const addResponse = await axios.post(`${baseUrl}/api/Papers`, formData, {
         headers: {
           Authorization: `Bearer ${keygenUser?.token}`,
           'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
+        }
       });
-      if (!addResponse.ok) {
-        throw new Error('Failed to add paper');
-      }
       setSuccess('Paper added successfully');
       setFormData({
-        createdByID: userId,
-        ...formData,
-        catchNumber: '',
+        paperID: 0,
+        programmeID: 0,
         paperName: '',
+        catchNumber: '',
         paperCode: '',
-        examCode: '',
+        courseID: '',
         examType: '',
         subjectID: '',
         paperNumber: '',
         examDate: '',
-        bookletSize: '',
+        bookletSize: 0,
+        createdAt: new Date().toISOString(),
+        createdByID: userId || '',
         KeyGenerated: false
       });
-      setPaperConfigData(null);
       setLoading(false);
-      setShowConfirmation(false);
     } catch (error) {
       console.error('Error adding paper:', error);
       setError('Failed to add paper. Please try again.');
@@ -168,211 +79,65 @@ const AddPaper = () => {
     }
   };
 
+
   useEffect(() => {
     fetchPrograms();
     fetchSubjects();
-    fetchSessions();
-    fetchGroups();
+    fetchCourses();
   }, []);
 
   const fetchPrograms = () => {
-    fetch(`${baseUrl}/api/Program`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+    fetch(`${baseUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => setPrograms(data))
       .catch(error => console.error('Error fetching programs:', error));
   };
 
-  const fetchGroups = () => {
-    fetch(`${baseUrl}/api/Group`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-      .then(response => response.json())
-      .then(data => setGroups(data))
-      .catch(error => console.error('Error fetching Groups:', error));
-  };
-
   const fetchSubjects = () => {
-    fetch(`${baseUrl}/api/Subjects`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+    fetch(`${baseUrl}/api/Subjects`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
-      .then(data => setSubjects(data))
+      .then(data => {
+        setSubjects(data)
+      })
       .catch(error => console.error('Error fetching subjects:', error));
   };
-
-  const fetchSessions = () => {
-    fetch(`${baseUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+  const fetchCourses = () => {
+    fetch(`${baseUrl}/api/Courses`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
-      .then(data => setSessions(data))
-      .catch(error => console.error('Error fetching sessions:', error));
+      .then(data => setCourses(data))
+      .catch(error => console.error('Error fetching courses:', error));
   };
-
-
-  const handleConfirmation = () => {
-    setShowConfirmation(true);
+  const handleChange = (name, value) => {
+    setFormData({
+      ...formData,
+      [name]: value
+    });
   };
 
   return (
-    <Container className="userform border border-3 p-4 my-3">
-      <h3>Add Paper</h3>
+    <Container className="userform border border-3 p-4 my-3 mt-0">
+      <div className="d-flex justify-content-between align-items-center">
+        <h3>Add Paper</h3>
+
+      </div>
+
       <Form onSubmit={handleSubmit}>
         <Row className='mb-3'>
           <Col>
-            <Form.Group controlId='groupID'>
-              <Form.Label >Groups<span className='text-danger'>*</span></Form.Label>
+            <Form.Group controlId='programmeID'>
+              <Form.Label>Program<span className='text-danger'>*</span></Form.Label>
               <Select
-                options={groups.map(group => ({ label: group.groupName, value: group.groupID }))}
-                value={formData.groupID ? { label: groups.find(s => s.groupID === formData.groupID).groupName, value: formData.groupID } : null}
-                onChange={(selectedOption) => handleChange('groupID', selectedOption ? selectedOption.value : null)}
-                placeholder="Select Group"
+                options={programs.map(program => ({ label: program.programmeName, value: program.programmeID }))}
+                value={formData.programmeID ? { label: programs.find(p => p.programmeID === formData.programmeID).programmeName, value: formData.programmeID } : null}
+                onChange={(selectedOption) => handleChange('programmeID', selectedOption ? selectedOption.value : null)}
+                placeholder="Select Program"
                 isClearable
                 required
               />
             </Form.Group>
           </Col>
+          {/* Booklet size  */}
           <Col>
-            <Form.Group controlId='sessionID'>
-              <Form.Label>Session<span className='text-danger'>*</span></Form.Label>
-              <Select
-                options={sessions.map(session => ({ label: session.session_Name, value: session.session_Id }))}
-                value={formData.sessionID ? { label: sessions.find(s => s.session_Id === formData.sessionID).session_Name, value: formData.sessionID } : null}
-                onChange={(selectedOption) => handleChange('sessionID', selectedOption ? selectedOption.value : null)}
-                placeholder="Select Session"
-                isClearable
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group controlId='catchNumber'>
-              <Form.Label>Catch Number<span className='text-danger'>*</span></Form.Label>
-              <Form.Control
-                type='text'
-                name='catchNumber'
-                value={formData.catchNumber}
-                onChange={(e) => handleChange('catchNumber', e.target.value)}
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group controlId='paperName'>
-              <Form.Label>Paper Name<span className='text-danger'>*</span></Form.Label>
-              <Form.Control
-                type='text'
-                name='paperName'
-                value={formData.paperName}
-                onChange={(e) => handleChange('paperName', e.target.value)}
-                required
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-        <Row className='mb-3'>
-          <Col>
-            <Form.Group controlId='paperCode'>
-              <Form.Label>Paper Code<span className='text-danger'>*</span></Form.Label>
-              <Form.Control
-                type='text'
-                name='paperCode'
-                value={formData.paperCode}
-                onChange={(e) => handleChange('paperCode', e.target.value)}
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group controlId='program'>
-              <div className='d-flex align-items-center justify-content-between me-2 dropdown-container'>
-                <Form.Label>Program<span className='text-danger'>*</span></Form.Label>
-                <FontAwesomeIcon onClick={() => setShowAddProgramModal(true)} icon={faPlus} />
-              </div>
-              <AddProgramModal
-                show={showAddProgramModal}
-                handleClose={() => setShowAddProgramModal(false)}
-                addProgram={addProgram}
-                programs={programs}
-              />
-              <Select
-                options={programs.map(program => ({ label: program.programName, value: program.programID }))}
-                value={formData.programID ? { label: programs.find(p => p.programID === formData.programID).programName, value: formData.programID } : null}
-                onChange={(selectedOption) => handleChange('programID', selectedOption ? selectedOption.value : null)} placeholder="Select Program"
-                isClearable
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group controlId='examCode'>
-              <Form.Label>Exam Code<span className='text-danger'>*</span></Form.Label>
-              <Form.Control
-                type='text'
-                name='examCode'
-                value={formData.examCode}
-                onChange={(e) => handleChange('examCode', e.target.value)}
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group controlId='examType'>
-              <Form.Label>Exam Type<span className='text-danger'>*</span></Form.Label>
-              <Form.Control
-                type='text'
-                name='examType'
-                value={formData.examType}
-                onChange={(e) => handleChange('examType', e.target.value)}
-                required
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-        <Row className='mb-3'>
-          <Col>
-            <Form.Group controlId='subjectID'>
-              <div className='d-flex align-items-center justify-content-between me-2 dropdown-container'>
-                <Form.Label>Select Subject<span className='text-danger'>*</span></Form.Label>
-                <FontAwesomeIcon onClick={() => setShowAddSubjectModal(true)} icon={faPlus} />
-              </div>
-              <AddSubjectModal
-                show={showAddSubjectModal}
-                handleClose={() => setShowAddSubjectModal(false)}
-                addSubject={addSubject}
-                subjects={subjects}
-              />
-              <Select
-                options={subjects.map(subject => ({ label: subject.subject_Name, value: subject.subject_Id }))}
-                value={formData.subjectID ? { label: subjects.find(s => s.subject_Id === formData.subjectID).subject_Name, value: formData.subjectID } : null}
-                onChange={(selectedOption) => handleChange('subjectID', selectedOption ? selectedOption.value : null)}
-                placeholder="Select Subject"
-                isClearable
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group controlId='paperNumber'>
-              <Form.Label>Paper Number<span className='text-danger'>*</span></Form.Label>
-              <Form.Control
-                type='text'
-                name='paperNumber'
-                value={formData.paperNumber}
-                onChange={(e) => handleChange('paperNumber', e.target.value)}
-                required
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group controlId='examDate'>
-              <Form.Label>Exam Date<span className='text-danger'>*</span></Form.Label>
-              <Form.Control
-                type='date'
-                name='examDate'
-                value={formData.examDate}
-                onChange={(e) => handleChange('examDate', e.target.value)}
-                required
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-        <Row className='mb-3'>
-          <Col md={4}>
             <Form.Group controlId='bookletSize'>
               <Form.Label>Booklet Size<span className='text-danger'>*</span></Form.Label>
               <Form.Control
@@ -384,53 +149,128 @@ const AddPaper = () => {
               />
             </Form.Group>
           </Col>
-          <Col md={8}>
-            {paperConfigData ? (
-              <Card className="my-0">
-                <Card.Body>
-                  <Row>
-                    <Col xs={4}>
-                      <p><strong>Number of Questions:</strong> {paperConfigData.paperConfig.numberofQuestions}</p>
-                      <p><strong>Sets:</strong> {paperConfigData.paperConfig.sets}</p>
-                      <p><strong>Set Order:</strong> {paperConfigData.paperConfig.setOrder}</p>
-                    </Col>
-                    <Col xs={4}>
-                      <p><strong>Number of Questions:</strong> {paperConfigData.paperConfig.numberofQuestions}</p>
-                      <p><strong>Sets:</strong> {paperConfigData.paperConfig.sets}</p>
-                      <p><strong>Set Order:</strong> {paperConfigData.paperConfig.setOrder}</p>
-                    </Col>
-                    <Col xs={4}>
-                      <p><strong>Number of Jumbling Steps:</strong> {paperConfigData.paperConfig.numberofJumblingSteps}</p>
-                      {paperConfigData.steps.map((step, index) => (
-                        <p key={index}><strong>Step {index + 1}:</strong> {step}</p>
-                      ))}
-                    </Col>
-                  </Row>
-                  <Form.Group controlId='confirmationCheckbox'>
-                    <Form.Check
-                      type='checkbox'
-                      label='Confirm Paper Config Data'
-                      onChange={handleConfirmation}
-                      checked={showConfirmation}
-                    />
-                  </Form.Group>
-                </Card.Body>
-              </Card>
-            ) : (
-              <Card className="my-3">
-                <Card.Body>
-                  <p>No Configuration found for this.</p>
-                </Card.Body>
-              </Card>
-            )}
-          </Col>
         </Row>
 
-        <Button variant='primary' type='submit' disabled={loading || !showConfirmation}>
-          {loading ? 'Adding...' : 'Add Paper'}
-        </Button>
-        {error && <Alert variant='danger'>{error}</Alert>}
-        {success && <Alert variant='success'>{success}</Alert>}
+        {/* bulk import  */}
+        <ImportData
+          programmeID={formData.programmeID}
+          setSelecedfile={setSelecedfile}
+          bookletSize={formData.bookletSize ? parseInt(formData.bookletSize, 10) : 0}
+        />
+
+        {
+          !selecedfile && (
+            <>
+              {/* Show field only when bulk import is not */}
+              {/* other data */}
+              <Row className='row-cols-1 row-cols-sm-2 row-cols-md-3'>
+                {/* catch no */}
+                <Col>
+                  <Form.Group controlId='catchNumber'>
+                    <Form.Label>Catch Number<span className='text-danger'>*</span></Form.Label>
+                    <Form.Control
+                      type='text'
+                      name='catchNumber'
+                      value={formData.catchNumber}
+                      onChange={(e) => handleChange('catchNumber', e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                {/* course  */}
+                <Col>
+                  <Form.Group controlId='courseID'>
+                    <Form.Label>Course<span className='text-danger'>*</span></Form.Label>
+                    <Select
+                      options={courses.map(course => ({ label: course.courseName, value: course.courseID }))}
+                      value={formData.courseID ? { label: courses.find(c => c.courseID === formData.courseID).courseName, value: formData.courseID } : null}
+                      onChange={(selectedOption) => handleChange('courseID', selectedOption ? selectedOption.value : null)}
+                      placeholder="Select Course"
+                      isClearable
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                {/* exam type  */}
+                <Col>
+                  <Form.Group controlId='examType'>
+                    <Form.Label>Exam Type<span className='text-danger'>*</span></Form.Label>
+                    <Form.Control
+                      type='text'
+                      name='examType'
+                      value={formData.examType}
+                      onChange={(e) => handleChange('examType', e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                {/* subject  */}
+                <Col>
+                  <Form.Group controlId='subjectID'>
+                    <Form.Label>Subject ID<span className='text-danger'>*</span></Form.Label>
+                    <Select
+                      options={subjects.map(subject => ({ label: subject.subjectName, value: subject.subjectID }))}
+                      value={formData.subjectID ? { label: subjects.find(s => s.subjectID === formData.subjectID).subjectName, value: formData.subjectID } : null}
+                      onChange={(selectedOption) => handleChange('subjectID', selectedOption ? selectedOption.value : null)}
+                      placeholder="Select Subject"
+                      isClearable
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                {/* paper name  */}
+                <Col>
+                  <Form.Group controlId='paperName'>
+                    <Form.Label>Paper Name<span className='text-danger'>*</span></Form.Label>
+                    <Form.Control
+                      type='text'
+                      name='paperName'
+                      value={formData.paperName}
+                      onChange={(e) => handleChange('paperName', e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                {/* paper number  */}
+                <Col>
+                  <Form.Group controlId='paperNumber'>
+                    <Form.Label>Paper Number<span className='text-danger'>*</span></Form.Label>
+                    <Form.Control
+                      type='text'
+                      name='paperNumber'
+                      value={formData.paperNumber}
+                      onChange={(e) => handleChange('paperNumber', e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                {/* exam date  */}
+                <Col>
+                  <Form.Group controlId='examDate'>
+                    <Form.Label>Exam Date<span className='text-danger'>*</span></Form.Label>
+                    <Form.Control
+                      type='date'
+                      name='examDate'
+                      value={formData.examDate}
+                      onChange={(e) => handleChange('examDate', e.target.value)}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+
+              {error && <Alert variant='danger'>{error}</Alert>}
+              {success && <Alert variant='success'>{success}</Alert>}
+              <br />
+
+              <Button variant='primary' type='submit' disabled={loading}>
+                {loading ? 'Adding...' : 'Add Paper'}
+              </Button>
+            </>
+          )
+        }
+
       </Form>
     </Container>
   );

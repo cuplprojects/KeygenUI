@@ -7,7 +7,7 @@ import axios from 'axios';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const ViewPaper = () => {
-  const {keygenUser} = useUser();
+  const { keygenUser } = useUser();
   const { decrypt } = useSecurity();
   const { paperID } = useParams();
   const [paper, setPaper] = useState(null);
@@ -16,7 +16,6 @@ const ViewPaper = () => {
   const [subjects, setSubjects] = useState([]);
   const [formDisabled, setFormDisabled] = useState(true);
   const [buttonText, setButtonText] = useState('Update');
-  // const [session, setSession] = useState(null);
 
   const handleChange = (name, value) => {
     setPaper({
@@ -41,7 +40,7 @@ const ViewPaper = () => {
   };
 
   const fetchPaper = () => {
-    fetch(`${baseUrl}/api/Papers/${decrypt(paperID)}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+    fetch(`${baseUrl}/api/Papers/${decrypt(paperID)}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
         setPaper(data);
@@ -54,7 +53,7 @@ const ViewPaper = () => {
   };
 
   const fetchPrograms = () => {
-    fetch(`${baseUrl}/api/Programmes`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+    fetch(`${baseUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
         setPrograms(data);
@@ -65,7 +64,7 @@ const ViewPaper = () => {
   };
 
   const fetchSubjects = () => {
-    fetch(`${baseUrl}/api/Subjects`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+    fetch(`${baseUrl}/api/Subjects`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
         setSubjects(data);
@@ -75,32 +74,12 @@ const ViewPaper = () => {
       });
   };
 
-  
-
-  // const fetchSession = () => {
-  //   fetch(`${baseUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-  //     .then(response => response.json())
-  //     .then(data => {
-  //       const sessionData = data.find(session => session.session_Id === paper.sessionID);
-  //       setSession(sessionData);
-  //     })
-  //     .catch(error => {
-  //       console.error('Error fetching session:', error);
-  //     });
-  // };
-
   useEffect(() => {
     fetchPaper();
+    fetchPrograms();
+    fetchSubjects();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (paper) {
-      fetchPrograms();
-      fetchSubjects();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paper]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -115,12 +94,6 @@ const ViewPaper = () => {
 
       <div className="d-flex justify-content-between m-3">
         <h3>View Paper</h3>
-        {/* {group && session && (
-          <>
-            <div><h5>Group Name: {group.groupName}</h5></div>
-            <div><h5>Session: {session.session_Name}</h5></div>
-          </>
-        )} */}
       </div>
       <hr />
       {loading && <div>Loading...</div>}
@@ -136,7 +109,7 @@ const ViewPaper = () => {
                   name='paperName'
                   value={paper.paperName}
                   onChange={(e) => handleChange('paperName', e.target.value)}
-                  disabled
+                  disabled={formDisabled}
                 />
               </Form.Group>
             </Col>
@@ -148,7 +121,7 @@ const ViewPaper = () => {
                   name='catchNumber'
                   value={paper.catchNumber}
                   onChange={(e) => handleChange('catchNumber', e.target.value)}
-                  disabled
+                  disabled={formDisabled}
                 />
               </Form.Group>
             </Col>
@@ -160,7 +133,7 @@ const ViewPaper = () => {
                   name='paperCode'
                   value={paper.paperCode}
                   onChange={(e) => handleChange('paperCode', e.target.value)}
-                  disabled
+                  disabled={formDisabled}
                 />
               </Form.Group>
             </Col>
@@ -174,7 +147,7 @@ const ViewPaper = () => {
                   name='program'
                   value={paper.programmeID}
                   onChange={(e) => handleChange('program', e.target.value)}
-                  disabled
+                  disabled={formDisabled}
                 >
                   {programs.map(program => (
                     <option key={program.programmeID} value={program.programmeID}>
@@ -192,7 +165,7 @@ const ViewPaper = () => {
                   name='examCode'
                   value={paper.examCode}
                   onChange={(e) => handleChange('examCode', e.target.value)}
-                  disabled
+                  disabled={formDisabled}
                 />
               </Form.Group>
             </Col>
@@ -204,7 +177,7 @@ const ViewPaper = () => {
                   name='subjectID'
                   value={paper.subjectID}
                   onChange={(e) => handleChange('subjectID', e.target.value)}
-                  disabled
+                  disabled={formDisabled}
                 >
                   {subjects.map(subject => (
                     <option key={subject.subjectID} value={subject.subjectID}>
@@ -224,21 +197,21 @@ const ViewPaper = () => {
                   name='paperNumber'
                   value={paper.paperNumber}
                   onChange={(e) => handleChange('paperNumber', e.target.value)}
-                  disabled
+                  disabled={formDisabled}
                 />
               </Form.Group>
             </Col>
             <Col>
-            <Form.Group controlId='examDate'>
-    <Form.Label>Exam Date</Form.Label>
-    <Form.Control
-      type='text'
-      name='examDate'
-      value={formatDate(paper.examDate)}
-      onChange={(e) => handleChange('examDate', e.target.value)}
-      disabled
-    />
-  </Form.Group>
+              <Form.Group controlId='examDate'>
+                <Form.Label>Exam Date</Form.Label>
+                <Form.Control
+                  type='text'
+                  name='examDate'
+                  value={formatDate(paper.examDate)}
+                  onChange={(e) => handleChange('examDate', e.target.value)}
+                  disabled={formDisabled}
+                />
+              </Form.Group>
             </Col>
             <Col>
               <Form.Group controlId='bookletSize'>
@@ -248,7 +221,7 @@ const ViewPaper = () => {
                   name='bookletSize'
                   value={paper.bookletSize}
                   onChange={(e) => handleChange('bookletSize', e.target.value)}
-                  disabled
+                  disabled={formDisabled}
                 />
               </Form.Group>
             </Col>

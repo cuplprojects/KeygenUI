@@ -29,10 +29,10 @@ const Papers = () => {
           ...paper,
           // groupName: groupsData.find(group => group.groupID === paper.groupID)?.groupName || "",
           // sessionName: sessionsData.find(session => session.session_Id === paper.sessionID)?.session_Name || "",
-          programmeName: programsData.find(program => program.programmeID === paper.programmeID)?.programmeName || "",
+          programmeName: programsData.find(program => program.programmeID === paper.programmeID)?.programmeName || "--",
           courseName: coursesData.find(course => course.courseID === paper.courseID)?.courseName || "--",
-          subjectName: subjectsData.find(subject => subject.subject_Id === paper.subjectID)?.subject_Name || "--",
-          createdBy: usersData.find(user => user.userID === paper.createdByID)?.firstName || ""
+          subjectName: subjectsData.find(subject => subject.subjectID === paper.subjectID)?.subjectName || "--",
+          createdBy: usersData.find(user => user.userID === paper.createdByID)?.firstName || "--"
         }));
 
         setPapers(updatedPapers);

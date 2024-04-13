@@ -36,7 +36,7 @@ const PaperTable = ({ papers }) => {
     const seconds = date.getSeconds();
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
-
+console.log(papers)
   return (
     <div className="table-responsive">
       <table className="table table-striped table-bordered table-hover" ref={tableRef}>

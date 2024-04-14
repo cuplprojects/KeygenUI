@@ -15,25 +15,28 @@ const Papers = () => {
     const fetchData = async () => {
       try {
         const [papersData, programsData, coursesData, subjectsData, usersData] = await Promise.all([
-          fetch(`${apiUrl}/api/Papers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
-          fetch(`${apiUrl}/api/Programmes`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
-          // fetch(`${apiUrl}/api/Groups`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
-          // fetch(`${apiUrl}/api/Sessions`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
-          fetch(`${apiUrl}/api/Courses`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
-          fetch(`${apiUrl}/api/Subjects`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
-          fetch(`${apiUrl}/api/Users/GetUsers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json())
+          fetch(`${apiUrl}/api/Papers`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Courses`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Subjects`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Users/GetUsers`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json())
         ]);
-
-        const updatedPapers = papersData.map(paper => ({
-          ...paper,
-          // groupName: groupsData.find(group => group.groupID === paper.groupID)?.groupName || "",
-          // sessionName: sessionsData.find(session => session.session_Id === paper.sessionID)?.session_Name || "",
-          programmeName: programsData.find(program => program.programmeID === paper.programmeID)?.programmeName || "--",
-          courseName: coursesData.find(course => course.courseID === paper.courseID)?.courseName || "--",
-          subjectName: subjectsData.find(subject => subject.subjectID === paper.subjectID)?.subjectName || "--",
-          createdBy: usersData.find(user => user.userID === paper.createdByID)?.firstName || "--"
+  
+        const updatedPapers = await Promise.all(papersData.map(async (paper) => {
+          const progConfigsResponse = await fetch(`${apiUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+          const progConfigsData = await progConfigsResponse.json();
+          const progConfigID = progConfigsData[0]?.progConfigID || 0;
+  
+          return {
+            ...paper,
+            progConfigID: progConfigID,
+            programmeName: programsData.find(program => program.programmeID === paper.programmeID)?.programmeName || "--",
+            courseName: coursesData.find(course => course.courseID === paper.courseID)?.courseName || "--",
+            subjectName: subjectsData.find(subject => subject.subjectID === paper.subjectID)?.subjectName || "--",
+            createdBy: usersData.find(user => user.userID === paper.createdByID)?.firstName || "--"
+          };
         }));
-
+  
         setPapers(updatedPapers);
         setLoading(false);
       } catch (error) {
@@ -41,9 +44,10 @@ const Papers = () => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
+  console.log(papers)
 
   return (
     <Container className="userform border border-3 p-4 my-3">

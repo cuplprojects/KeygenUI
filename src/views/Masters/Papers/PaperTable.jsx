@@ -43,6 +43,12 @@ const PaperTable = ({ papers }) => {
     localStorage.setItem('paperdata', JSON.stringify(paperData));
     navigate('/KeyGenerator/Newkey');
   }
+  const DownloadKey = (programmeID,  paperID, catchNumber, progConfigID) => {
+    const paperData = { programmeID, paperID, catchNumber, progConfigID };
+    localStorage.setItem('generatedKeys', JSON.stringify(paperData));
+    navigate('/keyGenerator/download-keys');
+  }
+
 
   return (
     <div className="table-responsive">
@@ -77,7 +83,7 @@ const PaperTable = ({ papers }) => {
                 <div>
                   <DropdownButton id="dropdown-basic-button" title="Action" className='btn btn-sm'>
                     {paper.keyGenerated ?
-                      <Dropdown.Item onClick={() => navigate("/KeyGenerator/Newkey")}>Download Key</Dropdown.Item>
+                      <Dropdown.Item onClick={() => DownloadKey(paper.programmeID, paper.paperID, paper.catchNumber, paper.progConfigID)}>Download Key</Dropdown.Item>
                       : <>
                         {paper.masterUploaded ?
                           <Dropdown.Item onClick={() => Generatekey(paper.programmeID, paper.programmeName, paper.paperID, paper.catchNumber)}>Generate Key</Dropdown.Item>

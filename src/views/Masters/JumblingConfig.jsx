@@ -58,7 +58,7 @@ const JumblingConfig = () => {
   };
 
   const [formData, setFormData] = useState({
-    progID: '',
+    progID: 0,
     sets: 0,
     setOrder: '',
     masterName: '',
@@ -80,13 +80,13 @@ const JumblingConfig = () => {
     console.log('Submitting form with data:', formData);
 
     try {
-      const response = await axios.post(`${baseUrl}/api/PaperConfig`, formData, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+      const response = await axios.post(`${baseUrl}/api/ProgConfigs`, formData, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       if (response.status !== 201) {
         throw new Error('Failed to submit form');
       }
 
       setFormData({
-        progID: '',
+        progID: 0,
         sets: 0,
         setOrder: '',
         masterName: '',
@@ -195,7 +195,7 @@ const JumblingConfig = () => {
                   <Col>
                     <Form.Group controlId="programID">
                       <Form.Label>Program</Form.Label>
-                      <Form.Control as="select" value={formData.programID} onChange={(e) => handleInputChange('programID', e.target.value)} required>
+                      <Form.Control as="select" value={formData.progID} onChange={(e) => handleInputChange('programID', e.target.value)} required>
                         <option value="">Select a program</option>
                         {programs.map((program) => (
                           <option key={program.programmeID} value={program.programmeID}>{program.programmeName}</option>

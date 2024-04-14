@@ -22,7 +22,7 @@ const AllKeys = () => {
       .then(async (data) => {
         const filteredPapers = data.filter((paper) => paper.keyGenerated === true);
         const updatedPapers = await Promise.all(filteredPapers.map(async (paper) => {
-          const groupResponse = await fetch(`${baseUrl}/api/Group/${paper.groupID}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+          const groupResponse = await fetch(`${baseUrl}/api/Groups/${paper.groupID}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
           const groupData = await groupResponse.json();
           const sessionResponse = await fetch(`${baseUrl}/api/Sessions/${paper.sessionID}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
           const sessionData = await sessionResponse.json();

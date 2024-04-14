@@ -4,6 +4,8 @@ import $ from 'jquery';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faDownload, faEye, faUpload } from '@fortawesome/free-solid-svg-icons';
 
 const PaperTable = ({ papers }) => {
   const { encrypt } = useSecurity();
@@ -43,7 +45,7 @@ const PaperTable = ({ papers }) => {
     localStorage.setItem('paperdata', JSON.stringify(paperData));
     navigate('/KeyGenerator/Newkey');
   }
-  const DownloadKey = (programmeID,  paperID, catchNumber, progConfigID) => {
+  const DownloadKey = (programmeID, paperID, catchNumber, progConfigID) => {
     const paperData = { programmeID, paperID, catchNumber, progConfigID };
     localStorage.setItem('generatedKeys', JSON.stringify(paperData));
     navigate('/keyGenerator/download-keys');
@@ -83,16 +85,16 @@ const PaperTable = ({ papers }) => {
                 <div>
                   <DropdownButton id="dropdown-basic-button" title="Action" className='btn btn-sm'>
                     {paper.keyGenerated ?
-                      <Dropdown.Item onClick={() => DownloadKey(paper.programmeID, paper.paperID, paper.catchNumber, paper.progConfigID)}>Download Key</Dropdown.Item>
+                      <Dropdown.Item onClick={() => DownloadKey(paper.programmeID, paper.paperID, paper.catchNumber, paper.progConfigID)}> <FontAwesomeIcon icon={faDownload} /> Download Key</Dropdown.Item>
                       : <>
                         {paper.masterUploaded ?
                           <Dropdown.Item onClick={() => Generatekey(paper.programmeID, paper.programmeName, paper.paperID, paper.catchNumber)}>Generate Key</Dropdown.Item>
                           :
-                          <Dropdown.Item onClick={() => navigate("/action-2")}>Upload Master</Dropdown.Item>
+                          <Dropdown.Item onClick={() => navigate("/action-2")}><FontAwesomeIcon icon={faUpload} /> Upload Master</Dropdown.Item>
                         }
                       </>
                     }
-                    <Dropdown.Item onClick={() => navigate(`/Masters/papers/ViewPaper/${encrypt(paper.paperID)}`)}>Update Paper</Dropdown.Item>
+                    <Dropdown.Item onClick={() => navigate(`/Masters/papers/ViewPaper/${encrypt(paper.paperID)}`)}> <FontAwesomeIcon icon={faEye} /> View Paper</Dropdown.Item>
                   </DropdownButton>
                 </div>
               </td>

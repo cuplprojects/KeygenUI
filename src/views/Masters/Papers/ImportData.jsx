@@ -187,7 +187,10 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
           'Content-Type': 'application/json'
         }
       });
-      // Add any logic to handle the response here
+      alert("Papers Submitted")
+      setFile(null)
+      setData([])
+      setSelecedfile(false)
     } catch (error) {
       console.error('Error:', error);
       // Add any error handling logic here

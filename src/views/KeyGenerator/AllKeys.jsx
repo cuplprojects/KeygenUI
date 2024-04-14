@@ -3,47 +3,53 @@ import { Container, Spinner, Alert } from "react-bootstrap";
 import KeysTable from "./KeysTable";
 import { useUser } from "./../../context/UserContext";
 
-const baseUrl = process.env.REACT_APP_BASE_URL;
+const apiUrl = process.env.REACT_APP_BASE_URL;
 
 const AllKeys = () => {
-  const {keygenUser} = useUser();
+  const { keygenUser } = useUser();
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`${baseUrl}/api/Papers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to fetch data");
-        }
-        return res.json();
-      })
-      .then(async (data) => {
-        const filteredPapers = data.filter((paper) => paper.keyGenerated === true);
-        const updatedPapers = await Promise.all(filteredPapers.map(async (paper) => {
-          const groupResponse = await fetch(`${baseUrl}/api/Groups/${paper.groupID}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-          const groupData = await groupResponse.json();
-          const sessionResponse = await fetch(`${baseUrl}/api/Sessions/${paper.sessionID}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-          const sessionData = await sessionResponse.json();
-          const subjectResponse = await fetch(`${baseUrl}/api/Subjects/${paper.subjectID}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-          const subjectData = await subjectResponse.json();
+    const fetchData = async () => {
+      try {
+        const [papersData, programsData, coursesData, subjectsData, usersData] = await Promise.all([
+          fetch(`${apiUrl}/api/Papers`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Courses`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Subjects`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
+          fetch(`${apiUrl}/api/Users/GetUsers`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json())
+        ]);
+    
+        const filteredPapersData = papersData.filter(paper => paper.keyGenerated); // Filter papers where keyGenerated is true
+    
+        const updatedPapers = await Promise.all(filteredPapersData.map(async (paper) => {
+          const progConfigsResponse = await fetch(`${apiUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+          const progConfigsData = await progConfigsResponse.json();
+          const progConfigID = progConfigsData[0]?.progConfigID || 0;
+    
           return {
             ...paper,
-            groupName: groupData.groupName,
-            sessionName: sessionData.session_Name,
-            subjectName: subjectData.subject_Name,
+            progConfigID: progConfigID,
+            programmeName: programsData.find(program => program.programmeID === paper.programmeID)?.programmeName || "--",
+            courseName: coursesData.find(course => course.courseID === paper.courseID)?.courseName || "--",
+            subjectName: subjectsData.find(subject => subject.subjectID === paper.subjectID)?.subjectName || "--",
+            createdBy: usersData.find(user => user.userID === paper.createdByID)?.firstName || "--"
           };
         }));
+    
         setPapers(updatedPapers);
         setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching papers data:", error);
+      } catch (error) {
+        console.error("Error fetching data:", error);
         setError("Failed to fetch data");
         setLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    fetchData();
+  }, [keygenUser?.token]);
 
   return (
     <Container className="userform border border-3 p-4 my-3">

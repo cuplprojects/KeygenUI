@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Button, Col, Row, Table } from 'react-bootstrap';
+import { Button, Col, Dropdown, DropdownButton, Row, Table } from 'react-bootstrap';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import KeyPdf from './Downloads/KeyPdf';
 import { useUser } from './../../context/UserContext';
 
 import ExportToExcel from './Downloads/ExportToExcel';
 import Keyi from './Downloads/Keyi';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 const DownloadKeys = () => {
   const { keygenUser } = useUser();
@@ -58,7 +60,7 @@ const DownloadKeys = () => {
           headers: { Authorization: `Bearer ${keygenUser?.token}` },
         });
         if (setOrdersResponse.data) {
-          const filteredConfigs = setOrdersResponse.data.filter((config) => config.progID === progConfigID);
+          const filteredConfigs = setOrdersResponse.data.filter((config) => config.progConfigID === progConfigID);
           const setOrder = filteredConfigs.map((config) => config.setOrder).join(',');
           setSetOrders(setOrder.split(',')); // Split set orders into an array
         }
@@ -66,7 +68,6 @@ const DownloadKeys = () => {
         console.error('Error fetching set orders:', error);
       }
     };
-
     fetchSetOrders(); // Moved fetchSetOrders outside of the if statement to ensure it always runs
   }, [progConfigID, keygenUser?.token]); // Added keygenUser?.token to the dependencies
 
@@ -81,7 +82,6 @@ const DownloadKeys = () => {
       setApiResponse(updatedApiResponse);
     }
   }, [apiResponseold, setOrders]);
-
   return (
     <div>
       <div className='d-flex align-items-center justify-content-between'>
@@ -92,13 +92,22 @@ const DownloadKeys = () => {
           </h5>
         </span>
         <div className='d-flex gap-2'>
-          <ExportToExcel data={apiResponse} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
-          <PDFDownloadLink document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
-            {({ loading }) => (loading ? <Button>Loading...</Button> : <Button>Download PDF</Button>)}
-          </PDFDownloadLink>
-          <PDFDownloadLink document={<Keyi data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
-            {({ loading }) => (loading ? <Button>Loading...</Button> : <Button>Download PDF</Button>)}
-          </PDFDownloadLink>
+          <DropdownButton id="export-dropdown" title={<><FontAwesomeIcon icon={faFilePdf} className="me-2" />Export</>} variant="primary">
+            <Dropdown.Item>
+              <ExportToExcel data={apiResponse} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
+
+            </Dropdown.Item>
+            {/* <Dropdown.Item>
+              <PDFDownloadLink document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
+                {({ loading }) => (loading ? <Button>Loading...</Button> : <Button><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
+              </PDFDownloadLink>
+            </Dropdown.Item> */}
+            <Dropdown.Item>
+              <PDFDownloadLink document={<Keyi data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
+                {({ loading }) => (loading ? <Button>Loading...</Button> : <Button><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
+              </PDFDownloadLink>
+            </Dropdown.Item>
+          </DropdownButton>
         </div>
       </div>
       <hr />

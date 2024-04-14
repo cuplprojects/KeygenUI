@@ -12,9 +12,6 @@ const ExportToExcel = ({ data = [], group = "", catchno = "", setlen }) => {
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sheet1');
-
-    let masterheadcolstcount = 65;
-    let masterheadcolendcount = 67;
     let chunkedData = [];
     const dividedData = data.reduce((acc, item) => {
       if (acc.length && acc[acc.length - 1].setID === item.setID) {
@@ -24,83 +21,84 @@ const ExportToExcel = ({ data = [], group = "", catchno = "", setlen }) => {
       }
       return acc;
     }, chunkedData);
-
-    for (let i = 0; i < setlen; i++) {
-      const masterheadercolumnstart = String.fromCharCode(masterheadcolstcount);
-      const masterheadercolumnend = String.fromCharCode(masterheadcolendcount);
-
-      worksheet.mergeCells(`${masterheadercolumnstart}1:${masterheadercolumnend}1`);
-      const masterHeaderCell = worksheet.getCell(`${masterheadercolumnstart}1`);
-
-      masterHeaderCell.value = `Answer key for Group: ${group}, Catch Number: ${catchno}, Set: ${dividedData[i].setID}`;
-      masterHeaderCell.alignment = { horizontal: 'center', vertical: 'middle' };
-      masterHeaderCell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      masterHeaderCell.fill = {
+    
+    console.log(dividedData)
+    // A1 
+    const answerheadingcell = worksheet.getCell('A1');
+    answerheadingcell.value = 'Answer key';
+    answerheadingcell.alignment = { horizontal: 'center', vertical: 'middle' };
+    answerheadingcell.font = { bold: true, color: { argb: '00000000' } };
+    worksheet.getColumn("A").width = 20;
+    worksheet.mergeCells(`B1:E1`);
+    const paperdetailsheadingcell = worksheet.getCell('B1')
+    paperdetailsheadingcell.value = `Group: ${group}, Catch Number: ${catchno}`;
+    paperdetailsheadingcell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    paperdetailsheadingcell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    paperdetailsheadingcell.fill = {
         type: 'pattern',
         pattern: 'solid',
         fgColor: { argb: 'FF000000' } // Black background color
       };
-
-      for (let j = 0; j < 3; j++) {
-        const subheadercolcount = masterheadcolstcount + j;
-        const subheadercolumn = String.fromCharCode(subheadercolcount);
-        worksheet.getColumn(subheadercolumn).width = 10;
-        const subheaderCell = worksheet.getCell(`${subheadercolumn}2`);
-        subheaderCell.alignment = { horizontal: 'center', vertical: 'middle' };
-        subheaderCell.font = { bold: true };
-        subheaderCell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFDADADA' } // Black background color
-        };
-        subheaderCell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' }
-        };
-        if (j === 0) {
-          subheaderCell.value = 'Page Number';
-        } else if (j === 1) {
-          subheaderCell.value = 'Question Number';
-        } else {
-          subheaderCell.value = 'Answer';
-        }
-      }
-
-      const dataLength = dividedData[i].data.length;
-      for (let j = 0; j < dataLength; j++) {
-        for (let k = 0; k < 3; k++) {
-          const subheadercolcount = masterheadcolstcount + k;
-          const subheadercolumn = String.fromCharCode(subheadercolcount);
-          const dataItem = dividedData[i].data[j];
-          const dataCell = worksheet.getCell(`${subheadercolumn}${j + 3}`);
-          dataCell.alignment = { horizontal: 'center', vertical: 'middle' };
-          dataCell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFFFFFFF' } // White background color
-          };
-          dataCell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-          };
-          if (k === 0) {
-            dataCell.value = dataItem.pageNumber;
-          } else if (k === 1) {
-            dataCell.value = dataItem.questionNumber;
-          } else {
-            dataCell.value = dataItem.answer;
-          }
-        }
-      }
-
-      masterheadcolstcount += 4;
-      masterheadcolendcount += 4;
+    paperdetailsheadingcell.width=50;
+    worksheet.getRow(1).height = 50;
+    const questionnumbercell = worksheet.getCell('A2')
+    questionnumbercell.value = 'Question Number';
+    questionnumbercell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+    questionnumbercell.font = { bold: true, color: { argb: 'FFFF0000' } };
+    questionnumbercell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Black background color
+    };
+    
+    let tablestart = 66;
+    for (let i = 0; i < setlen; i++)
+    {
+      const tablestartchar = String.fromCharCode(tablestart);
+      const tablestartcell = worksheet.getCell(`${tablestartchar}2`)
+      tablestartcell.value = `Set ${dividedData[i].setID}`;
+      tablestartcell.font = { bold: true, color: { argb: 'FFFF0000' } };
+      tablestartcell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFFF00' } // Black background color
+    };
+      
+      tablestart = tablestart + 1;
     }
 
+    const dataLength2 = dividedData[0].data.length;
+    for(let i = 0;i<dataLength2;i++)
+    {
+      worksheet.getCell(`A${i+3}`).value = i+1
+      worksheet.getCell(`A${i+3}`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+      worksheet.getCell(`A${i+3}`).font = { bold: true, color: { argb: '00000000' } };
+    }
+    let tablestart2 = 66;
+    for (let i =0;i< setlen; i++)
+    {
+      const tablestartchar2 = String.fromCharCode(tablestart2);
+      let dataLength = dividedData[i].data.length;
+      for (let j = 0; j < dataLength; j++)
+      {
+        worksheet.getCell(`${tablestartchar2}${j+3}`).value = dividedData[i].data[j].answer;
+        worksheet.getCell(`${tablestartchar2}${j+3}`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        worksheet.getCell(`${tablestartchar2}${j+3}`).font = { bold: true, color: { argb: '00000000' } };
+      }
+      tablestart2 = tablestart2 + 1;
+    }
+
+    for (let row = 1; row <= (dataLength2+2); row++) {
+      for (let col = 65; col <= (65+ setlen); col++) {
+          const cell = worksheet.getCell(`${String.fromCharCode(col)}${row}`);
+          cell.border = {
+              top: { style: 'thin', color: { argb: 'FF000000' } },
+              left: { style: 'thin', color: { argb: 'FF000000' } },
+              bottom: { style: 'thin', color: { argb: 'FF000000' } },
+              right: { style: 'thin', color: { argb: 'FF000000' } }
+          };
+      }
+  }
     const excelBuffer = await workbook.xlsx.writeBuffer();
     const excelBlob = new Blob([excelBuffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

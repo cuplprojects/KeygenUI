@@ -23,19 +23,31 @@ const Papers = () => {
         ]);
   
         const updatedPapers = await Promise.all(papersData.map(async (paper) => {
-          const progConfigsResponse = await fetch(`${apiUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-          const progConfigsData = await progConfigsResponse.json();
-          const progConfigID = progConfigsData[0]?.progConfigID || 0;
-  
-          return {
-            ...paper,
-            progConfigID: progConfigID,
-            programmeName: programsData.find(program => program.programmeID === paper.programmeID)?.programmeName || "--",
-            courseName: coursesData.find(course => course.courseID === paper.courseID)?.courseName || "--",
-            subjectName: subjectsData.find(subject => subject.subjectID === paper.subjectID)?.subjectName || "--",
-            createdBy: usersData.find(user => user.userID === paper.createdByID)?.firstName || "--"
-          };
+          if (paper.keyGenerated) {
+            const progConfigsResponse = await fetch(`${apiUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+            const progConfigsData = await progConfigsResponse.json();
+            const progConfigID = progConfigsData[0]?.progConfigID || 0;
+        
+            return {
+              ...paper,
+              progConfigID: progConfigID,
+              programmeName: programsData.find(program => program.programmeID === paper.programmeID)?.programmeName || "--",
+              courseName: coursesData.find(course => course.courseID === paper.courseID)?.courseName || "--",
+              subjectName: subjectsData.find(subject => subject.subjectID === paper.subjectID)?.subjectName || "--",
+              createdBy: usersData.find(user => user.userID === paper.createdByID)?.firstName || "--"
+            };
+          } else {
+            return {
+              ...paper,
+              progConfigID: 0,
+              programmeName: programsData.find(program => program.programmeID === paper.programmeID)?.programmeName || "--",
+              courseName: coursesData.find(course => course.courseID === paper.courseID)?.courseName || "--",
+              subjectName: subjectsData.find(subject => subject.subjectID === paper.subjectID)?.subjectName || "--",
+              createdBy: usersData.find(user => user.userID === paper.createdByID)?.firstName || "--"
+            };
+          }
         }));
+        
   
         setPapers(updatedPapers);
         setLoading(false);

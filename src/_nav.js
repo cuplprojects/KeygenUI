@@ -7,6 +7,10 @@ import {
   cilHamburgerMenu,
   cilNewspaper,
   cilApplications,
+  cilWatch,
+  cilClock,
+  cilPaperPlane,
+  cilBook,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -73,6 +77,12 @@ const _nav = [
     items: [
       {
         component: CNavItem,
+        name: 'Papers',
+        to: '/Masters/papers',
+        icon: <CIcon icon={cilNewspaper} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
         name: 'Groups',
         to: '/Groups',
         icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
@@ -81,13 +91,13 @@ const _nav = [
         component: CNavItem,
         name: 'Sessions',
         to: '/Masters/Sessions',
-        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+        icon: <CIcon icon={cilClock} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
         name: 'Courses',
         to: '/Masters/Courses',
-        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+        icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
       },
       {
         component: CNavItem,
@@ -97,30 +107,23 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'Programs',
-        to: '/Masters/Programs',
-        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
-      },
-      
-      {
-        component: CNavItem,
         name: 'Exam Type',
         to: '/Masters/ExamType',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
       },
-      
+      {
+        component: CNavItem,
+        name: 'Programs',
+        to: '/Masters/Programs',
+        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+      },
       {
         component: CNavItem,
         name: 'Jumble Configrations',
         to: '/Masters/JumblingConfig',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
       },
-      {
-        component: CNavItem,
-        name: 'Papers',
-        to: '/Masters/papers',
-        icon: <CIcon icon={cilNewspaper} customClassName="nav-icon" />,
-      },
+     
       
     ],
   },

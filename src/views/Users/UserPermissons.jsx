@@ -35,7 +35,6 @@ const UserPermissions = () => {
           can_Update: false,
           can_Delete: false,
         })));
-        console.log(modulePermissions)
       })
       .catch(error => console.error(error));
   }, []);
@@ -73,12 +72,8 @@ const UserPermissions = () => {
       can_Delete,
     }));
 
-    console.log('Adding permissions for user:', decryptid);
-    console.log('Permissions to be added:', permissionsArray);
-
     axios.post(permissionApi,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }, permissionsArray)
       .then(response => {
-        console.log('Permissions added successfully:', response.data);
         setSuccess(true);
         setDupliError(false);
         setSuccessMessage('Permissions added successfully!');

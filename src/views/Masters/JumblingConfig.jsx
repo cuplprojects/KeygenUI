@@ -39,16 +39,26 @@ const JumblingConfig = () => {
 
   const fetchConfigurations = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/api/PaperConfig`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-      setConfigurations(response.data);
-      setFilteredConfigurations(response.data);
+      const response = await axios.get(`${baseUrl}/api/ProgConfigs`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+      const configs = response.data;
+
+      // Fetch steps for each configuration
+      const configsWithSteps = await Promise.all(
+        configs.map(async (config) => {
+          const stepsResponse = await axios.get(`${baseUrl}/api/ProgConfigs/${config.progID}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+          return { ...config, steps: stepsResponse.data.steps };
+        })
+      );
+
+      setConfigurations(configsWithSteps);
+      setFilteredConfigurations(configsWithSteps);
     } catch (error) {
       console.error('Error fetching configurations:', error);
     }
   };
 
   const [formData, setFormData] = useState({
-    programID: '', // Changed from null to empty string
+    progID: '',
     sets: 0,
     setOrder: '',
     masterName: '',
@@ -63,17 +73,6 @@ const JumblingConfig = () => {
       ...formData,
       [field]: value
     });
-    filterConfigurations(field, value);
-  };
-
-  const filterConfigurations = () => {
-    let filtered = configurations;
-    if (formData.programID) {
-      filtered = configurations.filter(config =>
-        config.programID === parseInt(formData.programID)
-      );
-    }
-    setFilteredConfigurations(filtered);
   };
 
   const handleSubmit = async (e) => {
@@ -86,9 +85,8 @@ const JumblingConfig = () => {
         throw new Error('Failed to submit form');
       }
 
-      // Reset form data if submission was successful
       setFormData({
-        programID: '',
+        progID: '',
         sets: 0,
         setOrder: '',
         masterName: '',
@@ -109,7 +107,7 @@ const JumblingConfig = () => {
     for (let i = 1; i <= formData.numberofJumblingSteps; i++) {
       const fieldName = `step${i}`;
       fields.push(
-        <Col key={i}>
+        <Col key={fieldName}>
           <Form.Group controlId={fieldName}>
             <Form.Label>{`Step ${i}`}</Form.Label>
             <Form.Control
@@ -152,16 +150,20 @@ const JumblingConfig = () => {
               ) : (
                 <>
                   <Row className='row-cols-1 row-cols-lg-2 '>
-                    {currentConfigurations.map((config) => (
-                      <Col key={config.id} >
+                    {currentConfigurations.map((config, index) => (
+                      <Col key={index}>
                         <Card className='mt-2'>
                           <Card.Body>
-                            <strong>Master Name:</strong> {config.masterName} <br />
-                            <strong>Program Name:</strong> {programs.find((program) => program.programmeID === config.programID)?.programName} <br />
+                            <strong>Program Name:</strong> {programs.find((program) => program.programmeID === config.progID)?.programmeName} <br />
                             <strong>Number of Questions:</strong> {config.numberofQuestions} <br />
                             <strong>Booklet Size:</strong> {config.bookletSize} <br />
                             <strong>Number of Jumbling Steps:</strong> {config.numberofJumblingSteps} <br />
-                            {/* <strong>Steps:</strong> {config.setofSteps.join(', ')} <br /> */}
+                            <strong>Steps:</strong>
+                            <ul>
+                              {config.steps.map((step, idx) => (
+                                <li key={idx}>{`Step ${idx + 1}: ${step}`}</li>
+                              ))}
+                            </ul>
                           </Card.Body>
                         </Card>
                       </Col>
@@ -196,7 +198,7 @@ const JumblingConfig = () => {
                       <Form.Control as="select" value={formData.programID} onChange={(e) => handleInputChange('programID', e.target.value)} required>
                         <option value="">Select a program</option>
                         {programs.map((program) => (
-                          <option key={program.programmeID} value={program.programmeID}>{program.programName}</option>
+                          <option key={program.programmeID} value={program.programmeID}>{program.programmeName}</option>
                         ))}
                       </Form.Control>
                     </Form.Group>

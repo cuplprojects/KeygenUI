@@ -23,7 +23,6 @@ const Papers = () => {
           fetch(`${apiUrl}/api/Subjects`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json()),
           fetch(`${apiUrl}/api/Users/GetUsers`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.json())
         ]);
-        console.log(usersData);
 
         const updatedPapers = papersData.map(paper => ({
           ...paper,

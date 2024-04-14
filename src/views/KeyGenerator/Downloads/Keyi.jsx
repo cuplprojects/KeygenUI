@@ -8,7 +8,6 @@ const style = StyleSheet.create({
         fontSize: 9.4,
         boxSizing: 'border-box',
         textAlign: 'center'
-        
     },
     section: {
         margin: 10,
@@ -66,7 +65,7 @@ const style = StyleSheet.create({
     },
 });
 
-const KeyPdf = ({ data=[], group='', catchno='' }) => {
+const Keyi = ({ data = [], group = '', catchno = '', sn = '' }) => {
     if (!data) {
         return null; // If data is null, return null to prevent rendering
     }
@@ -92,21 +91,18 @@ const KeyPdf = ({ data=[], group='', catchno='' }) => {
                         <View key={setID} style={style.settable}>
                             <Text style={style.settitle}>Set {setID}</Text>
                             <View style={style.tableHeader}>
-                                <Text style={style.columnHeader}>Page Number</Text>
-                                <Text style={style.columnHeader}>Question Number</Text>
+                                <Text style={style.columnHeader}>Sn</Text>
                                 <Text style={style.columnHeader}>Answer</Text>
                             </View>
                             {setData.map((item, index) => (
                                 <View key={index} style={style.tableRow}>
-                                    <Text style={style.column}>{item.pageNumber}</Text>
-                                    <Text style={style.column}>{item.questionNumber}</Text>
+                                    <Text style={style.column}>{index + 1}</Text>
                                     <Text style={style.column}>{item.answer}</Text>
                                 </View>
                             ))}
                             {/* Add empty rows to match the max number of questions */}
                             {Array.from({ length: maxQuestions - setData.length }).map((_, index) => (
                                 <View key={`empty-${index}`} style={style.tableRow}>
-                                    <Text style={style.column}>&nbsp;</Text>
                                     <Text style={style.column}>&nbsp;</Text>
                                     <Text style={style.column}>&nbsp;</Text>
                                 </View>
@@ -120,17 +116,18 @@ const KeyPdf = ({ data=[], group='', catchno='' }) => {
     );
 };
 
-KeyPdf.propTypes = {
+Keyi.propTypes = {
     data: PropTypes.arrayOf(
         PropTypes.shape({
-          setID: PropTypes.string.isRequired,
-          pageNumber: PropTypes.number.isRequired,
-          questionNumber: PropTypes.number.isRequired,
-          answer: PropTypes.string.isRequired
+            setID: PropTypes.string.isRequired,
+            pageNumber: PropTypes.number.isRequired,
+            questionNumber: PropTypes.number.isRequired,
+            answer: PropTypes.string.isRequired
         })
-      ),
-    group: PropTypes.string, 
-    catchno: PropTypes.string, 
+    ),
+    group: PropTypes.string,
+    catchno: PropTypes.string,
+    sn: PropTypes.string,
 };
 
-export default KeyPdf;
+export default Keyi;

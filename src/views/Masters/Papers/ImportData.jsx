@@ -167,7 +167,6 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
       // Add the 'createdByID' field
       const subject = subjects.find((subject) => subject.subjectName?.replace(/[.\s-]/g, '').toLowerCase() === row.subjectName?.replace(/[.\s-]/g, '').toLowerCase());
       const course = courses.find((course) => course.courseName?.replace(/[.\s-]/g, '').toLowerCase() === row.courseName?.replace(/[.\s-]/g, '').toLowerCase());
-      console.log(typeof(newRow.catchNumber));
       return {
         ...newRow,
         createdByID: keygenUser?.userID,
@@ -180,7 +179,6 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
     });
 
     const jsonData = JSON.stringify(formattedData);
-    console.log(jsonData);
 
     try {
       const addResponse = await axios.post(`${baseUrl}/api/Papers`, jsonData, {
@@ -189,7 +187,6 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
           'Content-Type': 'application/json'
         }
       });
-      console.log('Response:', addResponse.data);
       // Add any logic to handle the response here
     } catch (error) {
       console.error('Error:', error);

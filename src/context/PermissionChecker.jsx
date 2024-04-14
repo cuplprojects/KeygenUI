@@ -21,7 +21,7 @@ const PermissionChecker = ({ children }) => {
         });
         setUserPermissions(response.data);
         setLoading(false);
-        // console.log(response.data);
+  
       } catch (error) {
         console.error('Error fetching permissions:', error);
         setLoading(false);

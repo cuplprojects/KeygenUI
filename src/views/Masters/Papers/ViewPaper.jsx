@@ -273,11 +273,8 @@ const ViewPaper = () => {
   const [subjects, setSubjects] = useState([]);
   const [formDisabled, setFormDisabled] = useState(true);
   const [buttonText, setButtonText] = useState('Update');
-<<<<<<< HEAD
-=======
   const [gkbuttonText, setGkButtonText] = useState('');
   const navigate = useNavigate();
->>>>>>> ba1a06862bad980b17445fa5572e34fba17c7fd4
 
   const handleChange = (name, value) => {
     setPaper({
@@ -291,7 +288,6 @@ const ViewPaper = () => {
       headers: { Authorization: `Bearer ${keygenUser?.token}` }
     })
       .then(response => {
-        console.log('Paper updated successfully:', response.data);
         setFormDisabled(true);
         setButtonText('Update');
       })
@@ -305,11 +301,8 @@ const ViewPaper = () => {
     fetch(`${baseUrl}/api/Papers/${decrypt(paperID)}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
-        console.log(data);
         setPaper(data);
         setLoading(false);
-        console.log(data.masterUploaded)
-        console.log(data.keyGenerated)
         if(!data.masterUploaded){
           setGkButtonText("Upload Master");
         }

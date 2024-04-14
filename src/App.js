@@ -18,18 +18,6 @@ const ForgotPassword = React.lazy(() => import('./views/pages/ForgotPassword/For
 const ChangePassword = React.lazy(() => import('./views/pages/ChangePassword/ChangePassword'));
 // const ImageUpload = React.lazy(() => import('./components/ImageUpload'));
 
-
-const disableConsole = () => {
-  console.log = () => {};
-  console.warn = () => {};
-  console.error = () => {};
-  console.info = () => {};
-  console.debug = () => {};
-};
-
-
-
-
 const App = () => {
   // Use the 'useColorModes' hook to manage color modes
   const { isColorModeSet, setColorMode } = useColorModes('CUPL_KeyGen_Theme');
@@ -56,7 +44,6 @@ const App = () => {
     
     // Set theme from the stored theme in Redux store
     setColorMode(storedTheme);
-    disableConsole();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

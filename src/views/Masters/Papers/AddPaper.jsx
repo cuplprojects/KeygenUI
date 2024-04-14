@@ -45,10 +45,9 @@ const AddPaper = () => {
     }
     e.preventDefault();
     setLoading(true);
-    console.log(formData);
     // Add new paper
     try {
-      const addResponse = await axios.post(`${baseUrl}/api/Papers`, formData, {
+      const addResponse = await axios.post(`${baseUrl}/api/Papers`, [formData], {
         headers: {
           Authorization: `Bearer ${keygenUser?.token}`,
           'Content-Type': 'application/json'

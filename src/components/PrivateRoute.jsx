@@ -22,7 +22,6 @@ const PrivateRoute = ({ element }) => {
       const currentTime = Math.floor(Date.now() / 1000);
       if (decodedToken.exp < currentTime) {
         // Token has expired, log the user out
-        console.log("Session Expired")
         logout();
         return <Navigate to="/login" />;
       }

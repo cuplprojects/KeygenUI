@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link} from 'react-router-dom';
 import { cilLockLocked } from '@coreui/icons';
 import {Col, Row, Form, InputGroup, Button, Alert } from 'react-bootstrap';
 import axios from 'axios';
@@ -10,7 +10,6 @@ import PageLayout from '../PageLayout/PageLayout';
 const ChangePasswordApi = process.env.REACT_APP_API_CHANGE_PASSWORD;
 
 const ChangePassword = () => {
-  const navigate = useNavigate();
   const { logout, keygenUser } = useUser();
 
   const [passwords, setPasswords] = useState({

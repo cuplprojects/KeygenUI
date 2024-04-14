@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import $ from 'jquery';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
+import { Dropdown, DropdownButton } from 'react-bootstrap';
 
 const PaperTable = ({ papers }) => {
   const { encrypt } = useSecurity();
@@ -15,7 +16,7 @@ const PaperTable = ({ papers }) => {
   }, []);
 
   const handleRowClick = (paperID) => {
-    navigate(`/Masters/papers/ViewPaper/${encrypt(paperID)}`);
+    // navigate(`/Masters/papers/ViewPaper/${encrypt(paperID)}`);
   };
 
   const formatDate = (dateString) => {
@@ -36,37 +37,59 @@ const PaperTable = ({ papers }) => {
     const seconds = date.getSeconds();
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
-console.log(papers)
+
+  const Generatekey = (programmeID, programme, PaperID, catchNumber) => {
+    const paperData = { programmeID, programme, PaperID, catchNumber };
+    localStorage.setItem('paperdata', JSON.stringify(paperData));
+    navigate('/KeyGenerator/Newkey');
+  }
+
   return (
     <div className="table-responsive">
       <table className="table table-striped table-bordered table-hover" ref={tableRef}>
         <thead>
           <tr>
+            <th>SN</th>
             <th>Program Name</th>
             <th>Catch Number</th>
             <th>Paper Name</th>
             <th>Subject Name</th>
             <th>Exam Date</th>
             <th>Booklet Size</th>
-            <th>Created At time</th>
             <th>Created By</th>
-            <th>Master Uploaded</th>
-            <th>Key Generated</th>
+            {/* <th>Master Uploaded</th> */}
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          {papers.map((paper) => (
+          {papers.map((paper, index) => (
             <tr className="c-pointer" key={paper.paperID} onClick={() => handleRowClick(paper.paperID)}>
+              <td>{index + 1}</td>
               <td>{paper.programmeName}</td>
               <td>{paper.catchNumber}</td>
               <td>{paper.paperName}</td>
               <td>{paper.subjectName}</td>
               <td>{formatDate(paper.examDate)}</td>
               <td>{paper.bookletSize}</td>
-              <td>{formatDateTime(paper.createdAt)}</td>
               <td>{paper.createdBy}</td>
-              <td>{paper.masterUploaded ? 'Yes' : 'No'}</td>
-              <td>{paper.keyGenerated ? 'Yes' : 'No'}</td>
+              {/* <td>{paper.masterUploaded ? 'Yes' : 'No'}</td> */}
+              <td>
+                <div>
+                  <DropdownButton id="dropdown-basic-button" title="Action" className='btn btn-sm'>
+                    {paper.keyGenerated ?
+                      <Dropdown.Item onClick={() => navigate("/KeyGenerator/Newkey")}>Download Key</Dropdown.Item>
+                      : <>
+                        {paper.masterUploaded ?
+                          <Dropdown.Item onClick={() => Generatekey(paper.programmeID, paper.programmeName, paper.paperID, paper.catchNumber)}>Generate Key</Dropdown.Item>
+                          :
+                          <Dropdown.Item onClick={() => navigate("/action-2")}>Upload Master</Dropdown.Item>
+                        }
+                      </>
+                    }
+                    <Dropdown.Item onClick={() => navigate(`/Masters/papers/ViewPaper/${encrypt(paper.paperID)}`)}>Update Paper</Dropdown.Item>
+                  </DropdownButton>
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>

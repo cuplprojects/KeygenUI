@@ -27,7 +27,7 @@ const UpdateUser = () => {
       })
       .catch((err) => setApiError(err.message || "An error occurred"))
       .finally(() => setLoading(false));
-  }, [decryptid]);
+  }, [decryptid, keygenUser]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

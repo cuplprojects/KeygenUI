@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Container, Row, Col } from 'react-bootstrap';
 import Select from 'react-select';
 import { useUser } from '../../../context/UserContext';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-import AddProgramModal from './AddProgramModal';
-import AddSubjectModal from './AddSubjectModal';
 import axios from 'axios';
 import ImportData from './ImportData';
 const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -162,7 +158,7 @@ const AddPaper = () => {
             <>
               {/* Show field only when bulk import is not */}
               {/* other data */}
-              <Row className='row-cols-1 row-cols-sm-2 row-cols-md-3'>
+              <Row className='row-cols-1 row-cols-sm-2 row-cols-md-3 mb-3'>
                 {/* catch no */}
                 <Col>
                   <Form.Group controlId='catchNumber'>
@@ -220,26 +216,24 @@ const AddPaper = () => {
                 {/* paper name  */}
                 <Col>
                   <Form.Group controlId='paperName'>
-                    <Form.Label>Paper Name<span className='text-danger'>*</span></Form.Label>
+                    <Form.Label>Paper Name</Form.Label>
                     <Form.Control
                       type='text'
                       name='paperName'
                       value={formData.paperName}
                       onChange={(e) => handleChange('paperName', e.target.value)}
-                      required
                     />
                   </Form.Group>
                 </Col>
                 {/* paper number  */}
                 <Col>
                   <Form.Group controlId='paperNumber'>
-                    <Form.Label>Paper Number<span className='text-danger'>*</span></Form.Label>
+                    <Form.Label>Paper Number</Form.Label>
                     <Form.Control
                       type='text'
                       name='paperNumber'
                       value={formData.paperNumber}
                       onChange={(e) => handleChange('paperNumber', e.target.value)}
-                      required
                     />
                   </Form.Group>
                 </Col>
@@ -261,7 +255,6 @@ const AddPaper = () => {
 
               {error && <Alert variant='danger'>{error}</Alert>}
               {success && <Alert variant='success'>{success}</Alert>}
-              <br />
 
               <Button variant='primary' type='submit' disabled={loading}>
                 {loading ? 'Adding...' : 'Add Paper'}

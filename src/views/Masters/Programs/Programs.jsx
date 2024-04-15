@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Table, Card, Form, Button } from 'react-bootstrap';
+import { Table, Card, Form, Button, Spinner } from 'react-bootstrap';
 import { useUser } from './../../../context/UserContext';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -82,7 +82,7 @@ const Programs = () => {
 
   const handleAddProgram = async () => {
     try {
-      
+
       const response = await axios.post(
         `${baseUrl}/api/Programmes`,
         {
@@ -119,22 +119,27 @@ const Programs = () => {
               <Card.Title className="text-center">Programs</Card.Title>
             </Card.Header>
             <Card.Body>
-              <Table striped bordered hover>
-                <thead>
-                  <tr>
-                    <th>Program ID</th>
-                    <th>Program Name</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {programs.map((program) => (
-                    <tr key={program.programID}>
-                      <td>{program.programmeID}</td>
-                      <td>{program.programmeName}</td>
+              {loading ? (
+                    <Spinner animation="border" role="status"></Spinner>
+              ) : (
+                <Table striped bordered hover>
+                  <thead>
+                    <tr>
+                      <th>Program ID</th>
+                      <th>Program Name</th>
                     </tr>
-                  ))}
-                </tbody>
-              </Table>
+                  </thead>
+                  <tbody>
+                    {programs.map((program) => (
+                      <tr key={program.programID}>
+                        <td>{program.programmeID}</td>
+                        <td>{program.programmeName}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+
             </Card.Body>
           </Card>
         </div>
@@ -153,7 +158,7 @@ const Programs = () => {
                     onChange={(e) => setProgrammeName(e.target.value)}
                   />
                 </Form.Group> */}
-                <Form.Group controlId="formGroup">
+                <Form.Group className="mt-2" controlId="formGroup">
                   <Form.Select
                     value={selectedGroup}
                     onChange={(e) => setSelectedGroup(e.target.value)}
@@ -166,7 +171,7 @@ const Programs = () => {
                     ))}
                   </Form.Select>
                 </Form.Group>
-                <Form.Group controlId="formSession">
+                <Form.Group className="mt-2" controlId="formSession">
                   <Form.Select
                     value={selectedSession}
                     onChange={(e) => setSelectedSession(e.target.value)}
@@ -179,7 +184,7 @@ const Programs = () => {
                     ))}
                   </Form.Select>
                 </Form.Group>
-                <Form.Group controlId="formType">
+                <Form.Group className="mt-2" controlId="formType">
                   <Form.Select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}

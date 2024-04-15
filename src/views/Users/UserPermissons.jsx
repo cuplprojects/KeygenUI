@@ -37,7 +37,7 @@ const UserPermissions = () => {
         })));
       })
       .catch(error => console.error(error));
-  }, []);
+  }, [keygenUser]);
 
 
   const handleInputChange = (moduleID, permissionType, checked) => {
@@ -72,7 +72,7 @@ const UserPermissions = () => {
       can_Delete,
     }));
 
-    axios.post(permissionApi,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }, permissionsArray)
+    axios.post(permissionApi, permissionsArray,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => {
         setSuccess(true);
         setDupliError(false);

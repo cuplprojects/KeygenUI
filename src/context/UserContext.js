@@ -1,7 +1,8 @@
-// UserContext.jsx
 import React, { createContext, useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useSecurity } from './Security';
+import axios from 'axios';
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const UserContext = createContext();
 
@@ -23,7 +24,6 @@ export const UserProvider = ({ children }) => {
     }
     return null;
   };
-
 
   const [keygenUser, setKeygenUser] = useState(getKeygenUserFromSessionStorage());
 
@@ -47,8 +47,27 @@ export const UserProvider = ({ children }) => {
     return !!keygenUser;
   };
 
+  const expandSession = () => {
+    axios.post(`${baseUrl}/api/Login/Extend`, null, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${keygenUser?.token}`
+        }
+    })
+    .then((response) => {
+        // Encrypt the userID before storing it in sessionStorage
+        const encryptedUserData = { ...response.data, userID: encrypt(response.data.userID) };
+        sessionStorage.setItem('keygenUser', JSON.stringify(encryptedUserData));
+        // Update state with new data
+        setKeygenUser(encryptedUserData);
+    })
+    .catch((error) => {
+        console.error('Error expanding session:', error);
+    });
+  };
+
   return (
-    <UserContext.Provider value={{ keygenUser, login, logout, isLoggedIn }}>
+    <UserContext.Provider value={{ keygenUser, login, logout, isLoggedIn, expandSession }}>
       {children}
     </UserContext.Provider>
   );

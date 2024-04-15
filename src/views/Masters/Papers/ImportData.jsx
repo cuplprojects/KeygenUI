@@ -118,9 +118,11 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
 
         // Check if headers match and fill data accordingly
         if (headers.includes('Catch No.')) {
-          mappedRow.catchNumber = String(row[headers.indexOf('Catch No.')]);
-        }
-        
+          const catchNumberIndex = headers.indexOf('Catch No.');
+          const catchNumberValue = row[catchNumberIndex];
+          mappedRow.catchNumber = catchNumberValue ? String(catchNumberValue) : '';
+        }        
+
         if (headers.includes('Course')) {
           mappedRow.courseName = row[headers.indexOf('Course')];
         }
@@ -143,7 +145,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
             mappedRow.examDate = null; // or handle invalid date
           }
         }
-        
+
 
         mappedData.push(mappedRow);
       }
@@ -156,14 +158,14 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
 
   const handleSubmitdata = async (e) => {
     e.preventDefault();
-    if (!programmeID || !bookletSize || data.some(row => !row.catchNumber) || data.some(row => !row.paperName)) {
+    if (!programmeID || !bookletSize || data.some(row => !row.catchNumber) || data.some(row => !row.courseName) || data.some(row => !row.examType)) {
       alert('Please fill in all required fields.');
       return;
     }
     // Convert data to JSON format for submission
     const formattedData = data.map(row => {
       // Destructure the row to remove the 'SN' field
-      const { SN,subjectName,courseName, ...newRow } = row;
+      const { SN, subjectName, courseName, ...newRow } = row;
       // Add the 'createdByID' field
       const subject = subjects.find((subject) => subject.subjectName?.replace(/[.\s-]/g, '').toLowerCase() === row.subjectName?.replace(/[.\s-]/g, '').toLowerCase());
       const course = courses.find((course) => course.courseName?.replace(/[.\s-]/g, '').toLowerCase() === row.courseName?.replace(/[.\s-]/g, '').toLowerCase());
@@ -174,7 +176,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
         bookletSize: bookletSize,
         subjectID: subject?.subjectID || 0,
         courseID: course?.courseID || 0,
-       
+
       };
     });
 
@@ -226,7 +228,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
               {data.map((row, rowIndex) => (
                 <tr key={rowIndex}>
                   {Object.entries(row).map(([key, value], cellIndex) => (
-                    <td key={cellIndex} style={{ backgroundColor: (key === 'catchNumber' || key === 'paperName') && !value ? '#FFB9AA' : 'inherit' }}>
+                    <td key={cellIndex} style={{ backgroundColor: (key === 'catchNumber') && !value ? '#FFB9AA' : 'inherit' }}>
                       {key === 'subjectName' && (
                         <>
                           <Form.Control
@@ -248,26 +250,26 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
                         </>
                       )}
 
-{key === 'courseName' && (
-  <>
-    <Form.Control
-      type="text"
-      value={value}
-      onChange={(e) => handleCellChange(e, rowIndex, key)}
-      style={{ backgroundColor: !value ? '#FFB9AA' : 'inherit' }}
-    />
-    {!matchCourse(value) && (
-      <Button
-        variant="primary"
-        size="sm"
-        onClick={() => handleAddCourse(value)}
-        disabled={!value}
-      >
-        Add
-      </Button>
-    )}
-  </>
-)}
+                      {key === 'courseName' && (
+                        <>
+                          <Form.Control
+                            type="text"
+                            value={value}
+                            onChange={(e) => handleCellChange(e, rowIndex, key)}
+                            style={{ backgroundColor: !value ? '#FFB9AA' : 'inherit' }}
+                          />
+                          {!matchCourse(value) && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => handleAddCourse(value)}
+                              disabled={!value}
+                            >
+                              Add
+                            </Button>
+                          )}
+                        </>
+                      )}
 
                       {key !== 'subjectName' && key !== 'courseName' && (
                         <Form.Control disabled={key === 'SN'} type="text" defaultValue={value} onChange={(e) => handleCellChange(e, rowIndex, key)} />

@@ -75,13 +75,14 @@ const JumblingConfig = () => {
     });
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Submitting form with data:', formData);
 
     try {
       const response = await axios.post(`${baseUrl}/api/ProgConfigs`, formData, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-      if (response.status !== 201) {
+      if (response.status !== 200) {
         throw new Error('Failed to submit form');
       }
 
@@ -195,12 +196,18 @@ const JumblingConfig = () => {
                   <Col>
                     <Form.Group controlId="programID">
                       <Form.Label>Program</Form.Label>
-                      <Form.Control as="select" value={formData.progID} onChange={(e) => handleInputChange('programID', e.target.value)} required>
+                      <Form.Control
+                        as="select"
+                        value={formData.progID}
+                        onChange={(e) => handleInputChange('progID', e.target.value)}
+                        required
+                      >
                         <option value="">Select a program</option>
                         {programs.map((program) => (
                           <option key={program.programmeID} value={program.programmeID}>{program.programmeName}</option>
                         ))}
                       </Form.Control>
+
                     </Form.Group>
                   </Col>
                   <Col>
@@ -227,12 +234,7 @@ const JumblingConfig = () => {
                       <Form.Control type="text" value={formData.setOrder} onChange={(e) => handleInputChange('setOrder', e.target.value)} required />
                     </Form.Group>
                   </Col>
-                  <Col>
-                    <Form.Group controlId="masterName">
-                      <Form.Label>Master Name</Form.Label>
-                      <Form.Control type="text" value={formData.masterName} onChange={(e) => handleInputChange('masterName', e.target.value)} required />
-                    </Form.Group>
-                  </Col>
+
                   <Col>
                     <Form.Group controlId="numberofJumblingSteps">
                       <Form.Label>Number of Jumbling Steps</Form.Label>

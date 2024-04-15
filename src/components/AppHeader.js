@@ -29,6 +29,8 @@ import { Button} from 'react-bootstrap';
 
 import { AppBreadcrumb } from './index';
 import { AppHeaderDropdown } from './header/index';
+import axios from 'axios';
+const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const AppHeader = () => {
   const headerRef = useRef();
@@ -37,7 +39,7 @@ const AppHeader = () => {
 
   const dispatch = useDispatch();
   const sidebarShow = useSelector((state) => state.sidebarShow);
-  const { keygenUser, logout } = useUser(); // Assuming you have a useUser hook to access the user context
+  const { keygenUser, logout, expandSession } = useUser(); // Assuming you have a useUser hook to access the user context
 
   // State to store the remaining time until session expiration
   const [sessionExpirationCountdown, setSessionExpirationCountdown] = useState(0);
@@ -103,7 +105,6 @@ const AppHeader = () => {
     }
   }
 
-
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -142,7 +143,7 @@ const AppHeader = () => {
                 {sessionExpirationCountdown > 0 && sessionExpirationCountdown <= 60 && (
                   <div className='ms-5  text-danger'>
                     Your session will expire in {formatTime(sessionExpirationCountdown)} Hour.
-                    <Button className='btn-sm mx-3'>Expand Session</Button>
+                    {/* <Button className='btn-sm mx-3' onClick={expandSession}>Expand Session</Button> */}
                   </div>
                 )}
               </CNavLink>

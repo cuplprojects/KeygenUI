@@ -364,7 +364,7 @@ const ViewPaper = () => {
     {
       navigate("/KeyGenerator/Newkey")
     }
-    else if(gkbuttonTextinput == "Generate Key")
+    else if(gkbuttonTextinput === "Generate Key")
     {
       
       // const formData = {

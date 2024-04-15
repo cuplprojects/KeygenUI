@@ -1,4 +1,3 @@
-// FormDataComponent.jsx
 import React from 'react';
 import { Form } from 'react-bootstrap';
 import PropTypes from 'prop-types';
@@ -32,7 +31,7 @@ const FormDataComponent = ({ formData, handleInputChange, disabled }) => {
                                 <Form.Control
                                     size="sm"
                                     type="text"
-                                    value={data.qNumber}
+                                    value={data.qNumber || index + 1} // Auto-fill with index + 1 if qNumber is not provided
                                     onChange={(e) => handleInputChange(index, 'qNumber', e.target.value)}
                                     disabled={disabled} // Disable the input field if form is submitted and not in editing mode
                                 />

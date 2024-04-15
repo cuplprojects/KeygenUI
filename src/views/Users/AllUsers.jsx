@@ -32,7 +32,7 @@ const AllUsers = () => {
         console.error("Error fetching user data:", error);
         setLoading(false);
       });
-  }, []);
+  }, [keygenUser]);
 
   return (
     <PermissionChecker>

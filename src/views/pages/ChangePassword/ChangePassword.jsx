@@ -7,6 +7,7 @@ import CIcon from '@coreui/icons-react';
 import { useUser } from './../../../context/UserContext';
 import PageLayout from '../PageLayout/PageLayout';
 
+
 const ChangePasswordApi = process.env.REACT_APP_API_CHANGE_PASSWORD;
 
 const ChangePassword = () => {
@@ -69,6 +70,10 @@ const ChangePassword = () => {
       }
     });
 
+    if (oldPassword.length < 0) {
+      newErrors.newPassword = 'Old Password is Required';
+    }
+
     if (newPassword.length < 8) {
       newErrors.newPassword = 'New Password must be at least 8 characters long';
     }
@@ -94,7 +99,7 @@ const ChangePassword = () => {
       const response = await axios.put(`${ChangePasswordApi}/${userId}`, {
         oldPassword: passwords.oldPassword,
         newPassword: passwords.newPassword,
-      });
+      }, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
 
       if (response.status === 200) {
         // Password change successful

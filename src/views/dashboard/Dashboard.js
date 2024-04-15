@@ -4,11 +4,11 @@ import PropTypes from 'prop-types';
 import { Card, Container } from 'react-bootstrap';
 import { CCard, CCardBody, CCol, CCardHeader, CRow } from '@coreui/react';
 import {
-  CChartBar,
   CChartDoughnut,
 } from '@coreui/react-chartjs';
 import DashboardCard from './DashboardCard';
 import DashboardCardData from './DashboardCardData';
+import ActivityTable from './ActivityTable';
 
 const Dashboard = () => {
   const { cardData, papersStatusCount } = DashboardCardData();
@@ -33,21 +33,9 @@ const Dashboard = () => {
         <CRow>
           <CCol xs={8}>
             <CCard className="mb-4">
-              <CCardHeader>Bar Chart</CCardHeader>
+              <CCardHeader>My Activities</CCardHeader>
               <CCardBody>
-                <CChartBar
-                  data={{
-                    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-                    datasets: [
-                      {
-                        label: 'GitHub Commits',
-                        backgroundColor: '#f87979',
-                        data: [40, 20, 12, 39, 10, 40, 39, 80, 40],
-                      },
-                    ],
-                  }}
-                  labels="months"
-                />
+                <ActivityTable />
               </CCardBody>
             </CCard>
           </CCol>

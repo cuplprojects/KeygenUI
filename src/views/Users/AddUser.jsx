@@ -35,7 +35,7 @@ const AddUser = () => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post(apiUrl,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }, formData);
+      const res = await axios.post(apiUrl, formData,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       setShowSuccessAlert(true);
       setShowErrorAlert(false);
       setErrorText("");

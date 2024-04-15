@@ -97,16 +97,16 @@ const DownloadKeys = () => {
               <ExportToExcel data={apiResponse} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
 
             </Dropdown.Item>
-            {/* <Dropdown.Item>
-              <PDFDownloadLink document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
+
+              <PDFDownloadLink className='ms-3' document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
                 {({ loading }) => (loading ? <Button>Loading...</Button> : <Button><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
               </PDFDownloadLink>
-            </Dropdown.Item> */}
-            <Dropdown.Item>
+
+            {/* <Dropdown.Item>
               <PDFDownloadLink document={<Keyi data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
                 {({ loading }) => (loading ? <Button>Loading...</Button> : <Button><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
               </PDFDownloadLink>
-            </Dropdown.Item>
+            </Dropdown.Item> */}
           </DropdownButton>
         </div>
       </div>

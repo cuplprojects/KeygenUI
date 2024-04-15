@@ -43,26 +43,40 @@ const Dashboard = () => {
             <CCard className="mb-4">
               <CCardHeader>Paper Status</CCardHeader>
               <CCardBody>
-                <CChartDoughnut
-                  data={{
-                    labels: ['Key Generated', 'Master Uploaded', 'Pending'],
-                    datasets: [
-                      {
-                        backgroundColor: ['#FFC107', '#4CAF50', '#03A9F4'],
-                        data: [
-                          statusCount.keyGenerated,
-                          statusCount.masterUploaded,
-                          statusCount.pendingkeys,
-                        ],
-                      },
-                    ],
-                  }}
-                />
+                {statusCount.keyGenerated === 0 && statusCount.masterUploaded === 0 && statusCount.pendingkeys === 0 ? (
+                  <CChartDoughnut
+                    data={{
+                      labels: ['No Data'],
+                      datasets: [
+                        {
+                          backgroundColor: ['#CCCCCC'],
+                          data: [100],
+                        },
+                      ],
+                    }}
+                  />
+                ) : (
+                  <CChartDoughnut
+                    data={{
+                      labels: ['Key Generated', 'Master Uploaded', 'Pending'],
+                      datasets: [
+                        {
+                          backgroundColor: ['#FFC107', '#4CAF50', '#03A9F4'],
+                          data: [
+                            statusCount.keyGenerated,
+                            statusCount.masterUploaded,
+                            statusCount.pendingkeys,
+                          ],
+                        },
+                      ],
+                    }}
+                  />
+                )}
               </CCardBody>
             </CCard>
           </CCol>
         </CRow>
-       
+
       </Container>
     </>
   );

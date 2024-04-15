@@ -3,6 +3,8 @@ import { saveAs } from 'file-saver';
 import PropTypes from 'prop-types';
 import ExcelJS from 'exceljs';
 import { Button } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFileExcel, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const ExportToExcel = ({ data = [], group = "", catchno = "", setlen }) => {
   const [loading, setLoading] = useState(false);
@@ -109,9 +111,17 @@ const ExportToExcel = ({ data = [], group = "", catchno = "", setlen }) => {
   };
 
   return (
-    <Button onClick={exportToExcel}>
-      {loading ? 'Loading' : 'Export To Excel'}
-    </Button>
+    <Button onClick={exportToExcel} disabled={loading}>
+    {loading ? (
+         <>
+             <FontAwesomeIcon icon={faSpinner} className="me-2" spin /> Loading...
+         </>
+     ) : (
+         <>
+             <FontAwesomeIcon icon={faFileExcel} className="me-2" /> Export to Excel
+         </>
+     )}
+ </Button>
   );
 };
 ExportToExcel.propTypes = {

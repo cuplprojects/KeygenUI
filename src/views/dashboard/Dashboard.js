@@ -1,21 +1,17 @@
+// Dashboard.js
 import React from 'react';
-import { Card, Container } from 'react-bootstrap';
-import DashboardCard from './DashboardCard';
-import DashboardCardData from './DashboardCardData'; // Import DashboardCardData component
 import PropTypes from 'prop-types';
-import { CCard, CCardBody, CCol, CCardHeader, CRow } from '@coreui/react'
+import { Card, Container } from 'react-bootstrap';
+import { CCard, CCardBody, CCol, CCardHeader, CRow } from '@coreui/react';
 import {
   CChartBar,
   CChartDoughnut,
-  CChartLine,
-  CChartPie,
-  CChartPolarArea,
-  CChartRadar,
-} from '@coreui/react-chartjs'
+} from '@coreui/react-chartjs';
+import DashboardCard from './DashboardCard';
+import DashboardCardData from './DashboardCardData';
 
 const Dashboard = () => {
-  const random = () => Math.round(Math.random() * 100)
-  const { cardData } = DashboardCardData(); // Call DashboardCardData component to get the card data
+  const { cardData, papersStatusCount } = DashboardCardData();
 
   return (
     <>
@@ -57,15 +53,19 @@ const Dashboard = () => {
           </CCol>
           <CCol xs={4}>
             <CCard className="mb-4">
-              <CCardHeader>Doughnut Chart</CCardHeader>
+              <CCardHeader>Paper Status</CCardHeader>
               <CCardBody>
                 <CChartDoughnut
                   data={{
-                    labels: ['VueJs', 'EmberJs', 'ReactJs', 'AngularJs'],
+                    labels: ['Key Generated', 'Master Uploaded', 'Pending'],
                     datasets: [
                       {
-                        backgroundColor: ['#41B883', '#E46651', '#00D8FF', '#DD1B16'],
-                        data: [40, 20, 80, 10],
+                        backgroundColor: ['#FFC107', '#4CAF50', '#03A9F4'],
+                        data: [
+                          papersStatusCount.keyGenerated,
+                          papersStatusCount.masterUploaded,
+                          papersStatusCount.pending,
+                        ],
                       },
                     ],
                   }}
@@ -76,12 +76,11 @@ const Dashboard = () => {
         </CRow>
 
         {/* Activity  */}
-<CRow>
-  <CCol sm={6}>
+        <CRow>
+          <CCol sm={6}>
 
-  </CCol>
-</CRow>
-
+          </CCol>
+        </CRow>
 
       </Container>
     </>
@@ -95,6 +94,5 @@ DashboardCard.propTypes = {
   value: PropTypes.number.isRequired,
   title: PropTypes.string.isRequired,
 };
-
 
 export default Dashboard;

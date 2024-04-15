@@ -138,7 +138,7 @@ const AppHeader = () => {
 
             </CNavItem>
             <CNavItem>
-              <CNavLink className='hovericon' onClick={toggleFullScreen}>
+              <CNavLink className='hovericon' >
                 {sessionExpirationCountdown > 0 && sessionExpirationCountdown <= 60 && (
                   <div className='ms-5  text-danger'>
                     Your session will expire in {formatTime(sessionExpirationCountdown)} Hour.

@@ -34,6 +34,59 @@ const AddPaper = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [duplicateError, setDuplicateError] = useState(false);
+  const [papers, setPapers] = useState([]);
+
+  useEffect(() => {
+    fetchPrograms();
+    fetchSubjects();
+    fetchCourses();
+    fetchPapers();
+  }, []);
+
+  useEffect(() => {
+    const isDuplicate = papers.some(paper => paper.programmeID === formData.programmeID && paper.subjectID === parseInt(formData.subjectID) && paper.catchNumber === formData.catchNumber);
+    setDuplicateError(isDuplicate);
+    setError(isDuplicate ? 'Duplicate catch number. Please use a different catch number.' : null);
+  }, [formData.catchNumber,formData.subjectID]);
+
+
+  const fetchPrograms = () => {
+    fetch(`${baseUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+      .then(response => response.json())
+      .then(data => setPrograms(data))
+      .catch(error => console.error('Error fetching programs:', error));
+  };
+
+  const fetchSubjects = () => {
+    fetch(`${baseUrl}/api/Subjects`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+      .then(response => response.json())
+      .then(data => {
+        setSubjects(data)
+      })
+      .catch(error => console.error('Error fetching subjects:', error));
+  };
+
+  const fetchCourses = () => {
+    fetch(`${baseUrl}/api/Courses`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+      .then(response => response.json())
+      .then(data => setCourses(data))
+      .catch(error => console.error('Error fetching courses:', error));
+  };
+
+  const fetchPapers = () => {
+    fetch(`${baseUrl}/api/Papers`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+      .then(response => response.json())
+      .then(data => setPapers(data))
+      .catch(error => console.error('Error fetching papers:', error));
+  };
+
+  const handleChange = (name, value) => {
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
 
   const handleSubmit = async (e) => {
     if (!formData.catchNumber) {
@@ -74,46 +127,10 @@ const AddPaper = () => {
     }
   };
 
-
-  useEffect(() => {
-    fetchPrograms();
-    fetchSubjects();
-    fetchCourses();
-  }, []);
-
-  const fetchPrograms = () => {
-    fetch(`${baseUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-      .then(response => response.json())
-      .then(data => setPrograms(data))
-      .catch(error => console.error('Error fetching programs:', error));
-  };
-
-  const fetchSubjects = () => {
-    fetch(`${baseUrl}/api/Subjects`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-      .then(response => response.json())
-      .then(data => {
-        setSubjects(data)
-      })
-      .catch(error => console.error('Error fetching subjects:', error));
-  };
-  const fetchCourses = () => {
-    fetch(`${baseUrl}/api/Courses`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-      .then(response => response.json())
-      .then(data => setCourses(data))
-      .catch(error => console.error('Error fetching courses:', error));
-  };
-  const handleChange = (name, value) => {
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
-
   return (
     <Container className="userform border border-3 p-4 my-3 mt-0">
       <div className="d-flex justify-content-between align-items-center">
         <h3>Add Paper</h3>
-
       </div>
 
       <Form onSubmit={handleSubmit}>
@@ -168,8 +185,10 @@ const AddPaper = () => {
                       name='catchNumber'
                       value={formData.catchNumber}
                       onChange={(e) => handleChange('catchNumber', e.target.value)}
+                      isInvalid={duplicateError}
                       required
                     />
+                    <Form.Control.Feedback type='invalid'>{error}</Form.Control.Feedback>
                   </Form.Group>
                 </Col>
                 {/* course  */}
@@ -251,7 +270,6 @@ const AddPaper = () => {
                   </Form.Group>
                 </Col>
               </Row>
-
 
               {error && <Alert variant='danger'>{error}</Alert>}
               {success && <Alert variant='success'>{success}</Alert>}

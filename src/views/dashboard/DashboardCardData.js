@@ -2,76 +2,49 @@
 import { useState, useEffect } from "react";
 import { useUser } from "./../../context/UserContext";
 
-const apiUrl = process.env.REACT_APP_API_USERS;
-const UniUrl = process.env.REACT_APP_API_GROUP;
 const baseUrl = process.env.REACT_APP_BASE_URL;
-const keysUrl = `${baseUrl}/api/Papers`;
+const StatusUrl = `${baseUrl}/api/Papers/StatusCount`;
 
 const DashboardCardData = () => {
   const { keygenUser } = useUser();
   const [loading, setLoading] = useState(true);
-  const [cardData, setCardData] = useState([]);
-  const [papersStatusCount, setPapersStatusCount] = useState({
-    keyGenerated: 0,
-    masterUploaded: 0,
-    pending: 0,
-  });
+  const [cardData, setCardData] = useState([]);  // for card data 
+  const [statusCount, setStatusCount] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [userDataResponse, uniDataResponse, keysResponse] = await Promise.all([
-          fetch(apiUrl, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }),
-          fetch(UniUrl, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }),
-          fetch(keysUrl, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-        ]);
-
-        const userData = await userDataResponse.json();
-        const uniData = await uniDataResponse.json();
-        const keysData = await keysResponse.json();
-
-        const generatedKeys = keysData.filter((key) => key.keyGenerated === true);
-
-        const papersStatus = keysData.reduce((acc, key) => {
-          if (key.keyGenerated) {
-            acc.keyGenerated++;
-          } else if (key.masterUploaded && !key.keyGenerated) {
-            acc.masterUploaded++;
-          } else {
-            acc.pending++;
-          }
-          return acc;
-        }, { keyGenerated: 0, masterUploaded: 0, pending: 0 });
-
-        setPapersStatusCount(papersStatus);
+        const response = await fetch(StatusUrl, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+        const statusCountData = await response.json();
+        setStatusCount(statusCountData);
 
         setCardData([
           {
             color: "",
             iconClass: "fa-user",
             link: "/users",
-            value: userData.length,
+            value: statusCount.userCount,
             title: "Registered user",
           },
           {
             color: "blue",
             iconClass: "fa-university ",
             link: "/Groups",
-            value: uniData.length,
+            value: statusCount.groupCount,
             title: "Registered Groups",
           },
           {
             color: "lightgreen",
             iconClass: "fa-file-circle-check",
             link: "/KeyGenerator",
-            value: generatedKeys.length,
+            value:statusCount.keyGenerated,
             title: "Answer-Keys Generated",
           },
           {
             color: "red",
             iconClass: "fa-note-sticky",
             link: "/Masters/papers",
-            value: keysData.length,
+            value: statusCount.allPapersCount,
             title: "All Papers",
           },
         ]);
@@ -86,7 +59,7 @@ const DashboardCardData = () => {
     fetchData();
   }, [keygenUser]);
 
-  return { cardData, loading, papersStatusCount };
+  return { cardData, loading, statusCount };
 };
 
 export default DashboardCardData;

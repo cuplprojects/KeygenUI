@@ -11,7 +11,7 @@ import DashboardCardData from './DashboardCardData';
 import ActivityTable from './ActivityTable';
 
 const Dashboard = () => {
-  const { cardData, papersStatusCount } = DashboardCardData();
+  const { cardData, statusCount } = DashboardCardData();
 
   return (
     <>
@@ -50,9 +50,9 @@ const Dashboard = () => {
                       {
                         backgroundColor: ['#FFC107', '#4CAF50', '#03A9F4'],
                         data: [
-                          papersStatusCount.keyGenerated,
-                          papersStatusCount.masterUploaded,
-                          papersStatusCount.pending,
+                          statusCount.keyGenerated,
+                          statusCount.masterUploaded,
+                          statusCount.pendingkeys,
                         ],
                       },
                     ],
@@ -62,14 +62,7 @@ const Dashboard = () => {
             </CCard>
           </CCol>
         </CRow>
-
-        {/* Activity  */}
-        <CRow>
-          <CCol sm={6}>
-
-          </CCol>
-        </CRow>
-
+       
       </Container>
     </>
   );

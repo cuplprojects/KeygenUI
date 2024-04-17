@@ -121,7 +121,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
           const catchNumberIndex = headers.indexOf('Catch No.');
           const catchNumberValue = row[catchNumberIndex];
           mappedRow.catchNumber = catchNumberValue ? String(catchNumberValue) : '';
-        }        
+        }
 
         if (headers.includes('Course')) {
           mappedRow.courseName = row[headers.indexOf('Course')];
@@ -145,7 +145,6 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
             mappedRow.examDate = null; // or handle invalid date
           }
         }
-
 
         mappedData.push(mappedRow);
       }
@@ -208,6 +207,17 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
     });
   };
 
+  // Define a mapping from camel case headers to real names
+  const headerMap = {
+    catchNumber: 'Catch No.',
+    courseName: 'Course',
+    examType: 'Exam Type',
+    subjectName: 'Subject',
+    paperName: 'Paper Name',
+    examDate: 'Exam Date & Time',
+    SN: 'SN' // Add this if 'SN' should be displayed as is
+  };
+
   return (
     <div>
       <Form.Group className='mb-3'>
@@ -220,7 +230,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
             <thead>
               <tr>
                 {Object.keys(data[0]).map((header, index) => (
-                  <th key={index}>{header}</th>
+                  <th key={index} className='text-center align-middle'>{headerMap[header]}</th>
                 ))}
               </tr>
             </thead>
@@ -280,7 +290,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
               ))}
             </tbody>
           </Table>
-          <button className='btn btn-primary' onClick={handleSubmitdata}>Submit Data</button>
+          <button className='btn btn-primary' onClick={handleSubmitdata}>Add Papers</button>
         </div>
       )}
     </div>

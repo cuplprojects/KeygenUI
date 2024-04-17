@@ -90,7 +90,7 @@ const PaperTable = ({ papers }) => {
                         {paper.masterUploaded ?
                           <Dropdown.Item onClick={() => Generatekey(paper.programmeID, paper.programmeName, paper.paperID, paper.catchNumber)}>Generate Key</Dropdown.Item>
                           :
-                          <Dropdown.Item onClick={() => navigate("/action-2")}><FontAwesomeIcon icon={faUpload} /> Upload Master</Dropdown.Item>
+                          <Dropdown.Item onClick={() => Generatekey(paper.programmeID, paper.programmeName, paper.paperID, paper.catchNumber)}><FontAwesomeIcon icon={faUpload} /> Upload Master</Dropdown.Item>
                         }
                       </>
                     }

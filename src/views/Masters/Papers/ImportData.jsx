@@ -141,11 +141,10 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
           const examDateTime = new Date(examDateTimeString);
           if (!isNaN(examDateTime.getTime())) {
             mappedRow.examDate = examDateTime.toISOString();
-          } else {
-            mappedRow.examDate = null; // or handle invalid date
           }
+          // Don't map if date is invalid
         }
-
+        
         mappedData.push(mappedRow);
       }
 

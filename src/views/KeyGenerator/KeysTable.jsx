@@ -81,7 +81,7 @@ KeysTable.propTypes = {
   papers: PropTypes.arrayOf(PropTypes.shape({
     paperID: PropTypes.number.isRequired,
     programmeName: PropTypes.string.isRequired,
-    catchNumber: PropTypes.number.isRequired,
+    catchNumber: PropTypes.string.isRequired,
     paperName: PropTypes.string.isRequired,
     subjectName: PropTypes.string.isRequired,
     examDate: PropTypes.string.isRequired,

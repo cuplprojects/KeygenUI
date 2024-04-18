@@ -11,11 +11,19 @@ const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
         const content = event.target.result;
         const rows = content.split('\n').map((row) => row.split(','));
 
+        // const parsedData = rows.slice(1,-1).map((row, index) => ({
+        //   sn: index + 1,
+        //   page: row[0] || '',
+        //   qNumber: row[1] || '',
+        //   key: row[2] || '',
+        // }));
+
+        
         const parsedData = rows.slice(1,-1).map((row, index) => ({
           sn: index + 1,
-          page: row[0] || '',
-          qNumber: row[1] || '',
-          key: row[2] || '',
+          qNumber: row[0] || '',
+          key: row[1] || '',
+          page: row[2] || '',
         }));
 
         setNumberOfQuestions(parsedData.length);

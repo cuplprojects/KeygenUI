@@ -259,13 +259,12 @@ const AddPaper = () => {
                 {/* exam date  */}
                 <Col>
                   <Form.Group controlId='examDate'>
-                    <Form.Label>Exam Date<span className='text-danger'>*</span></Form.Label>
+                    <Form.Label>Exam Date</Form.Label>
                     <Form.Control
                       type='date'
                       name='examDate'
                       value={formData.examDate}
                       onChange={(e) => handleChange('examDate', e.target.value)}
-                      required
                     />
                   </Form.Group>
                 </Col>

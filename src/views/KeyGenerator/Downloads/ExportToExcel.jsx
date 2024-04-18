@@ -6,9 +6,8 @@ import { Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileExcel, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
-const ExportToExcel = ({ data = [], group = "", catchno = "", setlen }) => {
+const ExportToExcel = ({ data = [], paperData={}, group = "", catchno = "", setlen= 0 }) => {
   const [loading, setLoading] = useState(false);
-
   const exportToExcel = async () => {
     setLoading(true);
 
@@ -24,7 +23,6 @@ const ExportToExcel = ({ data = [], group = "", catchno = "", setlen }) => {
       return acc;
     }, chunkedData);
     
-    console.log(dividedData)
     // A1 
     const answerheadingcell = worksheet.getCell('A1');
     answerheadingcell.value = 'Answer key';
@@ -33,9 +31,10 @@ const ExportToExcel = ({ data = [], group = "", catchno = "", setlen }) => {
     worksheet.getColumn("A").width = 20;
     worksheet.mergeCells(`B1:E1`);
     const paperdetailsheadingcell = worksheet.getCell('B1')
-    paperdetailsheadingcell.value = `Group: ${group}, Catch Number: ${catchno}`;
+    paperdetailsheadingcell.value = `Catch No. ${catchno}\n${paperData.courseName} ${paperData.examType}  ${paperData.subjectName ? `(${paperData.subjectName})` : ''}\n ${paperData.paperName ? paperData.paperName : ''}`;
     paperdetailsheadingcell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
     paperdetailsheadingcell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    paperdetailsheadingcell.style.font.name = 'Arial Narrow';
     paperdetailsheadingcell.fill = {
         type: 'pattern',
         pattern: 'solid',
@@ -105,7 +104,7 @@ const ExportToExcel = ({ data = [], group = "", catchno = "", setlen }) => {
     const excelBlob = new Blob([excelBuffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
-    saveAs(excelBlob, `${catchno}.xlsx`);
+    saveAs(excelBlob, `${catchno}-keys.xlsx`);
 
     setLoading(false);
   };
@@ -135,6 +134,7 @@ ExportToExcel.propTypes = {
   ),
   setlen: PropTypes.number.isRequired,
   group: PropTypes.string,
-  catchno: PropTypes.string
+  catchno: PropTypes.string,
+  paperData: PropTypes.object
 };
 export default ExportToExcel;

@@ -54,6 +54,37 @@ const DownloadKeys = () => {
   }, []);
 
   useEffect(() => {
+    const fetchPaperData = async () => {
+      try {
+        const paperResponse = await axios.get(`${baseUrl}/api/Papers/${PaperID}`, {
+          headers: { Authorization: `Bearer ${keygenUser?.token}` },
+        });
+        setPaperData(paperResponse.data);
+      } catch (error) {
+        console.error('Error fetching paper data:', error);
+      }
+    };
+  
+    if (PaperID) {
+      fetchPaperData();
+    }
+  }, [PaperID, keygenUser?.token]);
+  
+
+
+  useEffect(() => {
+    if (apiResponseold && setOrders.length > 0) {
+      const updatedApiResponse = apiResponseold.map((item) => {
+        return {
+          ...item,
+          setID: setOrders[item.setID - 1], // Adjusted index for 0-based array
+        };
+      });
+      setApiResponse(updatedApiResponse);
+    }
+  }, [apiResponseold, setOrders]);
+
+  useEffect(() => {
     const fetchSetOrders = async () => {
       try {
         const setOrdersResponse = await axios.get(`${baseUrl}/api/ProgConfigs`, {
@@ -71,17 +102,6 @@ const DownloadKeys = () => {
     fetchSetOrders(); // Moved fetchSetOrders outside of the if statement to ensure it always runs
   }, [progConfigID, keygenUser?.token]); // Added keygenUser?.token to the dependencies
 
-  useEffect(() => {
-    if (apiResponseold && setOrders.length > 0) {
-      const updatedApiResponse = apiResponseold.map((item) => {
-        return {
-          ...item,
-          setID: setOrders[item.setID - 1], // Adjusted index for 0-based array
-        };
-      });
-      setApiResponse(updatedApiResponse);
-    }
-  }, [apiResponseold, setOrders]);
   return (
     <div>
       <div className='d-flex align-items-center justify-content-between'>
@@ -94,7 +114,7 @@ const DownloadKeys = () => {
         <div className='d-flex gap-2'>
           <DropdownButton id="export-dropdown" title={<><FontAwesomeIcon icon={faFilePdf} className="me-2" />Export</>} variant="primary">
             <Dropdown.Item>
-              <ExportToExcel data={apiResponse} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
+              <ExportToExcel data={apiResponse} paperData={paperData} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
 
             </Dropdown.Item>
 

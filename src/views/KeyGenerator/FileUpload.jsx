@@ -1,45 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Form } from 'react-bootstrap';
+import * as XLSX from 'xlsx';
 import PropTypes from 'prop-types';
 
 const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
-  const handleFileInputChange = async (e) => {
+  const [file, setFile] = useState(null);
+
+  const handleFileInputChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = async (event) => {
-        const content = event.target.result;
-        const rows = content.split('\n').map((row) => row.split(','));
-
-        // const parsedData = rows.slice(1,-1).map((row, index) => ({
-        //   sn: index + 1,
-        //   page: row[0] || '',
-        //   qNumber: row[1] || '',
-        //   key: row[2] || '',
-        // }));
-
-        
-        const parsedData = rows.slice(1,-1).map((row, index) => ({
+      reader.onload = (event) => {
+        const data = event.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = 'Sheet1'; // Specify the sheet name here
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        const parsedData = jsonData.slice(2).filter(row => !isNaN(row[0]) && !isNaN(row[2])).map((row, index) => ({
           sn: index + 1,
-          qNumber: row[0] || '',
-          key: row[1] || '',
-          page: row[2] || '',
+          qNumber: row[0],
+          key: row[1],
+          page: row[2],
         }));
-
-        setNumberOfQuestions(parsedData.length);
         setFormData(parsedData);
+        setNumberOfQuestions(parsedData.length);
+        console.log(parsedData)
       };
-
-      reader.readAsText(file);
+      reader.readAsBinaryString(file);
     }
   };
-
   return (
     <Form.Group>
-      <Form.Label>Upload CSV File:</Form.Label>
+      <Form.Label>Upload Excel File:</Form.Label>
       <Form.Control
         type="file"
-        accept=".csv"
+        accept=".xlsx"
         onChange={handleFileInputChange}
         disabled={disabled} // Disable the input field if form is submitted and not in editing mode
       />

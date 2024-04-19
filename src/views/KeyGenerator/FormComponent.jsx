@@ -12,7 +12,7 @@ import { useUser } from './../../context/UserContext';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
-    const {keygenUser} = useUser();
+    const { keygenUser } = useUser();
     const [editing, setEditing] = useState(false);
     const [formData, setFormData] = useState([]);
     const [selectedProgramme, setSelectedProgramme] = useState('');
@@ -26,10 +26,18 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchProgrammes() {
             try {
-                const response = await fetch(`${baseUrl}/api/Programmes`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+                const response = await fetch(`${baseUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
                 if (response.ok) {
                     const data = await response.json();
                     setProgrammes(data);
+
+                    // Check if there is a selected programme in sessionStorage
+                    const selectedProgrammeFromStorage = sessionStorage.getItem('selectedProgramme');
+                    if (selectedProgrammeFromStorage) {
+                        const parsedProgramme = JSON.parse(selectedProgrammeFromStorage);
+                        setSelectedProgramme(parsedProgramme);
+                    }
+
                 } else {
                     console.error('Failed to fetch programmes:', response.statusText);
                 }
@@ -43,13 +51,12 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchPapers() {
             try {
-                const response = await fetch(`${baseUrl}/api/Papers/Programme/${selectedProgramme.value}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+                const response = await fetch(`${baseUrl}/api/Papers/Programme/${selectedProgramme.value}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
                 if (response.ok) {
                     const data = await response.json();
                     const filteredPapers = data.filter((paper) => paper.keyGenerated === false);
                     setPapers(filteredPapers);
                     setSelectedPaperData(null);
-                    console.log(filteredPapers)
                 } else {
                     console.error('Failed to fetch papers:', response.statusText);
                 }
@@ -65,10 +72,9 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     useEffect(() => {
         async function fetchData() {
             try {
-                const response = await fetch(`${baseUrl}/api/ProgConfigs/Programme/${selectedProgramme.value}/${bookletSize}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+                const response = await fetch(`${baseUrl}/api/ProgConfigs/Programme/${selectedProgramme.value}/${bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
                 if (response.ok) {
                     const data = await response.json();
-                    console.log(data);
                     setNumberOfQuestions(data[0].numberofQuestions);
                     setFormData(Array.from({ length: data[0].numberofQuestions }, (_, index) => ({
                         sn: index + 1,
@@ -115,21 +121,21 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         if (!selectedProgramme || !selectedPaper || !numberOfQuestions || formData.some(data => !data.page || !data.qNumber || !data.key)) {
             alert("Please ensure all required fields are filled out.");
             return;
         }
-    
+
         const csvHeader = 'Page No.,Q#,Key';
         const csvData = [csvHeader, ...formData.map((data) => `${data.page},${data.qNumber},${data.key}`)].join('\n');
         const blob = new Blob([csvData], { type: 'text/csv' });
-    
+
         try {
             const formdataForSubmit = new FormData();
             formdataForSubmit.append('file', blob, `file_${Date.now()}.csv`);
             const url = `${baseUrl}/api/FormData?ProgID=${selectedProgramme.value}&CatchNumber=${selectedPaperData.catchNumber}&PaperID=${selectedPaperData.paperID}`;
-            
+
             const response = await axios.post(url, formdataForSubmit, {
                 headers: {
                     'Authorization': `Bearer ${keygenUser?.token}`,
@@ -138,8 +144,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             });
             // const responseData = await response.json();
             const responseData = await response.data;
-            console.log(responseData)
-    
+
             if (responseData != null) {
                 console.log('File uploaded successfully!');
                 setFormSubmitted(true);
@@ -151,6 +156,14 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             console.error('Error uploading file:', error);
         }
     };
+
+    const SelectedProgrammechange = (selectedOption) => {
+        setSelectedProgramme(selectedOption);
+    
+        // Store selected programme in sessionStorage
+        sessionStorage.setItem('selectedProgramme', JSON.stringify(selectedOption));
+    };
+    
 
     const handleEdit = () => {
         setEditing(true);
@@ -167,14 +180,13 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                                 <Select
                                     options={Programmes.map((program) => ({ value: program.programmeID, label: program.programmeName }))}
                                     value={selectedProgramme}
-                                    onChange={setSelectedProgramme}
+                                    onChange={SelectedProgrammechange}
                                     placeholder="Select the Programme"
                                     isDisabled={!editing && formSubmitted}
                                 />
                             </Form.Group>
                         </Col>
-                    </Row>
-                    <Row>
+
                         <Col md={6}>
                             <Form.Group className='mb-2'>
                                 <Form.Label>Select Paper:<span className="text-danger">*</span></Form.Label>
@@ -185,11 +197,11 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                                         setSelectedPaper(selectedOption);
                                         const paperData = papers.find((paper) => paper.paperID === selectedOption.value);
                                         setSelectedPaperData(paperData);
-                                        
+
 
                                         setBookletSize(paperData.bookletSize);
                                     }}
-                                    
+
                                     placeholder="Select the Paper"
                                     isDisabled={!editing && formSubmitted}
                                 />

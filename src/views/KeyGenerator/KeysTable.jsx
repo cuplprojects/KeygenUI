@@ -22,7 +22,7 @@ const KeysTable = ({ papers }) => {
       const { programmeID, paperID, catchNumber, progConfigID } = paper;
       const paperData = { programmeID, paperID, catchNumber, progConfigID };
       localStorage.setItem('generatedKeys', JSON.stringify(paperData));
-      navigate('/KeyGenerator/download-keys');
+      navigate('/KeyGenerator/Newkey/download-keys');
     }
   };
 

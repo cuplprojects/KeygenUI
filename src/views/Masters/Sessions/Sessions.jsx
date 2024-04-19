@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Table, Card, Form, Button } from 'react-bootstrap';
+import { Table, Card, Form, Button, Alert } from 'react-bootstrap';
 import { useUser } from './../../../context/UserContext';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -10,6 +10,7 @@ const Sessions = () => {
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState('');
   const [existingSessions, setExistingSessions] = useState([]);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   useEffect(() => {
     fetchSessions();
@@ -30,21 +31,22 @@ const Sessions = () => {
   };
 
   const handleAddSession = async () => {
+    setLoading(true);
     try {
-      const response = await axios.post(
+      await axios.post(
         `${baseUrl}/api/Sessions`,
         { sessionName: selectedSession },
         { headers: { Authorization: `Bearer ${keygenUser?.token}` } }
       );
-      if (response.status === 200) {
-        setSelectedSession(''); // Clear the selected session
-        fetchSessions(); // Refresh the sessions list after adding a new session
-      }
+      setSelectedSession(''); // Clear the selected session
+      fetchSessions(); // Refresh the sessions list after adding a new session
+      setShowSuccessAlert(true);
     } catch (error) {
       console.error('Error adding session:', error);
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   return (
     <div className="container mt-3">
@@ -77,6 +79,11 @@ const Sessions = () => {
         <div className="col-md-6">
           <Card>
             <Card.Body>
+            {showSuccessAlert && (
+                <Alert variant="success" onClose={() => setShowSuccessAlert(false)} dismissible>
+                  Session added successfully!
+                </Alert>
+              )}
               <h5 className="card-title">Add Session</h5>
               <Form>
                 <Form.Group controlId="formSession">
@@ -94,9 +101,12 @@ const Sessions = () => {
                   </Form.Select>
                 </Form.Group>
                 <div className='mt-4 text-end'>
-                  <Button variant="primary" onClick={handleAddSession}>Add Session</Button>
+                  <Button variant="primary" onClick={handleAddSession} disabled={loading}>
+                    {loading? 'Adding Session...' : 'Add Session'}
+                  </Button>
                 </div>
               </Form>
+              
             </Card.Body>
           </Card>
         </div>

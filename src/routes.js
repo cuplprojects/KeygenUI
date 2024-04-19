@@ -45,7 +45,7 @@ const routes = [
   
   { path: '/KeyGenerator', name: 'Key Generator', moduleId: 2, permissionType: 'can_View', element: <AllKeys /> },
   { path: '/KeyGenerator/Newkey', name: 'New Key', moduleId: 2, permissionType: 'can_Add', element: <NewKey /> },
-  { path: '/KeyGenerator/download-keys', name: 'Download Keys', moduleId: 2, permissionType: 'can_View', element: <DownloadKeys /> },
+  { path: '/KeyGenerator/Newkey/download-keys', name: 'Download Keys', moduleId: 2, permissionType: 'can_View', element: <DownloadKeys /> },
 
   { path: '/Groups', name: 'All Groups', moduleId: 3, permissionType: 'can_View', element: <AllGroups /> },
   // { path: '/Groups/add-Group', name: 'Add Group', moduleId: 3, permissionType: 'can_Add', element: <AddGroup /> },

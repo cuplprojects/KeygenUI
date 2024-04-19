@@ -48,7 +48,7 @@ const PaperTable = ({ papers }) => {
   const DownloadKey = (programmeID, paperID, catchNumber, progConfigID) => {
     const paperData = { programmeID, paperID, catchNumber, progConfigID };
     localStorage.setItem('generatedKeys', JSON.stringify(paperData));
-    navigate('/keyGenerator/download-keys');
+    navigate('/KeyGenerator/Newkey/download-keys');
   }
 
 

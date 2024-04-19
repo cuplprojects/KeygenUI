@@ -286,7 +286,7 @@ const ShuffleConfig = ({ selectedPaperData }) => {
       
         localStorage.setItem('generatedKeys', JSON.stringify(updatedResponseData));
 
-        navigate('/KeyGenerator/download-keys');
+        navigate('/KeyGenerator/Newkey/download-keys');
       } else {
         throw new Error('Failed to send data.');
       }

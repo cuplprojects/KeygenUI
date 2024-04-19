@@ -24,9 +24,8 @@ const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
         }));
         setFormData(parsedData);
         setNumberOfQuestions(parsedData.length);
-        console.log(parsedData)
       };
-      reader.readAsBinaryString(file);
+      reader.readAsArrayBuffer(file);
     }
   };
   return (

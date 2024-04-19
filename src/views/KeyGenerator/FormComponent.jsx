@@ -22,6 +22,8 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [selectedPaperData, setSelectedPaperData] = useState(null);
     const [bookletSize, setBookletSize] = useState(null);
     const [numberOfQuestions, setNumberOfQuestions] = useState(0);
+    const [editedBookletSize, setEditedBookletSize] = useState(null);
+    const [noconfigError, setNoconfigError] = useState("");
 
     useEffect(() => {
         async function fetchProgrammes() {
@@ -76,6 +78,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                 if (response.ok) {
                     const data = await response.json();
                     setNumberOfQuestions(data[0].numberofQuestions);
+                    setNoconfigError("");
                     setFormData(Array.from({ length: data[0].numberofQuestions }, (_, index) => ({
                         sn: index + 1,
                         page: '',
@@ -83,7 +86,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                         key: '',
                     })));
                 } else {
-                    console.error('Failed to fetch data:', response.statusText);
+                    setNoconfigError("No Configuration found for this paper.");
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -94,6 +97,58 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             fetchData();
         }
     }, [selectedProgramme, bookletSize]);
+
+    useEffect(() => {
+        let timeoutId;
+        async function updatePaperData() {
+            try {
+                const response = await axios.put(
+                    `${baseUrl}/api/Papers/${selectedPaperData.paperID}`,
+                    {
+                        paperID: selectedPaperData.paperID,
+                        programmeID: selectedPaperData.programmeID,
+                        paperName: selectedPaperData.paperName,
+                        catchNumber: selectedPaperData.catchNumber,
+                        paperCode: selectedPaperData.paperCode,
+                        courseID: selectedPaperData.courseID,
+                        examType: selectedPaperData.examType,
+                        subjectID: selectedPaperData.subjectID,
+                        paperNumber: selectedPaperData.paperNumber,
+                        examDate: selectedPaperData.examDate,
+                        numberofQuestion: selectedPaperData.numberofQuestion,
+                        bookletSize: editedBookletSize,
+                        createdAt: selectedPaperData.createdAt,
+                        createdByID: selectedPaperData.createdByID,
+                        masterUploaded: selectedPaperData.masterUploaded,
+                        keyGenerated: selectedPaperData.keyGenerated
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${keygenUser?.token}`,
+                        },
+                    }
+                );
+                const updatedPaperData = {
+                    ...selectedPaperData,
+                    bookletSize: editedBookletSize,
+                };
+                setBookletSize(editedBookletSize)
+                setSelectedPaperData(updatedPaperData);
+                window.location.reload();
+            } catch (error) {
+                console.error("Error updating paper data:", error);
+            }
+        }
+
+        if (editedBookletSize !== bookletSize) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(updatePaperData, 500);
+        }
+
+        return () => {
+            clearTimeout(timeoutId);
+        };
+    }, [editedBookletSize]);
 
     const handleNumberOfQuestionsChange = (e) => {
         const inputNumber = e.target.value;
@@ -159,11 +214,11 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
 
     const SelectedProgrammechange = (selectedOption) => {
         setSelectedProgramme(selectedOption);
-    
+
         // Store selected programme in sessionStorage
         sessionStorage.setItem('selectedProgramme', JSON.stringify(selectedOption));
     };
-    
+
 
     const handleEdit = () => {
         setEditing(true);
@@ -179,7 +234,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                                 <Form.Label>Select Programme:<span className="text-danger">*</span></Form.Label>
                                 <Select
                                     options={Programmes.map((program) => ({ value: program.programmeID, label: program.programmeName }))}
-                                    value={selectedProgramme}
+                                    value={selectedProgramme ? selectedProgramme : bookletSize}
                                     onChange={SelectedProgrammechange}
                                     placeholder="Select the Programme"
                                     isDisabled={!editing && formSubmitted}
@@ -189,7 +244,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
 
                         <Col md={6}>
                             <Form.Group className='mb-2'>
-                                <Form.Label>Select Paper:<span className="text-danger">*</span></Form.Label>
+                                <Form.Label>Select Catch Number:<span className="text-danger">*</span></Form.Label>
                                 <Select
                                     options={papers.map((paper) => ({ value: paper.paperID, label: paper.catchNumber }))}
                                     value={selectedPaper}
@@ -197,9 +252,8 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                                         setSelectedPaper(selectedOption);
                                         const paperData = papers.find((paper) => paper.paperID === selectedOption.value);
                                         setSelectedPaperData(paperData);
-
-
                                         setBookletSize(paperData.bookletSize);
+                                        setEditedBookletSize(paperData.bookletSize);
                                     }}
 
                                     placeholder="Select the Paper"
@@ -218,8 +272,21 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                             </Col>
                             <Col md={6}>
                                 <Form.Group>
-                                    <Form.Label>Paper Code</Form.Label>
-                                    <Form.Control value={selectedPaperData.paperCode} disabled />
+                                    <Form.Label>Booklet Size</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        value={editedBookletSize}
+                                        onChange={(e) => setEditedBookletSize(e.target.value)}
+                                        min="0"
+                                        placeholder="Enter the booklet size"
+                                        required
+                                        disabled={false || formSubmitted}
+                                    />
+                                    {formData.length > 0 && formData[formData.length - 1].page !== '' && (
+                                        <Form.Label>Page in Excel: {formData[formData.length - 1].page + 2}</Form.Label>
+                                    )}
+
+
                                 </Form.Group>
                             </Col>
                         </Row>
@@ -244,7 +311,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                         />
                     </Form.Group>
                     <div className="d-grid gap-2 mt-4">
-                        <Button type="submit" disabled={!editing && formSubmitted}>Upload and Save CSV</Button>
+                        <Button type="submit" disabled={!editing && formSubmitted}>Upload and Save Master data</Button>
                         {!editing && formSubmitted && (
                             // <Button onClick={handleEdit}>Edit Form</Button>
                             <></>
@@ -257,7 +324,17 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             </Col>
 
             <Col lg={6}>
-                {numberOfQuestions > 0 && (
+                {
+                    noconfigError && (
+                        <div className="d-flex align-items-center justify-content-center border border-2 border-danger" style={{ height: '100px' }}>
+                            <p className='text-danger'>
+                                {noconfigError} <br />
+                                Pls. Check Program, Catch Number and Booklet Size.
+                            </p>
+                        </div>
+                    )
+                }
+                {numberOfQuestions > 0 && noconfigError === "" && (
                     <Form className="rounded">
                         <Form.Group className='mt-2'>
                             <Form.Label>Fill Master Data:<span className="text-danger">*</span></Form.Label>

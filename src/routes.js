@@ -43,7 +43,7 @@ const routes = [
 
   { path: '/users/AddPermissions/:userId', name: 'Add Permissions', moduleId: 1, permissionType: 'can_Add', element: <Permission /> },
   
-  { path: '/KeyGenerator', name: 'Key Generator', moduleId: 2, permissionType: 'can_View', element: <AllKeys /> },
+  { path: '/KeyGenerator', name: 'Generated Keys', moduleId: 2, permissionType: 'can_View', element: <AllKeys /> },
   { path: '/KeyGenerator/Newkey', name: 'New Key', moduleId: 2, permissionType: 'can_Add', element: <NewKey /> },
   { path: '/KeyGenerator/Newkey/download-keys', name: 'Download Keys', moduleId: 2, permissionType: 'can_View', element: <DownloadKeys /> },
 

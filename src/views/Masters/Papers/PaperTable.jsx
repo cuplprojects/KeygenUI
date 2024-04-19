@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import $ from 'jquery';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -18,7 +18,7 @@ const PaperTable = ({ papers }) => {
   }, []);
 
   const handleRowClick = (paperID) => {
-    // navigate(`/Masters/papers/ViewPaper/${encrypt(paperID)}`);
+    navigate(`/Masters/papers/ViewPaper/${encrypt(paperID)}`);
   };
 
   const formatDate = (dateString) => {
@@ -81,7 +81,7 @@ const PaperTable = ({ papers }) => {
               <td>{paper.bookletSize}</td>
               <td>{paper.createdBy}</td>
               {/* <td>{paper.masterUploaded ? 'Yes' : 'No'}</td> */}
-              <td>
+              <td onClick={(event) => event.stopPropagation()}>
                 <div>
                   <DropdownButton id="dropdown-basic-button" title="Action" className='btn btn-sm'>
                     {paper.keyGenerated ?

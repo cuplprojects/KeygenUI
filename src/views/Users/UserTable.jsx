@@ -30,7 +30,7 @@ const UserTable = ({ users, hasPermission }) => {
   ];
 
   const handleRowClick = (userID) => {
-    // navigate(`view-user/${encrypt(userID)}`);
+    navigate(`view-user/${encrypt(userID)}`);
   };
 
 
@@ -59,11 +59,11 @@ const UserTable = ({ users, hasPermission }) => {
                 <td>{user.email}</td>
                 <td>{user.mobileNumber}</td>
                 <td className='text-capitalize'>{user.designation}</td>
-                <td>
+                <td onClick={(event) => event.stopPropagation()}>
                   <div className="d-flex gap-3 text-primary justify-content-center">
                     {hasPermission(1, 'can_View') && <Link to={`view-user/${encrypt(user.userId)}`}><FontAwesomeIcon icon={faEye} className="text-success" /></Link>}
                     {hasPermission(1, 'can_Update') && <Link to={`update-user/${encrypt(user.userId)}`}><FontAwesomeIcon icon={faPenToSquare} className="text-primary" /></Link>}
-                    {hasPermission(1, 'can_Delete') && <Link to={`delete-user/${encrypt(user.userId)}`}><FontAwesomeIcon icon={faTrash} className="text-danger" /></Link>}
+                    {/* {hasPermission(1, 'can_Delete') && <Link to={`delete-user/${encrypt(user.userId)}`}><FontAwesomeIcon icon={faTrash} className="text-danger" /></Link>} */}
                   </div>
                 </td>
               </tr>

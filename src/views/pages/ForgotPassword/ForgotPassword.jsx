@@ -58,7 +58,7 @@ const ForgotPassword = () => {
         )}
         {alertMessage && (
           <Alert variant="danger" className="mt-3">
-            Email you entered is incorrect!
+            Incorrect email address.
           </Alert>
         )}
         <InputGroup className="mb-3">

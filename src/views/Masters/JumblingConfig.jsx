@@ -78,7 +78,6 @@ const JumblingConfig = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Submitting form with data:', formData);
 
     try {
       // Convert string numbers to integers for submission
@@ -106,8 +105,7 @@ const JumblingConfig = () => {
         numberofJumblingSteps: '',
         setofSteps: ['']
       });
-
-      console.log('Form submitted successfully');
+      fetchConfigurations();
     } catch (error) {
       console.error('Error submitting form:', error);
     }

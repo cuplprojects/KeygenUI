@@ -54,14 +54,7 @@ const FormDataComponent = ({ formData, handleInputChange, disabled }) => {
 };
 
 FormDataComponent.propTypes = {
-    formData: PropTypes.arrayOf(
-        PropTypes.shape({
-            sn: PropTypes.number.isRequired,
-            page: PropTypes.string.isRequired,
-            qNumber: PropTypes.string.isRequired,
-            key: PropTypes.string.isRequired
-        })
-    ).isRequired,
+    formData: PropTypes.array.isRequired,
     handleInputChange: PropTypes.func.isRequired,
     disabled: PropTypes.bool.isRequired
 };

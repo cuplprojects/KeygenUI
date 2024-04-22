@@ -11,7 +11,17 @@ import DashboardCardData from './DashboardCardData';
 import ActivityTable from './ActivityTable';
 
 const Dashboard = () => {
-  const { cardData, statusCount } = DashboardCardData();
+  const { cardData, statusCount, loading } = DashboardCardData();
+
+  if (loading) {
+    return (
+      <div className="text-center mt-5">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -81,6 +91,7 @@ const Dashboard = () => {
     </>
   );
 };
+
 
 DashboardCard.propTypes = {
   link: PropTypes.string.isRequired,

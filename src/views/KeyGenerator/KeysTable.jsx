@@ -1,12 +1,15 @@
 import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { Table, Button, DropdownButton, Dropdown } from "react-bootstrap";
+import { Table, DropdownButton, Dropdown } from "react-bootstrap";
 import $ from 'jquery';
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faDownload } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+const apiUrl = process.env.REACT_APP_BASE_URL;
 
-const KeysTable = ({ papers }) => {
+
+const KeysTable = ({ papers, token }) => {
   const navigate = useNavigate();
   const tableRef = useRef(null);
 
@@ -15,16 +18,29 @@ const KeysTable = ({ papers }) => {
     $(tableRef.current).DataTable();
   }, []);
 
-  const handleDownloadClick = (paperID) => {
-    // Logic to download keys for the given paperID
-    const paper = papers.find(paper => paper.paperID === paperID);
-    if (paper) {
-      const { programmeID, paperID, catchNumber, progConfigID } = paper;
-      const paperData = { programmeID, paperID, catchNumber, progConfigID };
-      localStorage.setItem('generatedKeys', JSON.stringify(paperData));
-      navigate('/KeyGenerator/Newkey/download-keys');
+  const handleDownloadClick = async (paper) => {
+    try {
+      const progConfigResponse = await axios.get(`${apiUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${token}` } });
+      const progConfigID = progConfigResponse.data[0]?.progConfigID;
+  
+      if (progConfigID) {
+        const paperData = { 
+          paperID: paper.paperID, 
+          progConfigID, 
+          programmeID: paper.programmeID, 
+          catchNumber: paper.catchNumber, 
+          bookletSize: paper.bookletSize 
+        };
+        localStorage.setItem('generatedKeys', JSON.stringify(paperData));
+        navigate('/KeyGenerator/Newkey/download-keys');
+      } else {
+        console.error("No progConfigID found for paper:", paper);
+      }
+    } catch (error) {
+      console.error("Error fetching progConfigID:", error);
     }
   };
+  
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -33,7 +49,6 @@ const KeysTable = ({ papers }) => {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
-
 
   return (
     <div className="table-responsive">
@@ -64,7 +79,7 @@ const KeysTable = ({ papers }) => {
               <td>{paper.createdBy}</td>
               <td>
                 <DropdownButton id={`dropdown-button-${paper.paperID}`} title="Action" size="sm">
-                  <Dropdown.Item onClick={() => handleDownloadClick(paper.paperID)}>
+                  <Dropdown.Item onClick={() => handleDownloadClick(paper)}>
                     <FontAwesomeIcon icon={faDownload} /> Download Key
                   </Dropdown.Item>
                 </DropdownButton>
@@ -78,17 +93,8 @@ const KeysTable = ({ papers }) => {
 };
 
 KeysTable.propTypes = {
-  papers: PropTypes.arrayOf(PropTypes.shape({
-    paperID: PropTypes.number.isRequired,
-    programmeName: PropTypes.string.isRequired,
-    catchNumber: PropTypes.string.isRequired,
-    paperName: PropTypes.string.isRequired,
-    subjectName: PropTypes.string.isRequired,
-    examDate: PropTypes.string.isRequired,
-    bookletSize: PropTypes.string.isRequired,
-    createdBy: PropTypes.string.isRequired,
-    progConfigID: PropTypes.number.isRequired,
-  })).isRequired,
+  papers: PropTypes.array.isRequired,
+  token: PropTypes.string.isRequired,
 };
 
 export default KeysTable;

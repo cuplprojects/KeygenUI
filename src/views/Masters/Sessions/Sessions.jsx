@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Table, Card, Form, Button, Alert } from 'react-bootstrap';
+import { Table, Card, Form, Button, Alert, Spinner, Placeholder } from 'react-bootstrap';
 import { useUser } from './../../../context/UserContext';
+import $ from 'jquery';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const Sessions = () => {
@@ -12,9 +13,17 @@ const Sessions = () => {
   const [existingSessions, setExistingSessions] = useState([]);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
+  const tableRef = useRef(null);
+
   useEffect(() => {
     fetchSessions();
   }, [sessions]); // Fetch sessions whenever there's a change in the sessions state
+
+  useEffect(() => {
+    if (!loading && tableRef.current) {
+        $(tableRef.current).DataTable();
+    }
+  }, [loading]);
 
   const fetchSessions = async () => {
     try {
@@ -57,22 +66,34 @@ const Sessions = () => {
               <Card.Title className="text-center">Sessions</Card.Title>
             </Card.Header>
             <Card.Body>
-              <Table striped bordered hover>
-                <thead>
-                  <tr>
-                    <th>Session ID</th>
-                    <th>Session Name</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sessions.map((session) => (
-                    <tr key={session.sessionID}>
-                      <td>{session.sessionID}</td>
-                      <td>{session.sessionName}</td>
+              {loading ? (
+                <div className="d-flex flex-wrap">
+                {Array.from({ length: 10 }).map((_, index) => (
+                    <div key={index} className="p-1" style={{ flexBasis: '50%', maxWidth: '50%' }}>
+                        <Placeholder as="div" animation="glow">
+                            <Placeholder xs={12} className='p-3' />
+                        </Placeholder>
+                    </div>
+                ))}
+            </div>
+              ) : (
+                <Table striped bordered hover ref={tableRef}>
+                  <thead>
+                    <tr>
+                      <th>Session ID</th>
+                      <th>Session</th>
                     </tr>
-                  ))}
-                </tbody>
-              </Table>
+                  </thead>
+                  <tbody>
+                    {sessions.map((session) => (
+                      <tr key={session.sessionID}>
+                        <td>{session.sessionID}</td>
+                        <td>{session.sessionName}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
             </Card.Body>
           </Card>
         </div>

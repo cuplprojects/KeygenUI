@@ -4,11 +4,13 @@ import KeysTable from "./KeysTable";
 import { useUser } from "./../../context/UserContext";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import PaperPlaceholder from "./../.../../../MyPlaceholders/PaperPlaceholder";
 
 const apiUrl = process.env.REACT_APP_BASE_URL;
 
 const AllKeys = () => {
   const { keygenUser } = useUser();
+  const token = keygenUser?.token;
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,22 +18,13 @@ const AllKeys = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${apiUrl}/api/Papers`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+        const response = await axios.get(`${apiUrl}/api/Papers`, { headers: { Authorization: `Bearer ${token}` } });
         const papersData = response.data;
   
         const filteredPapersData = papersData.filter(paper => paper.keyGenerated); // Filter papers where keyGenerated is true
   
-        // Fetch progConfigID for each paper
-        const updatedPapersData = await Promise.all(filteredPapersData.map(async (paper) => {
-          const progConfigResponse = await axios.get(`${apiUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-          const progConfigData = progConfigResponse.data[0]; // Assuming the API returns an array with a single object
-          return {
-            ...paper,
-            progConfigID: progConfigData.progConfigID
-          };
-        }));
-  
-        setPapers(updatedPapersData);
+ 
+        setPapers(filteredPapersData);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -40,10 +33,10 @@ const AllKeys = () => {
       }
     };
   
-    if (keygenUser?.token) {
+    if (token) {
       fetchData();
     }
-  }, [keygenUser?.token]);
+  }, [token]);
   
   return (
     <Container className="userform border border-3 p-4 my-3">
@@ -57,12 +50,12 @@ const AllKeys = () => {
 
       {loading ? (
         <div className="text-center">
-          <Spinner animation="border" role="status"></Spinner>
+          <PaperPlaceholder/>
         </div>
       ) : error ? (
         <Alert variant="danger">{error}</Alert>
       ) : (
-        <KeysTable papers={papers} />
+        <KeysTable papers={papers} token={token}/>
       )}
     </Container>
   );

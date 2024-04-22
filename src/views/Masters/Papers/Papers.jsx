@@ -4,30 +4,22 @@ import PaperTable from "./PaperTable.jsx";
 import { Link } from "react-router-dom";
 import { useUser } from "./../../../context/UserContext.js";
 import axios from "axios";
+import PaperPlaceholder from "./../../../MyPlaceholders/PaperPlaceholder.jsx";
 
 const apiUrl = process.env.REACT_APP_BASE_URL;
 
 const Papers = () => {
   const { keygenUser } = useUser();
+  const token = keygenUser?.token;
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const papersData = await axios.get(`${apiUrl}/api/Papers`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } }).then(res => res.data);
+        const papersData = await axios.get(`${apiUrl}/api/Papers`, { headers: { Authorization: `Bearer ${token}` } }).then(res => res.data);
 
-        // Fetch progConfigID for each paper
-        const updatedPapersData = await Promise.all(papersData.map(async (paper) => {
-          const progConfigResponse = await axios.get(`${apiUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-          const progConfigData = progConfigResponse.data[0]; // Assuming the API returns an array with a single object
-          return {
-            ...paper,
-            progConfigID: progConfigData.progConfigID
-          };
-        }));
-
-        setPapers(updatedPapersData);
+        setPapers(papersData);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -36,13 +28,13 @@ const Papers = () => {
     };
 
     fetchData();
-  }, [keygenUser?.token]);
+  }, [token]);
 
   return (
     <Container className="userform border border-3 p-4 my-3">
       <div className="d-flex justify-content-between m-3">
         <h3>Papers</h3>
-        <Link to={`/Masters/AddPaper`} className="btn btn-primary">
+        <Link to={`/Masters/papers/AddPaper`} className="btn btn-primary">
           Add New Paper
         </Link>
       </div>
@@ -50,12 +42,10 @@ const Papers = () => {
 
       {loading ? (
         <div className="text-center">
-          <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </Spinner>
+         <PaperPlaceholder/>
         </div>
       ) : (
-        <PaperTable papers={papers} />
+        <PaperTable papers={papers} token={token}/>
       )}
     </Container>
   );

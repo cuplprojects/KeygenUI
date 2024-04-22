@@ -5,9 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faEye, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faEye, faKey, faUpload } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+const apiUrl = process.env.REACT_APP_BASE_URL;
 
-const PaperTable = ({ papers }) => {
+
+const PaperTable = ({ papers, token }) => {
   const { encrypt } = useSecurity();
   const tableRef = useRef(null);
   const navigate = useNavigate();
@@ -29,27 +32,44 @@ const PaperTable = ({ papers }) => {
     return `${day}/${month}/${year}`;
   };
 
-  const formatDateTime = (dateTimeString) => {
-    const date = new Date(dateTimeString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const seconds = date.getSeconds();
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-  };
+  // const formatDateTime = (dateTimeString) => {
+  //   const date = new Date(dateTimeString);
+  //   const day = date.getDate();
+  //   const month = date.getMonth() + 1;
+  //   const year = date.getFullYear();
+  //   const hours = date.getHours();
+  //   const minutes = date.getMinutes();
+  //   const seconds = date.getSeconds();
+  //   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  // };
 
-  const Generatekey = (programmeID, programme, PaperID, catchNumber) => {
-    const paperData = { programmeID, programme, PaperID, catchNumber };
+  const Generatekey = (paper) => {
+    const { programmeID, programmeName, paperID, catchNumber } = paper;
+    const paperData = { programmeID, programmeName, paperID, catchNumber };
     localStorage.setItem('paperdata', JSON.stringify(paperData));
     navigate('/KeyGenerator/Newkey');
-  }
-  const DownloadKey = (programmeID, paperID, catchNumber, progConfigID) => {
-    const paperData = { programmeID, paperID, catchNumber, progConfigID };
-    localStorage.setItem('generatedKeys', JSON.stringify(paperData));
-    navigate('/KeyGenerator/Newkey/download-keys');
-  }
+  };
+
+  const DownloadKey = async (paper) => {
+    try {
+      console.log(paper)
+      const progConfigResponse = await axios.get(`${apiUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${token}` } });
+      const progConfigData = progConfigResponse.data[0]; // Assuming the API returns an array with a single object
+      const progConfigID = progConfigData.progConfigID;
+  
+      const paperData = {
+        programmeID: paper.programmeID,
+        paperID: paper.paperID,
+        catchNumber: paper.catchNumber,
+        progConfigID: progConfigID
+      };
+      localStorage.setItem('generatedKeys', JSON.stringify(paperData));
+      navigate('/KeyGenerator/Newkey/download-keys');
+    } catch (error) {
+      console.error("Error fetching progConfigID:", error);
+    }
+  };
+  
 
 
   return (
@@ -85,12 +105,12 @@ const PaperTable = ({ papers }) => {
                 <div>
                   <DropdownButton id="dropdown-basic-button" title="Action" className='btn btn-sm'>
                     {paper.keyGenerated ?
-                      <Dropdown.Item onClick={() => DownloadKey(paper.programmeID, paper.paperID, paper.catchNumber, paper.progConfigID)}> <FontAwesomeIcon icon={faDownload} /> Download Key</Dropdown.Item>
-                      : <>
+                          <Dropdown.Item  onClick={() => DownloadKey(paper)}><FontAwesomeIcon icon={faDownload}/> Download Keys</Dropdown.Item>
+                          : <>
                         {paper.masterUploaded ?
-                          <Dropdown.Item onClick={() => Generatekey(paper.programmeID, paper.programmeName, paper.paperID, paper.catchNumber)}>Generate Key</Dropdown.Item>
+                          <Dropdown.Item onClick={() => Generatekey(paper)}><FontAwesomeIcon icon={faKey}/>Generate Key</Dropdown.Item>
                           :
-                          <Dropdown.Item onClick={() => Generatekey(paper.programmeID, paper.programmeName, paper.paperID, paper.catchNumber)}><FontAwesomeIcon icon={faUpload} /> Upload Master</Dropdown.Item>
+                          <Dropdown.Item onClick={() => Generatekey(paper)}><FontAwesomeIcon icon={faUpload}/>Upload Master</Dropdown.Item>
                         }
                       </>
                     }
@@ -108,6 +128,7 @@ const PaperTable = ({ papers }) => {
 
 PaperTable.propTypes = {
   papers: PropTypes.array.isRequired,
+  token: PropTypes.string.isRequired,
 };
 
 export default PaperTable;

@@ -54,7 +54,7 @@ const routes = [
   // { path: '/Groups/papers/:groupId', name: 'Papers', moduleId: null, permissionType: null, element: <PaperComponent /> },
   
   { path: '/Masters/papers', name: 'All Papers', moduleId: 3, permissionType: 'can_View', element: <Papers /> },
-  { path: '/Masters/AddPaper', name: 'Add Paper', moduleId: 3, permissionType: 'can_Add', element: <AddPaper /> },
+  { path: '/Masters/papers/AddPaper', name: 'Add Paper', moduleId: 3, permissionType: 'can_Add', element: <AddPaper /> },
   { path: '/Masters/JumblingConfig', name: ' JumblingConfig', moduleId: 3, permissionType: 'can_Add', element: <JumblingConfig /> },
   { path: '/Masters/Sessions', name: ' Sessions', moduleId: 3, permissionType: 'can_Add', element: <Sessions /> },
   { path: '/Masters/Courses', name: ' Courses', moduleId: 3, permissionType: 'can_Add', element: <Courses /> },

@@ -1,10 +1,12 @@
+// Activity.jsx
 import React, { useState, useEffect } from 'react';
-import { Container, Alert, Spinner } from 'react-bootstrap';
+import { Container, Alert } from 'react-bootstrap';
 import ActivityData from './ActivityData';
-import { useUser } from './../../context/UserContext';
+import { useUser } from '../../context/UserContext';
+import SkeletonLoader from './SkeletonLoader'; // Import the SkeletonLoader component
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
-const Activity = () => {
+const ActivityTable = () => {
     const { keygenUser } = useUser();
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -36,7 +38,7 @@ const Activity = () => {
     return (
         <Container>
             {loading ? (
-                <Spinner />
+                <SkeletonLoader /> // Render the SkeletonLoader component while loading
             ) : error ? (
                 <Alert variant="danger">{error}</Alert>
             ) : (
@@ -46,4 +48,4 @@ const Activity = () => {
     );
 };
 
-export default Activity;
+export default ActivityTable;

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Table, Card, Form, Button } from 'react-bootstrap';
+import { Table, Card, Form, Button, Spinner, Placeholder } from 'react-bootstrap';
 import { useUser } from './../../../context/UserContext';
+import $ from 'jquery';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const Courses = () => {
@@ -12,14 +13,22 @@ const Courses = () => {
     const [courseName, setCourseName] = useState('');
     const [existingCourses, setExistingCourses] = useState([]);
 
+    const tableRef = useRef(null);
+
     useEffect(() => {
         fetchCourses();
-    }, [courses]); // Fetch courses whenever there's a change in the courses state
+    }, []); // Fetch courses on initial render
+
+    useEffect(() => {
+        if (!loading && tableRef.current) {
+            $(tableRef.current).DataTable();
+        }
+    }, [loading]);
 
     const fetchCourses = async () => {
         try {
-            const response = await axios.get(`${baseUrl}/api/Courses`,{
-                headers:{
+            const response = await axios.get(`${baseUrl}/api/Courses`, {
+                headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
@@ -36,13 +45,13 @@ const Courses = () => {
 
     const handleAddCourse = async () => {
         try {
-            const response = await axios.post(`${baseUrl}/api/Courses`, { courseName },{
-                headers:{
+            const response = await axios.post(`${baseUrl}/api/Courses`, { courseName }, {
+                headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
             if (response.status === 200) {
-                setCourseName(''); // Clear the input field
+                setCourseName('');
             }
         } catch (error) {
             console.error('Error adding course:', error);
@@ -58,7 +67,20 @@ const Courses = () => {
                             <Card.Title className="text-center">Courses</Card.Title>
                         </Card.Header>
                         <Card.Body>
-                                <Table striped bordered hover>
+                            {loading ? (
+                                <>
+                                    <div className="d-flex flex-wrap">
+                                        {Array.from({ length: 20 }).map((_, index) => (
+                                            <div key={index} className="p-1" style={{ flexBasis: '50%', maxWidth: '50%' }}>
+                                                <Placeholder as="div" animation="glow">
+                                                    <Placeholder xs={12} className='p-3' />
+                                                </Placeholder>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <Table striped bordered hover ref={tableRef}>
                                     <thead>
                                         <tr>
                                             <th>Course ID</th>
@@ -74,6 +96,7 @@ const Courses = () => {
                                         ))}
                                     </tbody>
                                 </Table>
+                            )}
                         </Card.Body>
                     </Card>
                 </div>
@@ -106,5 +129,6 @@ const Courses = () => {
         </div>
     );
 };
+
 
 export default Courses;

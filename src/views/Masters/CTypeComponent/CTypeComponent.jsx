@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Table, Card, Form, Button } from 'react-bootstrap';
+import { Table, Card, Form, Button, Spinner, Placeholder } from 'react-bootstrap';
 import { useUser } from './../../../context/UserContext';
+import $ from 'jquery';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const CTypeComponent = () => {
@@ -11,10 +12,17 @@ const CTypeComponent = () => {
     const [loading, setLoading] = useState(true);
     const [typeName, setTypeName] = useState('');
     const [existingTypes, setExistingTypes] = useState([]);
+    const tableRef = useRef(null);
 
     useEffect(() => {
         fetchTypes();
     }, []); // Fetch types only once when the component mounts
+
+    useEffect(() => {
+        if (!loading && tableRef.current) {
+            $(tableRef.current).DataTable();
+        }
+    }, [loading]);
 
     const fetchTypes = async () => {
         try {
@@ -51,7 +59,7 @@ const CTypeComponent = () => {
             console.error('Error adding type:', error);
         }
     };
-    
+
     return (
         <div className="container mt-3">
             <div className="row">
@@ -61,22 +69,34 @@ const CTypeComponent = () => {
                             <Card.Title className="text-center">Types</Card.Title>
                         </Card.Header>
                         <Card.Body>
-                            <Table striped bordered hover>
-                                <thead>
-                                    <tr>
-                                        <th>Type ID</th>
-                                        <th>Type Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {types.map((type) => (
-                                        <tr key={type.typeID}>
-                                            <td>{type.typeID}</td>
-                                            <td>{type.typeName}</td>
-                                        </tr>
+                            {loading ? (
+                                <div className="d-flex flex-wrap">
+                                    {Array.from({ length: 20 }).map((_, index) => (
+                                        <div key={index} className="p-1" style={{ flexBasis: '50%', maxWidth: '50%' }}>
+                                            <Placeholder as="div" animation="glow">
+                                                <Placeholder xs={12} className='p-3' />
+                                            </Placeholder>
+                                        </div>
                                     ))}
-                                </tbody>
-                            </Table>
+                                </div>
+                            ) : (
+                                <Table striped bordered hover ref={tableRef}>
+                                    <thead>
+                                        <tr>
+                                            <th>Type ID</th>
+                                            <th>Type Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {types.map((type) => (
+                                            <tr key={type.typeID}>
+                                                <td>{type.typeID}</td>
+                                                <td>{type.typeName}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                            )}
                         </Card.Body>
                     </Card>
                 </div>

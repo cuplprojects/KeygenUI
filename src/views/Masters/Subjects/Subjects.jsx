@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Table, Card, Form, Button } from 'react-bootstrap';
+import { Table, Card, Form, Button, Placeholder } from 'react-bootstrap';
 import { useUser } from './../../../context/UserContext';
+import $ from 'jquery';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const Subjects = () => {
@@ -12,14 +13,22 @@ const Subjects = () => {
     const [subjectName, setSubjectName] = useState('');
     const [existingSubjects, setExistingSubjects] = useState([]);
 
+    const tableRef = useRef(null);
+
     useEffect(() => {
         fetchSubjects();
     }, [subjects]); // Fetch subjects whenever there's a change in the subjects state
 
+    useEffect(() => {
+        if (!loading && tableRef.current) {
+            $(tableRef.current).DataTable();
+        }
+    }, [loading]);
+
     const fetchSubjects = async () => {
         try {
-            const response = await axios.get(`${baseUrl}/api/Subjects`,{
-                headers:{
+            const response = await axios.get(`${baseUrl}/api/Subjects`, {
+                headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
@@ -36,8 +45,8 @@ const Subjects = () => {
 
     const handleAddSubject = async () => {
         try {
-            const response = await axios.post(`${baseUrl}/api/Subjects`, { subjectName },{
-                headers:{
+            const response = await axios.post(`${baseUrl}/api/Subjects`, { subjectName }, {
+                headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
@@ -59,7 +68,18 @@ const Subjects = () => {
                             <Card.Title className="text-center">Subjects</Card.Title>
                         </Card.Header>
                         <Card.Body>
-                                <Table striped bordered hover>
+                            {loading ? (
+                                 <div className="d-flex flex-wrap">
+                                 {Array.from({ length: 20 }).map((_, index) => (
+                                     <div key={index} className="p-1" style={{ flexBasis: '50%', maxWidth: '50%' }}>
+                                         <Placeholder as="div" animation="glow">
+                                             <Placeholder xs={12} className='p-3' />
+                                         </Placeholder>
+                                     </div>
+                                 ))}
+                             </div>
+                            ) : (
+                                <Table striped bordered hover ref={tableRef}>
                                     <thead>
                                         <tr>
                                             <th>Subject ID</th>
@@ -75,6 +95,7 @@ const Subjects = () => {
                                         ))}
                                     </tbody>
                                 </Table>
+                            )}
                         </Card.Body>
                     </Card>
                 </div>
@@ -94,8 +115,8 @@ const Subjects = () => {
                                         placeholder="Enter subject name"
                                         value={subjectName}
                                         onChange={(e) => {
-                                            setSubjectName(e.target.value)}
-                                        }
+                                            setSubjectName(e.target.value)
+                                        }}
                                     />
                                 </Form.Group>
                                 <div className='mt-4 text-end'>

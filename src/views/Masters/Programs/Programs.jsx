@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Table, Card, Form, Button, Spinner } from 'react-bootstrap';
+import { Table, Card, Form, Button, Spinner, Alert, Placeholder } from 'react-bootstrap';
 import { useUser } from './../../../context/UserContext';
+import $ from 'jquery'; // Import jQuery
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const Programs = () => {
@@ -16,6 +17,10 @@ const Programs = () => {
   const [groups, setGroups] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [types, setTypes] = useState([]);
+  const [duplicate, setDuplicate] = useState(false);
+  const [addingProgram, setAddingProgram] = useState(false); // Loading state for the "Add Program" button
+
+  const tableRef = useRef(null); // Ref for the jQuery table
 
   // Fetch programs, groups, sessions, and types on component mount
   useEffect(() => {
@@ -24,6 +29,12 @@ const Programs = () => {
     fetchSessions();
     fetchTypes();
   }, []);
+
+  useEffect(() => {
+    if (!loading && tableRef.current) {
+      $(tableRef.current).DataTable(); // Initialize the jQuery DataTable
+    }
+  }, [loading]);
 
   const fetchPrograms = async () => {
     try {
@@ -80,9 +91,15 @@ const Programs = () => {
     }
   };
 
+  useEffect(() => {
+    const isdupli = programs.some(p => p.groupID == selectedGroup && p.sessionID == selectedSession && p.typeID == selectedType)
+    setDuplicate(isdupli)
+
+  }, [selectedGroup, selectedSession, selectedType])
+
   const handleAddProgram = async () => {
     try {
-
+      setAddingProgram(true); // Set loading state to true
       const response = await axios.post(
         `${baseUrl}/api/Programmes`,
         {
@@ -107,9 +124,10 @@ const Programs = () => {
       }
     } catch (error) {
       console.error('Error adding program:', error);
+    } finally {
+      setAddingProgram(false); // Set loading state back to false
     }
-  };
-
+  }
   return (
     <div className="container mt-3">
       <div className="row">
@@ -120,9 +138,17 @@ const Programs = () => {
             </Card.Header>
             <Card.Body>
               {loading ? (
-                    <Spinner animation="border" role="status"></Spinner>
+                <div className="d-flex flex-wrap">
+                  {Array.from({ length: 10 }).map((_, index) => (
+                    <div key={index} className="p-1" style={{ flexBasis: '50%', maxWidth: '50%' }}>
+                      <Placeholder as="div" animation="glow">
+                        <Placeholder xs={12} className='p-3' />
+                      </Placeholder>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <Table striped bordered hover>
+                <Table striped bordered hover ref={tableRef}>
                   <thead>
                     <tr>
                       <th>Program ID</th>
@@ -130,8 +156,8 @@ const Programs = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {programs.map((program) => (
-                      <tr key={program.programID}>
+                    {programs.map((program, index) => (
+                      <tr key={index}>
                         <td>{program.programmeID}</td>
                         <td>{program.programmeName}</td>
                       </tr>
@@ -150,14 +176,11 @@ const Programs = () => {
             </Card.Header>
             <Card.Body>
               <Form>
-                {/* <Form.Group controlId="formProgram">
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter program name"
-                    value={programmeName}
-                    onChange={(e) => setProgrammeName(e.target.value)}
-                  />
-                </Form.Group> */}
+                {duplicate && (
+                  <Alert variant="warning" className='p-2'>
+                    Program Already Exists.
+                  </Alert>
+                )}
                 <Form.Group className="mt-2" controlId="formGroup">
                   <Form.Select
                     value={selectedGroup}
@@ -201,9 +224,9 @@ const Programs = () => {
                   <Button
                     variant="primary"
                     onClick={handleAddProgram}
-                    disabled={existingPrograms.includes(programmeName.toLowerCase())}
+                    disabled={duplicate || addingProgram} // Disable button if duplicate or if adding program
                   >
-                    Add Program
+                    {addingProgram ? <><Spinner animation="border" size="sm" /> Pls. wait..</> : 'Add Program'}
                   </Button>
                 </div>
               </Form>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Row, Col, Form, Button, Card, Pagination, OverlayTrigger, Tooltip } from 'react-bootstrap';
-import { useUser } from './../../context/UserContext';
+import { Container, Row, Col, Form, Button, Card, Pagination, OverlayTrigger, Tooltip, Placeholder, Alert } from 'react-bootstrap';
+import { useUser } from '../../../context/UserContext';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const JumblingConfig = () => {
@@ -13,12 +13,44 @@ const JumblingConfig = () => {
   const [configurationsPerPage] = useState(2);
   const [filteredConfigurations, setFilteredConfigurations] = useState([]);
   const [errorText, setErrorText] = useState('');
+  const [loadingData, setLoadingData] = useState(true);
+
+  const [formData, setFormData] = useState({
+    progID: 0,
+    sets: '',
+    setOrder: '',
+    masterName: '',
+    numberofQuestions: '',
+    bookletSize: '',
+    numberofJumblingSteps: '',
+    setofSteps: ['']
+  });
 
   useEffect(() => {
     fetchPrograms();
     fetchSessions();
     fetchConfigurations();
   }, []);
+
+  useEffect(() => {
+    if (formData.progID > 0) {
+      if (!formData.bookletSize) {
+        const filtered = configurations.filter(config => config.progID == formData.progID);
+        setFilteredConfigurations(filtered);
+      } else {
+        const filtered = configurations.filter(config => config.progID == formData.progID && config.bookletSize == formData.bookletSize);
+        setFilteredConfigurations(filtered);
+      }
+    } else {
+      if (!formData.bookletSize) {
+        setFilteredConfigurations(configurations);
+      } else {
+        const filtered = configurations.filter(config => config.bookletSize == formData.bookletSize);
+        setFilteredConfigurations(filtered);
+      }
+    }
+  }, [formData.progID, formData.bookletSize, configurations]);
+
 
   const fetchPrograms = async () => {
     try {
@@ -40,6 +72,7 @@ const JumblingConfig = () => {
 
   const fetchConfigurations = async () => {
     try {
+      setLoadingData(true);
       const response = await axios.get(`${baseUrl}/api/ProgConfigs`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       const configs = response.data;
 
@@ -53,21 +86,11 @@ const JumblingConfig = () => {
 
       setConfigurations(configsWithSteps);
       setFilteredConfigurations(configsWithSteps);
+      setLoadingData(false);
     } catch (error) {
       console.error('Error fetching configurations:', error);
     }
   };
-
-  const [formData, setFormData] = useState({
-    progID: 0,
-    sets: '',
-    setOrder: '',
-    masterName: '',
-    numberofQuestions: '',
-    bookletSize: '',
-    numberofJumblingSteps: '',
-    setofSteps: ['']
-  });
 
   const handleInputChange = (field, value) => {
     setFormData({
@@ -157,7 +180,7 @@ const JumblingConfig = () => {
       setErrorText("Duplicate numbers in step")
       return;
     }
-    else{
+    else {
       setErrorText("")
     }
     setFormData({
@@ -174,14 +197,35 @@ const JumblingConfig = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+
+
+  const renderPlaceholderGrid = () => (
+    <div className="d-flex flex-wrap">
+      {Array.from({ length: 9 }).map((_, index) => (
+        <div key={index} className="p-1" style={{ flexBasis: '100%', maxWidth: '100%' }}>
+          <Placeholder as="div" animation="glow">
+            <Placeholder xs={12} className='p-1' />
+          </Placeholder>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <Container>
       <Row className='row-cols-1 row-cols-md-2'>
         <Col>
           <Card>
+          <Card.Header>
+              <Card.Title className='text-center'>Previous Configurations</Card.Title>
+            </Card.Header>
             <Card.Body>
-              <h2>Previous Configurations</h2>
-              {filteredConfigurations.length === 0 ? (
+              {loadingData ? (
+                <Row>
+                  <Col>{renderPlaceholderGrid()}</Col>
+                  <Col>{renderPlaceholderGrid()}</Col>
+                </Row>
+              ) : filteredConfigurations.length === 0 ? (
                 <p>No configurations found.</p>
               ) : (
                 <>
@@ -224,9 +268,18 @@ const JumblingConfig = () => {
         </Col>
         <Col>
           <Card>
+            <Card.Header>
+              <Card.Title className='text-center'>Create new configuration</Card.Title>
+            </Card.Header>
             <Card.Body>
-              <h3 className='text-center'>Create new configuration</h3>
               <Form onSubmit={handleSubmit}>
+                {
+                  formData.progID > 0 && formData.bookletSize && filteredConfigurations.length > 0 && (
+                    <Alert variant="warning" className='p-2'>
+                      Configration Already Exists.
+                    </Alert>
+                  )
+                }
                 <Row className='row-cols-1 row-cols-md-2'>
                   <Col className='mb-2'>
                     <Form.Group controlId="programID">
@@ -260,7 +313,7 @@ const JumblingConfig = () => {
                         placement='top'
                         overlay={
                           <Tooltip id={`tooltip-bookletSize`}>
-                            Enter the size of the booklet, Excluding cover page.
+                            Enter the size of the booklet, including cover page.
                           </Tooltip>
                         }
                       >
@@ -319,7 +372,8 @@ const JumblingConfig = () => {
                 </Row>
                 <div className="text-center mt-3">
                   <p className='text-danger'>{errorText}</p>
-                  <Button type="submit" disabled={errorText}>Add Configuration</Button>
+                  <Button type="submit" disabled={errorText || filteredConfigurations.length > 0}>Add Configuration</Button>
+
                 </div>
               </Form>
             </Card.Body>

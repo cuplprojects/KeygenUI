@@ -22,7 +22,7 @@ const AllGroups = lazy(() => import('./views/Masters/Groups/Groups'));
 const AddPaper = lazy(() => import('./views/Masters/Papers/AddPaper'));
 const ViewPaper = lazy(() => import('./views/Masters/Papers/ViewPaper'));
 // Masters
-const JumblingConfig = lazy(() => import('./views/Masters/JumblingConfig'));
+const JumblingConfig = lazy(() => import('./views/Masters/JumblingConfig/JumblingConfig'));
 const Sessions = lazy(() => import('./views/Masters/Sessions/Sessions'));
 const Courses = lazy(() => import('./views/Masters/Courses/Courses'));
 const Subjects = lazy(() => import('./views/Masters/Subjects/Subjects'));

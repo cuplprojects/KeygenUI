@@ -158,7 +158,6 @@ const ViewUser = () => {
       });
   };
 
-
   return (
     <Card>
       <CardBody>
@@ -223,12 +222,11 @@ const ViewUser = () => {
                           <td>{getModuleNameById(permission.moduleID)}</td>
                           <td>
                             <div className="toggle-button">
-                             
                               <FontAwesomeIcon
                                 icon={faCircleXmark}
                                 className={`text-danger toggle-icon ${!permission.can_View ? 'active' : ''}`}
                                 onClick={() => handlePermissionUpdate(permission.permissionID, "can_View")}
-                              /> 
+                              />
                               <FontAwesomeIcon
                                 icon={faCircleCheck}
                                 className={`text-success toggle-icon ${permission.can_View ? 'active' : ''}`}

@@ -1,24 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Table, Card, Form, Button } from 'react-bootstrap';
+import { Table, Card, Form, Button, Spinner, Placeholder } from 'react-bootstrap';
 import { useUser } from './../../../context/UserContext';
+import $ from 'jquery';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const Groups = () => {
   const { keygenUser } = useUser();
+  const token = keygenUser?.token
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [groupName, setGroupName] = useState('');
   const [existingGroups, setExistingGroups] = useState([]);
-  // Fetch groups on component mount and whenever groups state changes
+
+  const tableRef = useRef(null);
+
   useEffect(() => {
     fetchGroups();
-  }, [groups]);
+  }, []); // Fetch groups on initial render
+
+  useEffect(() => {
+    if (!loading && tableRef.current) {
+      $(tableRef.current).DataTable();
+    }
+  }, [loading]);
 
   const fetchGroups = async () => {
     try {
       const response = await axios.get(`${baseUrl}/api/Groups`, {
-        headers: { Authorization: `Bearer ${keygenUser?.token}` },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       if (response.data) {
         setGroups(response.data);
@@ -31,103 +43,117 @@ const Groups = () => {
     }
   };
 
-  const handleUpdateGroup = async (groupId, updatedGroup) => {
+  const handleToggleStatus = async (groupId, groupName, newStatus) => {
     try {
-      const response = await axios.put(`${baseUrl}/api/Groups/${groupId}`, updatedGroup, {
-        headers: { Authorization: `Bearer ${keygenUser?.token}` },
+      const response = await axios.put(`${baseUrl}/api/Groups/${groupId}`, { groupId, status: newStatus }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       if (response.status === 204) {
-        // Update the groups state to trigger a re-render
-        setGroups(groups.map(group => group.groupID === groupId ? updatedGroup : group));
+        setGroups(groups.map(group => group.groupID === groupId ? { ...group, status: newStatus } : group));
       }
     } catch (error) {
-      console.error('Error updating group:', error);
+      console.error('Error toggling status:', error);
     }
   };
 
   const handleAddGroup = async () => {
     try {
       const response = await axios.post(`${baseUrl}/api/Groups`, { groupName }, {
-        headers: { Authorization: `Bearer ${keygenUser?.token}` },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
-      if (response.status === 201) {
+      if (response.status === 200) {
         setGroupName('');
-        setExistingGroups([...existingGroups, groupName.toLowerCase()]); // Clear the input field
-      } else {
-        // Handle potential API errors here (e.g., display error message to user)
-        console.error('Group creation failed:', response);
       }
     } catch (error) {
       console.error('Error adding group:', error);
     }
   };
 
-    return (
-        <div className="container mt-3">
-            <div className="row">
-                <div className="col-md-6">
-                    <Card>
-                        <Card.Header>
-                            <Card.Title className="text-center">Groups</Card.Title>
-                        </Card.Header>
-                        <Card.Body>
-                                <Table striped bordered hover>
-                                    <thead>
-                                        <tr>
-                                            <th>Group ID</th>
-                                            <th>Group Name</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {groups.map((group) => (
-                                            <tr key={group.groupID}>
-                                                <td>{group.groupID}</td>
-                                                <td>{group.groupName}</td>
-                                                <td>
-                                                    <Form.Check
-                                                        type="switch"
-                                                        id={`custom-switch-${group.groupID}`}
-                                                        label=""
-                                                        checked={group.status}
-                                                        onChange={(e) => handleUpdateGroup(group.groupID, { ...group, status: e.target.checked })}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </Table>
-                        </Card.Body>
-                    </Card>
-                </div>
-                <div className="col-md-6">
-                    <Card>
-                        <Card.Header>
-                            <Card.Title>
-                                Add Group
-                            </Card.Title>
-                        </Card.Header>
-                        <Card.Body>
-                            <h5 className="card-title"></h5>
-                            <Form>
-                                <Form.Group controlId="formGroup">
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Enter group name"
-                                        value={groupName}
-                                        onChange={(e) => setGroupName(e.target.value)}
-                                    />
-                                </Form.Group>
-                                <div className='mt-4 text-end'>
-                                <Button variant="primary" onClick={handleAddGroup} disabled={existingGroups.includes(groupName.toLowerCase())}>Add Group</Button>
-                                </div>
-                            </Form>
-                        </Card.Body>
-                    </Card>
-                </div>
-            </div>
+  return (
+    <div className="container mt-3">
+      <div className="row">
+        <div className="col-md-6 mb-3">
+          <Card>
+            <Card.Header>
+              <Card.Title className="text-center">Groups</Card.Title>
+            </Card.Header>
+            <Card.Body>
+              {loading ? (
+                <>
+                  <div className="d-flex flex-wrap">
+                    {Array.from({ length: 20 }).map((_, index) => (
+                      <div key={index} className="p-1" style={{ flexBasis: '50%', maxWidth: '50%' }}>
+                        <Placeholder as="div" animation="glow">
+                          <Placeholder xs={12} className='p-3' />
+                        </Placeholder>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <Table id="groupsTable" striped bordered hover ref={tableRef}>
+                  <thead>
+                    <tr>
+                      <th>Group ID</th>
+                      <th>Group Name</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {groups.map((group) => (
+                      <tr key={group.groupID}>
+                        <td>{group.groupID}</td>
+                        <td>{group.groupName}</td>
+                        <td>
+                          <Form.Check
+                            type="switch"
+                            id={`status-switch-${group.groupID}`}
+                            label=""
+                            checked={group.status}
+                            onChange={(e) => handleToggleStatus(group.groupID, group.groupName, e.target.checked)}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+            </Card.Body>
+          </Card>
         </div>
-    );
+        <div className="col-md-6">
+          <Card>
+            <Card.Header>
+              <Card.Title>
+                Add Group
+              </Card.Title>
+            </Card.Header>
+            <Card.Body>
+              <h5 className="card-title"></h5>
+              <Form>
+                <Form.Group controlId="formGroup">
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter group name"
+                    value={groupName}
+                    onChange={(e) => setGroupName(e.target.value)}
+                  />
+                </Form.Group>
+                <div className='mt-4 text-end'>
+                  <Button variant="primary" onClick={handleAddGroup} disabled={existingGroups.includes(groupName.toLowerCase()) || !groupName.trim()}>Add Group</Button>
+                </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
 };
+
 
 export default Groups;

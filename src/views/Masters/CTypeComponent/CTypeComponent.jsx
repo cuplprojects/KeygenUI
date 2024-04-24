@@ -66,7 +66,7 @@ const CTypeComponent = () => {
                 <div className="col-md-6 mb-3">
                     <Card>
                         <Card.Header>
-                            <Card.Title className="text-center">Types</Card.Title>
+                            <Card.Title className="text-center">Exam Types</Card.Title>
                         </Card.Header>
                         <Card.Body>
                             {loading ? (
@@ -83,8 +83,8 @@ const CTypeComponent = () => {
                                 <Table striped bordered hover ref={tableRef}>
                                     <thead>
                                         <tr>
-                                            <th>Type ID</th>
-                                            <th>Type Name</th>
+                                            <th>Exam Type ID</th>
+                                            <th>Exam Type</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -104,7 +104,7 @@ const CTypeComponent = () => {
                     <Card>
                         <Card.Header>
                             <Card.Title>
-                                Add Type
+                                Add Exam Type
                             </Card.Title>
                         </Card.Header>
                         <Card.Body>

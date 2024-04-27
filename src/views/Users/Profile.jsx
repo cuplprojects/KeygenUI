@@ -1,13 +1,12 @@
-// Profile.js
 import React, { useState, useEffect } from 'react';
 import { useUser } from './../../context/UserContext';
 import { fetchUserData, updateProfilePicture } from './../../context/UserData';
 import DefaultAvatar from './../../assets/images/avatars/defaultavatar.jpg';
 import { Accordion, Card, Col, Container, Row, Spinner } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClockRotateLeft, faKey, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faClockRotateLeft, faKey, faLock, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
-// import ChangePasswordForm from '../pages/ChangePassword/ChangePasswordForm';
+import { useProfileImage } from './../../context/ProfileImageProvider'; // Import the context hook
 
 const BaseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -17,13 +16,14 @@ const Profile = () => {
     const [profilePicturePath, setProfilePicturePath] = useState(DefaultAvatar);
     const [loading, setLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState(null);
+    const { updateProfileImageUrl } = useProfileImage(); // Use the context hook
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (keygenUser) {
                     setLoading(true);
-                    const userData = await fetchUserData(keygenUser.userID,keygenUser.token);
+                    const userData = await fetchUserData(keygenUser.userID, keygenUser.token);
                     setUserData(userData);
                     setProfilePicturePath(userData.profilePicturePath ? `${BaseUrl}/${userData.profilePicturePath}?${new Date().getTime()}` : DefaultAvatar);
                     setLoading(false);
@@ -42,21 +42,27 @@ const Profile = () => {
         setSelectedImage(file);
     };
 
-    const handleUpload = async () => {
-        if (selectedImage && keygenUser) {
-            setLoading(true);
-            try {
-                await updateProfilePicture(keygenUser.userID, selectedImage, keygenUser.token);
-                const updatedUserData = await fetchUserData(keygenUser.userID,keygenUser.token);
-                setUserData(updatedUserData);
-                setProfilePicturePath(`${BaseUrl}/${updatedUserData.profilePicturePath}?${new Date().getTime()}`);
-            } catch (error) {
-                console.error('Error updating profile picture:', error);
-            } finally {
-                setLoading(false);
+    useEffect(() => {
+        const handleUpload = async () => {
+            if (selectedImage && keygenUser) {
+                setLoading(true);
+                try {
+                    await updateProfilePicture(keygenUser.userID, selectedImage, keygenUser.token);
+                    const updatedUserData = await fetchUserData(keygenUser.userID, keygenUser.token);
+                    setUserData(updatedUserData);
+                    const newImageUrl = `${BaseUrl}/${updatedUserData.profilePicturePath}?${new Date().getTime()}`;
+                    setProfilePicturePath(newImageUrl);
+                    updateProfileImageUrl(keygenUser.userID, newImageUrl); // Update the profile image URL in the context
+                } catch (error) {
+                    console.error('Error updating profile picture:', error);
+                } finally {
+                    setLoading(false);
+                }
             }
-        }
-    };
+        };
+
+        handleUpload(); // Call handleUpload when selectedImage or keygenUser changes
+    }, [selectedImage, keygenUser]);
 
     return (
         <Container>
@@ -68,9 +74,15 @@ const Profile = () => {
                 <Row>
                     <Col md={5} className="text-center">
                         <Card className="mx-auto w-100 p-3">
-                            <Card.Body style={{border: '2px dashed #dadada '}}>
-                                <div className="text-center">
-                                    <Card.Img variant="top" src={profilePicturePath} style={{ width: '200px' }} alt="Profile" />
+                            <Card.Body style={{ border: '2px dashed #dadada ' }}>
+                                <div className="upload">
+                                    <img src={profilePicturePath} alt="Profile" />
+                                    <div className="round">
+                                        <label htmlFor="file-input">
+                                            <FontAwesomeIcon icon={faPencilAlt} style={{ color: "#fff" }} />
+                                        </label>
+                                        <input id="file-input" type="file" onChange={handleImageChange} />
+                                    </div>
                                 </div>
                                 <Card.Title>{`${userData.firstName} ${userData.lastName}`}</Card.Title>
                                 <Card.Text>
@@ -82,8 +94,6 @@ const Profile = () => {
                                 <Card.Text>
                                     Designation: {userData.designation}
                                 </Card.Text>
-                                <input type="file" onChange={handleImageChange} />
-                                <button onClick={handleUpload}>Update Profile Picture</button>
                             </Card.Body>
                         </Card>
                     </Col>
@@ -94,7 +104,6 @@ const Profile = () => {
                                     <FontAwesomeIcon icon={faLock} className='me-3' /> Security</Accordion.Header>
                                 <Accordion.Body className='rounded'>
                                     <Link to={'/ChangePassword'}><FontAwesomeIcon icon={faKey} className='me-3' /> Change Password</Link>
-                                    {/* <ChangePasswordForm/> */}
                                 </Accordion.Body>
                             </Accordion.Item>
                             <Accordion.Item eventKey="1" className='mt-3 rounded'>

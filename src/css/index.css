@@ -175,12 +175,12 @@ input[type=file]::-webkit-file-upload-button {
     border-left-color: #ff663c;
 }
 .counter.lightgreen{
-    color: #008624;
-    border-color: #008624;
+    color: #4caf50;
+    border-color: #4caf50;
 }
 .counter.lightgreen:after{
-    border-bottom-color: #008624;
-    border-left-color: #008624;
+    border-bottom-color: #4caf50;
+    border-left-color: #4caf50;
 }
 @media screen and (max-width:990px){
     .counter{ margin-bottom: 40px; }

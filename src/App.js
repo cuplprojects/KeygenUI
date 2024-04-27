@@ -7,6 +7,7 @@ import { UserProvider } from './context/UserContext';
 import PrivateRoute from './components/PrivateRoute'; // Import PrivateRoute component
 import './scss/style.scss';
 import { SkeletonTheme } from 'react-loading-skeleton';
+import { ProfileImageProvider } from './context/ProfileImageProvider';
 // import AccessDeniedPage from './views/pages/page403/AccessDeniedPage';
 
 // Containers
@@ -48,6 +49,7 @@ const App = () => {
 
   return (
     <SkeletonTheme baseColor="#ff0000" highlightColor="#00ff00">
+       <ProfileImageProvider>
       <UserProvider>
         {/* HashRouter to manage navigation */}
         <HashRouter>
@@ -74,6 +76,7 @@ const App = () => {
           </Suspense>
         </HashRouter>
       </UserProvider>
+      </ProfileImageProvider>
     </SkeletonTheme>
   );
 };

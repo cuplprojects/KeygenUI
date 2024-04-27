@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleCheck, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import './viewuser.css'
 import { useUser } from "./../../context/UserContext";
+import { useProfileImage } from './../../context/ProfileImageProvider';
 
 const permissionApi = process.env.REACT_APP_API_PERMISSION;
 const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -21,6 +22,7 @@ const ViewUser = () => {
   const { decrypt } = useSecurity();
   const { userId } = useParams();
   const decodedUserId = decrypt(userId);
+  const { updateProfileImageUrl } = useProfileImage();
 
   const [user, setUser] = useState({
     firstName: "",
@@ -33,7 +35,6 @@ const ViewUser = () => {
   });
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showBtn, setShowBtn] = useState(false);
   const [permissions, setPermissions] = useState([]);
   const [modules, setModules] = useState([]);
   const [activeTab, setActiveTab] = useState("permissions");
@@ -51,25 +52,7 @@ const ViewUser = () => {
     const fetchPermissions = async () => {
       try {
         const permissionsResponse = await axios.get(`${apiPermissionsByUser}/${decodedUserId}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-        const permissionsData = permissionsResponse.data;
-        setPermissions(permissionsData);
-
-        // Check if any module is missing permissions
-        const missingPermissions = modules.filter(module => !permissionsData.some(permission => permission.moduleID === module.moduleID));
-        if (missingPermissions.length > 0) {
-          const postPermissions = missingPermissions.map(module => ({
-            userId: decodedUserId,
-            moduleID: module.moduleID,
-            can_Add: false,
-            can_View: false,
-            can_Update: false,
-            can_Delete: false,
-          }));
-          await axios.post(permissionApi, postPermissions, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-          const updatedPermissionsResponse = await axios.get(`${apiPermissionsByUser}/${decodedUserId}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-          const updatedPermissionsData = updatedPermissionsResponse.data;
-          setPermissions(updatedPermissionsData);
-        }
+        setPermissions(permissionsResponse.data);
       } catch (error) {
         console.error('Error fetching permissions:', error);
       }
@@ -78,8 +61,7 @@ const ViewUser = () => {
     const fetchModules = async () => {
       try {
         const modulesResponse = await axios.get(apiModules, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-        const modulesData = modulesResponse.data;
-        setModules(modulesData);
+        setModules(modulesResponse.data);
       } catch (error) {
         console.error('Error fetching modules:', error);
       }
@@ -88,32 +70,34 @@ const ViewUser = () => {
     fetchUserData();
     fetchPermissions();
     fetchModules();
-  }, [decodedUserId, modules, keygenUser]);
+  }, [decodedUserId, keygenUser]);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     setSelectedImage(file);
-    setShowBtn(true);
   };
 
-  const handleUpload = async () => {
-    if (selectedImage) {
-      setLoading(true);
+  useEffect(() => {
+    const handleUpload = async () => {
+      if (selectedImage) {
+        setLoading(true);
 
-      const formData = new FormData();
-      formData.append('image', selectedImage);
-
-      try {
-        const response = await axios.post(`${baseUrl}/api/Users/upload/${decodedUserId}`, formData, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
-        setUser(prevUser => ({ ...prevUser, profilePicturePath: response.data.filePath }));
-        setShowBtn(false);
-      } catch (error) {
-        console.error('Error updating profile picture:', error);
-      } finally {
-        setLoading(false);
+        const formData = new FormData();
+        formData.append('image', selectedImage);
+        try {
+          const response = await axios.post(`${baseUrl}/api/Users/upload/${decodedUserId}`, formData, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+          setUser(prevUser => ({ ...prevUser, profilePicturePath: response.data.filePath }));
+          updateProfileImageUrl(decodedUserId, `${baseUrl}/${response.data.filePath}`);
+        } catch (error) {
+          console.error('Error updating profile picture:', error);
+        } finally {
+          setLoading(false);
+        }
       }
-    }
-  };
+    };
+
+    handleUpload(); // Call handleUpload when selectedImage changes
+  }, [selectedImage, keygenUser, decodedUserId]);
 
   const getModuleNameById = (moduleId) => {
     const module = modules.find(m => m.moduleID === moduleId);
@@ -121,37 +105,16 @@ const ViewUser = () => {
   };
 
   const handlePermissionUpdate = (permissionId, field) => {
-    const updatedPermissionsCopy = permissions.map(permission => {
+    const updatedPermissions = permissions.map(permission => {
       if (permission.permissionID === permissionId) {
         return { ...permission, [field]: !permission[field] };
       }
       return permission;
     });
 
-    axios.put(`${permissionApi}/${permissionId}`, updatedPermissionsCopy.find(p => p.permissionID === permissionId), { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+    axios.put(`${permissionApi}/${permissionId}`, updatedPermissions.find(p => p.permissionID === permissionId), { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(res => {
-        const updatedPermission = updatedPermissionsCopy.find(p => p.permissionID === permissionId);
-        let updatedModulePermissions = updatedPermissionsCopy.filter(p => p.moduleID === updatedPermission.moduleID);
-
-        if (field === "can_Delete" && updatedPermission.can_Delete) {
-          updatedModulePermissions.forEach(p => {
-            p.can_View = true;
-            p.can_Add = true;
-            p.can_Update = true;
-            p.can_Delete = true;
-          });
-        } else if (field === "can_Update" && updatedPermission.can_Update) {
-          updatedModulePermissions.forEach(p => {
-            p.can_View = true;
-            p.can_Add = true;
-          });
-        } else if (field === "can_Add" && updatedPermission.can_Add) {
-          updatedModulePermissions.forEach(p => {
-            p.can_View = true;
-          });
-        }
-
-        setPermissions(updatedPermissionsCopy);
+        setPermissions(updatedPermissions);
       })
       .catch(err => {
         console.log(err);
@@ -171,11 +134,6 @@ const ViewUser = () => {
                   <i className="fa fa-pencil" style={{ color: "#fff" }} ></i>
                 </div>
               </div>
-              {showBtn && (
-                <button className="btn btn-sm btn-primary" onClick={handleUpload} disabled={loading}>
-                  {loading ? 'Loading...' : 'Submit'}
-                </button>
-              )}
               <h5>{`${user.firstName} ${user.middleName} ${user.lastName}`}</h5>
               <p style={{ lineHeight: '1' }}>{user.designation}</p>
             </Container>

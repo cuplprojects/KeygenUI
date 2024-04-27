@@ -1,13 +1,12 @@
 import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { CContainer } from '@coreui/react';
 import PermissionDecorator from './../context/PermissionDecorator';
-import { Spinner } from 'react-bootstrap';
+import { Container, Spinner } from 'react-bootstrap';
 import routes from './../routes';
 
 const AppContent = () => {
   return (
-    <CContainer className="px-4" lg>
+    <Container fluid className="px-4" >
       <Suspense fallback={<div className="h-100 w-100 d-flex align-items-center justify-content-center">
         <Spinner color="primary" variant="grow" />
       </div>}>
@@ -18,7 +17,7 @@ const AppContent = () => {
           <Route path="*" element={<Navigate to="/dashboard" />} />
         </Routes>
       </Suspense>
-    </CContainer>
+    </Container>
   );
 };
 

@@ -143,7 +143,7 @@ const Login = () => {
             </div>
             <Row className='align-items-center'>
               <Col xs={12} sm={6} className='text-center text-sm-center text-md-start mb-2 mb-sm-0'>
-                <Button typeof='submit' color="primary" className="px-4 w-100" onClick={handleLogin} disabled={loading}>
+                <Button type='submit' color="primary" className="px-4 w-100" onClick={handleLogin} disabled={loading}>
                   {loading ? <Spinner animation="border" size="sm" className="me-2" /> : null}
                   Login
                 </Button>

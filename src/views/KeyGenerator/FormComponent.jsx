@@ -24,6 +24,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [numberOfQuestions, setNumberOfQuestions] = useState(0);
     const [editedBookletSize, setEditedBookletSize] = useState(null);
     const [noconfigError, setNoconfigError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         async function fetchProgrammes() {
@@ -190,6 +191,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             const formdataForSubmit = new FormData();
             formdataForSubmit.append('file', blob, `file_${Date.now()}.csv`);
             const url = `${baseUrl}/api/FormData?ProgID=${selectedProgramme.value}&CatchNumber=${selectedPaperData.catchNumber}&PaperID=${selectedPaperData.paperID}`;
+            setLoading(true);
 
             const response = await axios.post(url, formdataForSubmit, {
                 headers: {
@@ -311,7 +313,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                         />
                     </Form.Group>
                     <div className="d-grid gap-2 mt-4">
-                        <Button type="submit" disabled={!editing && formSubmitted}>Upload and Save Master data</Button>
+                        <Button type="submit" disabled={!editing && formSubmitted && loading}>Upload and Save Master data</Button>
                         {!editing && formSubmitted && (
                             // <Button onClick={handleEdit}>Edit Form</Button>
                             <></>

@@ -51,10 +51,19 @@ const UserTable = ({ users, hasPermission }) => {
           </thead>
           <tbody className='text-center'>
             {users.map((user) => (
-              
+
               <tr className='c-pointer' key={user.userId} onClick={() => handleRowClick(user.userId)}>
                 <td>{user.userId}</td>
-                <td><img className="rounded-circle" src={user.profilePicturePath ? `${baseUrl}/${user.profilePicturePath}` : DefaultAvatar} alt="" width="50px" height='50px' /></td>
+                <td>
+                  <img
+                  key={user.userId} // Use a unique identifier for the key
+                  className="rounded-circle"
+                  src={user.profilePicturePath ? `${baseUrl}/${user.profilePicturePath}` : DefaultAvatar}
+                  alt=""
+                  width="50px"
+                  height="50px"
+                />
+                </td>
                 <td className='text-capitalize'>{user.name}</td>
                 <td>{user.email}</td>
                 <td>{user.mobileNumber}</td>

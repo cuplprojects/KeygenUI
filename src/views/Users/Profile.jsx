@@ -106,7 +106,7 @@ const Profile = () => {
                                     <FontAwesomeIcon icon={faLock} className='me-3' /> Security
                                 </Accordion.Header>
                                 <Accordion.Body className='rounded'>
-                                    <Accordion defaultActiveKey="3">
+                                    <Accordion defaultActiveKey="0">
                                         <Accordion.Item eventKey="3">
                                             <Accordion.Header>
                                                 <FontAwesomeIcon icon={faKey} className='me-3' /> Change Password

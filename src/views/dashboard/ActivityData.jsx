@@ -3,14 +3,26 @@ import { Table } from 'react-bootstrap';
 import $ from 'jquery';
 import PropTypes from 'prop-types';
 
-const ActivityData = ({ activities }) => {
+const ActivityData = ({ activities, setDataCount }) => {
     const tableRef = useRef(null);
 
     useEffect(() => {
         $(tableRef.current).DataTable({
-            order: [[2, 'desc']]
+            order: [[2, 'desc']],
+            lengthMenu: [5],
         });
+
+        // // Log the selected length whenever the user changes the number of entries per page
+        // $(tableRef.current).on('length.dt', (e, settings, len) => {
+        //     setDataCount(len)
+        // });
+
+        // // Clean up the event listeners when the component unmounts
+        // return () => {
+        //     $(tableRef.current).off('length.dt');
+        // };
     }, []);
+    
 
     const formatDateTime = (dateTimeString) => {
         const date = new Date(dateTimeString);
@@ -24,9 +36,9 @@ const ActivityData = ({ activities }) => {
     };
 
     return (
-        <Table striped bordered hover ref={tableRef}>
+        <Table striped bordered hover ref={tableRef} >
             <thead>
-                <tr>
+                <tr >
                     <th>Event</th>
                     <th>Category</th>
                     <th>Logged At</th>
@@ -47,6 +59,7 @@ const ActivityData = ({ activities }) => {
 
 ActivityData.propTypes = {
     activities: PropTypes.array.isRequired,
+    setDataCount: PropTypes.func.isRequired,
 };
 
 export default ActivityData;

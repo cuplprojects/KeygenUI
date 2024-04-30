@@ -17,7 +17,7 @@ a{
 /* Add these styles to your existing CSS */
 
 .loginicon {
-    background: url('./../assets/images/loginicon.png');
+    background: url('./../assets/images/loginimgstory.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
@@ -25,7 +25,7 @@ a{
     backdrop-filter: blur(5px);
 }
 .loginbg {
-    background: url('https://img.freepik.com/free-vector/white-abstract-background-design_361591-897.jpg?size=626&ext=jpg&ga=GA1.1.967398460.1707111848&semt=ais');
+    background: url('./../assets/images/bg.svg');
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;

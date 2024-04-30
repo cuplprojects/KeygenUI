@@ -55,7 +55,7 @@ const KeysTable = ({ papers, token }) => {
       <Table striped bordered hover ref={tableRef}>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>SN.</th>
             <th>Program Name</th>
             <th>Catch Number</th>
             <th>Paper Name</th>
@@ -67,9 +67,9 @@ const KeysTable = ({ papers, token }) => {
           </tr>
         </thead>
         <tbody>
-          {papers.map((paper) => (
+          {papers.map((paper, index) => (
             <tr key={paper.paperID}>
-              <td>{paper.paperID}</td>
+              <td>{index+1}</td>
               <td>{paper.programmeName}</td>
               <td>{paper.catchNumber}</td>
               <td>{paper.paperName}</td>

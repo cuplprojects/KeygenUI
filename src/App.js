@@ -63,7 +63,7 @@ const App = () => {
           >
             {/* Define the routes using 'Routes' component */}
             <Routes>
-              <Route exact path="/" element={<Navigate to="/dashboard" />} />
+              <Route exact path="/" element={<Navigate to="/login" />} />
               <Route path="/login" element={<Login />} />
               <Route path="/ForgotPassword" element={<ForgotPassword />} />
 

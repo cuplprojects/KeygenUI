@@ -214,13 +214,30 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         }
     };
 
+    const resetFormState = () => {
+        setFormData([]);
+        setSelectedPaper('');
+        setPapers([]);
+        setSelectedPaperData(null);
+        setBookletSize(null);
+        setNumberOfQuestions(0);
+        setEditedBookletSize(null);
+        setNoconfigError("");
+        setLoading(false);
+    };
+    
+    // Call resetFormState wherever needed to clear all state values
+    // For example, in SelectedProgrammechange function:
+    
     const SelectedProgrammechange = (selectedOption) => {
+        resetFormState();
+    
         setSelectedProgramme(selectedOption);
-
+    
         // Store selected programme in sessionStorage
         sessionStorage.setItem('selectedProgramme', JSON.stringify(selectedOption));
     };
-
+    
 
     const handleEdit = () => {
         setEditing(true);

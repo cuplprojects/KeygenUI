@@ -11,9 +11,11 @@ const ActivityTable = () => {
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [datacount, setDataCount] = useState(5)
+    
 
     useEffect(() => {
-        fetch(`${baseUrl}/api/Logs/Events/${keygenUser?.userID}`, {
+        fetch(`${baseUrl}/api/Logs/Events/User/${keygenUser?.userID}/count/${datacount}`, {
             headers: {
                 'Authorization': `Bearer ${keygenUser?.token}`
             }
@@ -42,7 +44,7 @@ const ActivityTable = () => {
             ) : error ? (
                 <Alert variant="danger">{error}</Alert>
             ) : (
-                <ActivityData activities={activities} />
+                <ActivityData activities={activities} setDataCount={setDataCount} />
             )}
         </Container>
     );

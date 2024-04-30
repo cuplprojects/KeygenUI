@@ -7,6 +7,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClockRotateLeft, faKey, faLock, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 import { useProfileImage } from './../../context/ProfileImageProvider'; // Import the context hook
+import ActivityTable from '../dashboard/ActivityTable';
+import ChangePasswordForm from '../pages/ChangePassword/ChangePasswordForm';
 
 const BaseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -101,15 +103,27 @@ const Profile = () => {
                         <Accordion defaultActiveKey="0">
                             <Accordion.Item eventKey="0">
                                 <Accordion.Header>
-                                    <FontAwesomeIcon icon={faLock} className='me-3' /> Security</Accordion.Header>
+                                    <FontAwesomeIcon icon={faLock} className='me-3' /> Security
+                                </Accordion.Header>
                                 <Accordion.Body className='rounded'>
-                                    <Link to={'/ChangePassword'}><FontAwesomeIcon icon={faKey} className='me-3' /> Change Password</Link>
+                                    <Accordion defaultActiveKey="3">
+                                        <Accordion.Item eventKey="3">
+                                            <Accordion.Header>
+                                                <FontAwesomeIcon icon={faKey} className='me-3' /> Change Password
+                                            </Accordion.Header>
+                                            <Accordion.Body className='rounded'>
+                                                <ChangePasswordForm />
+                                            </Accordion.Body>
+                                        </Accordion.Item>
+                                    </Accordion>
                                 </Accordion.Body>
                             </Accordion.Item>
                             <Accordion.Item eventKey="1" className='mt-3 rounded'>
-                                <Accordion.Header><FontAwesomeIcon icon={faClockRotateLeft} className='me-3' />Activity</Accordion.Header>
+                                <Accordion.Header>
+                                    <FontAwesomeIcon icon={faClockRotateLeft} className='me-3' /> Activity
+                                </Accordion.Header>
                                 <Accordion.Body>
-                                    No Activity Found.
+                                    <ActivityTable />
                                 </Accordion.Body>
                             </Accordion.Item>
                         </Accordion>

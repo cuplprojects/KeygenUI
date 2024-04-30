@@ -135,15 +135,7 @@ const Dashboard = () => {
               </Card.Body>
             </Card>
             <CRow>
-              <CCol xs={8}>
-                <CCard className="mb-4">
-                  <CCardHeader>My Activities</CCardHeader>
-                  <CCardBody>
-                    <ActivityTable />
-                  </CCardBody>
-                </CCard>
-              </CCol>
-              <CCol xs={4}>
+            <CCol xs={12} md={4}>
                 <CCard className="mb-4">
                   <CCardHeader>Paper Status</CCardHeader>
                   <CCardBody>
@@ -179,6 +171,15 @@ const Dashboard = () => {
                   </CCardBody>
                 </CCard>
               </CCol>
+              <CCol xs={12} md={8}>
+                <CCard className="mb-4">
+                  <CCardHeader>My Activities</CCardHeader>
+                  <CCardBody>
+                    <ActivityTable />
+                  </CCardBody>
+                </CCard>
+              </CCol>
+
             </CRow>
           </div>
         </>

@@ -10,6 +10,7 @@ const ActivityData = ({ activities, setDataCount }) => {
         $(tableRef.current).DataTable({
             order: [[2, 'desc']],
             lengthMenu: [5],
+            retrieve: true,
         });
 
         // // Log the selected length whenever the user changes the number of entries per page
@@ -22,7 +23,7 @@ const ActivityData = ({ activities, setDataCount }) => {
         //     $(tableRef.current).off('length.dt');
         // };
     }, []);
-    
+
 
     const formatDateTime = (dateTimeString) => {
         const date = new Date(dateTimeString);
@@ -36,24 +37,26 @@ const ActivityData = ({ activities, setDataCount }) => {
     };
 
     return (
-        <Table striped bordered hover ref={tableRef} >
-            <thead>
-                <tr >
-                    <th>Event</th>
-                    <th>Category</th>
-                    <th>Logged At</th>
-                </tr>
-            </thead>
-            <tbody>
-                {activities.slice().reverse().map((activity) => (
-                    <tr key={activity.eventID}>
-                        <td>{activity.event}</td>
-                        <td>{activity.category}</td>
-                        <td>{formatDateTime(activity.loggedAT)}</td>
+        <div className='table-responsive'>
+            <Table striped bordered hover ref={tableRef} >
+                <thead>
+                    <tr >
+                        <th>Event</th>
+                        <th>Category</th>
+                        <th>Logged At</th>
                     </tr>
-                ))}
-            </tbody>
-        </Table>
+                </thead>
+                <tbody>
+                    {activities.slice().reverse().map((activity) => (
+                        <tr key={activity.eventID}>
+                            <td>{activity.event}</td>
+                            <td>{activity.category}</td>
+                            <td>{formatDateTime(activity.loggedAT)}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
+        </div>
     );
 };
 

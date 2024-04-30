@@ -199,3 +199,19 @@ input[type=file]::-webkit-file-upload-button {
 .CSV8 { background-color: lightseagreen !important; color: white !important; }
 .CSV9 { background-color: lightgrey !important; color: black !important; }
 .CSV10 { background-color: lightskyblue !important; color: black !important; }
+
+/* side bar scroller  */
+/* Define scrollbar styles for WebKit browsers (Chrome, Safari) */
+.sidebar-nav::-webkit-scrollbar {
+  width: 10px; /* Set the width of the scrollbar */
+}
+/* Define the track styles */
+.sidebar-nav::-webkit-scrollbar-track {
+  background: #dadada; /* Set the background color of the track */
+  border-radius: 10px;
+}
+/* Define the thumb styles */
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #888; /* Set the color of the scrollbar thumb */
+  border-radius: 10px;
+}

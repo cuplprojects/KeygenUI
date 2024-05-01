@@ -41,8 +41,13 @@ const Profile = () => {
 
     const handleImageChange = (event) => {
         const file = event.target.files[0];
-        setSelectedImage(file);
+        if (file && ['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+            setSelectedImage(file);
+        } else {
+            alert('Please select a PNG, JPG, or JPEG image file.');
+        }
     };
+    
 
     useEffect(() => {
         const handleUpload = async () => {

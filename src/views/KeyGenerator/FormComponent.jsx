@@ -26,6 +26,45 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [noconfigError, setNoconfigError] = useState("");
     const [loading, setLoading] = useState(false);
 
+
+    useEffect(() => {
+        setFormData([])
+
+    }, [selectedPaper])
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get(
+                    `${baseUrl}/api/FormData?progID=${selectedPaperData.programmeID}&CatchNumber=${selectedPaperData.catchNumber}&PaperID=${selectedPaperData.paperID}`,
+                    { headers: { Authorization: `Bearer ${keygenUser?.token}` } }
+                );
+                const transformedData = response.data.map((item, index) => ({
+                    key: item.answer,
+                    page: item.pageNumber,
+                    qNumber: item.questionNumber,
+                    sn: index + 1
+                }));
+                if (transformedData.length > 0) {
+                    setFormData(transformedData);
+                    setBookletSize(selectedPaper.bookletSize);
+                    setFormSubmitted(true);
+                    setEditing(false);
+                    setLoading(true);
+                }
+            } catch (error) {
+                console.error('Error fetching form data:', error);
+            }
+        };
+        if (selectedPaperData) {
+            fetchData();
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedPaperData, keygenUser?.token]);
+
+
     useEffect(() => {
         async function fetchProgrammes() {
             try {
@@ -135,7 +174,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                 };
                 setBookletSize(editedBookletSize)
                 setSelectedPaperData(updatedPaperData);
-                window.location.reload();
+                setFormData([])
             } catch (error) {
                 console.error("Error updating paper data:", error);
             }
@@ -225,19 +264,19 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         setNoconfigError("");
         setLoading(false);
     };
-    
+
     // Call resetFormState wherever needed to clear all state values
     // For example, in SelectedProgrammechange function:
-    
+
     const SelectedProgrammechange = (selectedOption) => {
         resetFormState();
-    
+
         setSelectedProgramme(selectedOption);
-    
+
         // Store selected programme in sessionStorage
         sessionStorage.setItem('selectedProgramme', JSON.stringify(selectedOption));
     };
-    
+
 
     const handleEdit = () => {
         setEditing(true);

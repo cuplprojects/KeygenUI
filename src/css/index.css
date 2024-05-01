@@ -9,7 +9,8 @@
 .scale-1-2:hover {
     transform: scale(1.2);
 }
-a{
+
+a {
     text-decoration: none;
 }
 
@@ -24,6 +25,7 @@ a{
     -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
 }
+
 .loginbg {
     background: url('./../assets/images/bg.svg');
     background-position: center;
@@ -31,7 +33,8 @@ a{
     background-size: cover;
     backdrop-filter: blur(5px);
 }
-.blur-5{
+
+.blur-5 {
     -webkit-backdrop-filter: blur(50px);
     backdrop-filter: blur(5px);
 }
@@ -56,7 +59,8 @@ a{
     border-radius: 50%;
     border: 6px solid #eaeaea;
     width: 100%;
-    height: 150px; /* Updated to 150px */
+    height: 150px;
+    /* Updated to 150px */
     /* Ensuring the image takes up the full container */
 }
 
@@ -65,9 +69,12 @@ a{
     bottom: 0;
     right: 0;
     background: #00B4FF;
-    width: 40px; /* Updated to 40px */
-    height: 40px; /* Updated to 40px */
-    line-height: 40px; /* Updated to 40px */
+    width: 40px;
+    /* Updated to 40px */
+    height: 40px;
+    /* Updated to 40px */
+    line-height: 40px;
+    /* Updated to 40px */
     text-align: center;
     border-radius: 50%;
     overflow: hidden;
@@ -86,7 +93,7 @@ input[type=file]::-webkit-file-upload-button {
 
 
 /* Admin dashboard cards */
-.counter{
+.counter {
     color: #f27f21;
     font-family: 'Open Sans', sans-serif;
     text-align: center;
@@ -99,12 +106,13 @@ input[type=file]::-webkit-file-upload-button {
     position: relative;
     z-index: 1;
 }
+
 .counter:before,
-.counter:after{
+.counter:after {
     content: "";
     background: #f3f3f3;
     border-radius: 20px;
-    box-shadow: 4px 4px 2px rgba(0,0,0,0.2);
+    box-shadow: 4px 4px 2px rgba(0, 0, 0, 0.2);
     position: absolute;
     left: 15px;
     top: 15px;
@@ -112,7 +120,8 @@ input[type=file]::-webkit-file-upload-button {
     right: 15px;
     z-index: -1;
 }
-.counter:after{
+
+.counter:after {
     background: transparent;
     width: 100px;
     height: 100px;
@@ -126,14 +135,19 @@ input[type=file]::-webkit-file-upload-button {
     bottom: -10px;
     right: auto;
 }
-.counter .counter-icon{
+
+.counter .counter-icon {
     font-size: 35px;
     line-height: 35px;
     margin: 0 0 15px;
     transition: all 0.3s ease 0s;
 }
-.counter:hover .counter-icon{ transform: rotateY(360deg); }
-.counter .counter-value{
+
+.counter:hover .counter-icon {
+    transform: rotateY(360deg);
+}
+
+.counter .counter-value {
     color: #555;
     font-size: 30px;
     font-weight: 600;
@@ -142,7 +156,8 @@ input[type=file]::-webkit-file-upload-button {
     display: block;
     transition: all 0.3s ease 0s;
 }
-.counter-value1{
+
+.counter-value1 {
     color: #555;
     font-size: 30px;
     font-weight: 600;
@@ -151,67 +166,197 @@ input[type=file]::-webkit-file-upload-button {
     display: block;
     transition: all 0.3s ease 0s;
 }
-.counter:hover .counter-value{ text-shadow: 2px 2px 0 #d1d8e0; }
-.counter h3{
+
+.counter:hover .counter-value {
+    text-shadow: 2px 2px 0 #d1d8e0;
+}
+
+.counter h3 {
     font-size: 17px;
     font-weight: 700;
     text-transform: uppercase;
     margin: 0 0 15px;
 }
-.counter.blue{
+
+.counter.blue {
     color: #4accdb;
     border-color: #4accdb;
 }
-.counter.blue:after{
+
+.counter.blue:after {
     border-bottom-color: #4accdb;
     border-left-color: #4accdb;
 }
-.counter.red{
+
+.counter.red {
     color: #ff663c;
     border-color: #ff663c;
 }
-.counter.red:after{
+
+.counter.red:after {
     border-bottom-color: #ff663c;
     border-left-color: #ff663c;
 }
-.counter.lightgreen{
+
+.counter.lightgreen {
     color: #4caf50;
     border-color: #4caf50;
 }
-.counter.lightgreen:after{
+
+.counter.lightgreen:after {
     border-bottom-color: #4caf50;
     border-left-color: #4caf50;
 }
-@media screen and (max-width:990px){
-    .counter{ margin-bottom: 40px; }
+
+@media screen and (max-width:990px) {
+    .counter {
+        margin-bottom: 40px;
+    }
 }
 
 
 
 /* for key table */
-.CSV1 { background-color: lightblue !important; color: black !important; }
-.CSV2 { background-color: lightgreen !important; color: black !important; }
-.CSV3 { background-color: lightpink !important; color: black !important; }
-.CSV4 { background-color: rgb(218, 218, 103) !important; color: black !important; }
-.CSV5 { background-color: lightsalmon !important; color: black !important; }
-.CSV6 { background-color: lightcyan !important; color: black !important; }
-.CSV7 { background-color: lightcoral !important; color: black !important; }
-.CSV8 { background-color: lightseagreen !important; color: white !important; }
-.CSV9 { background-color: lightgrey !important; color: black !important; }
-.CSV10 { background-color: lightskyblue !important; color: black !important; }
+.CSV1 {
+    background-color: lightblue !important;
+    color: black !important;
+}
+
+.CSV2 {
+    background-color: lightgreen !important;
+    color: black !important;
+}
+
+.CSV3 {
+    background-color: lightpink !important;
+    color: black !important;
+}
+
+.CSV4 {
+    background-color: rgb(218, 218, 103) !important;
+    color: black !important;
+}
+
+.CSV5 {
+    background-color: lightsalmon !important;
+    color: black !important;
+}
+
+.CSV6 {
+    background-color: lightcyan !important;
+    color: black !important;
+}
+
+.CSV7 {
+    background-color: lightcoral !important;
+    color: black !important;
+}
+
+.CSV8 {
+    background-color: lightseagreen !important;
+    color: white !important;
+}
+
+.CSV9 {
+    background-color: lightgrey !important;
+    color: black !important;
+}
+
+.CSV10 {
+    background-color: lightskyblue !important;
+    color: black !important;
+}
 
 /* side bar scroller  */
 /* Define scrollbar styles for WebKit browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
-  width: 10px; /* Set the width of the scrollbar */
+    width: 10px;
+    /* Set the width of the scrollbar */
 }
+
 /* Define the track styles */
 ::-webkit-scrollbar-track {
-  background: #dadada; /* Set the background color of the track */
-  border-radius: 10px;
+    background: #dadada;
+    /* Set the background color of the track */
+    border-radius: 10px;
 }
+
 /* Define the thumb styles */
 ::-webkit-scrollbar-thumb {
-  background: #888; /* Set the color of the scrollbar thumb */
-  border-radius: 10px;
+    background: #888;
+    /* Set the color of the scrollbar thumb */
+    border-radius: 10px;
+}
+
+/* paper progress tracking  */
+
+ol.progress-meter {
+    padding-bottom: 9.5px;
+    list-style-type: none;
+}
+
+ol.progress-meter li {
+    display: inline-block;
+    text-align: center;
+    text-indent: -19px;
+    height: 39.3px;
+    width: 24.99%;
+    font-size: 12px;
+    border-bottom-width: 4px;
+    border-bottom-style: solid;
+}
+
+ol.progress-meter li:before {
+    position: relative;
+    float: left;
+    text-indent: 0;
+    left: -webkit-calc(50% - 9.5px);
+    left: -moz-calc(50% - 9.5px);
+    left: -ms-calc(50% - 9.5px);
+    left: -o-calc(50% - 9.5px);
+    left: calc(50% - 9.5px);
+}
+
+ol.progress-meter li.done {
+    font-size: 12px;
+}
+
+ol.progress-meter li.done:before {
+    content: "\2713";
+    height: 19px;
+    width: 19px;
+    line-height: 21.85px;
+    bottom: -28.175px;
+    border: none;
+    border-radius: 19px;
+}
+
+ol.progress-meter li.todo {
+    font-size: 12px;
+}
+
+ol.progress-meter li.todo:before {
+    content: "\2B24";
+    font-size: 17.1px;
+    bottom: -26.95px;
+    line-height: 18.05px;
+}
+
+ol.progress-meter li.done {
+    color: black;
+    border-bottom-color: yellowgreen;
+}
+
+ol.progress-meter li.done:before {
+    color: white;
+    background-color: yellowgreen;
+}
+
+ol.progress-meter li.todo {
+    color: silver;
+    border-bottom-color: silver;
+}
+
+ol.progress-meter li.todo:before {
+    color: silver;
 }

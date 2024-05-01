@@ -1,286 +1,112 @@
-// import React, { useState, useEffect } from 'react';
-// import { Form, Container, Row, Col } from 'react-bootstrap';
-// import { useParams } from 'react-router-dom';
-// import { useSecurity } from './../../../context/Security';
-// import { useUser } from './../../../context/UserContext';
-// import axios from 'axios';
-// const baseUrl = process.env.REACT_APP_BASE_URL;
-
-// const ViewPaper = () => {
-//   const { keygenUser } = useUser();
-//   const { decrypt } = useSecurity();
-//   const { paperID } = useParams();
-//   const [paper, setPaper] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [programs, setPrograms] = useState([]);
-//   const [subjects, setSubjects] = useState([]);
-//   const [formDisabled, setFormDisabled] = useState(true);
-//   const [buttonText, setButtonText] = useState('Update');
-//   const [gkbuttonText, setgkButtonText] = useState('');
-
-//   const handleChange = (name, value) => {
-//     setPaper({
-//       ...paper,
-//       [name]: value
-//     });
-//   };
-
-//   const updatePaper = () => {
-//     axios.put(`${baseUrl}/api/Papers/${decrypt(paperID)}`, paper, {
-//       headers: { Authorization: `Bearer ${keygenUser?.token}` }
-//     })
-//       .then(response => {
-//         console.log('Paper updated successfully:', response.data);
-//         setFormDisabled(true);
-//         setButtonText('Update');
-//       })
-//       .catch(error => {
-//         console.error('Error updating paper:', error);
-//         // Handle error appropriately, such as displaying an error message to the user
-//       });
-//   };
-
-//   const fetchPaper = () => {
-//     fetch(`${baseUrl}/api/Papers/${decrypt(paperID)}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-//       .then(response => response.json())
-//       .then(data => {
-//         setPaper(data);
-//         setLoading(false);
-//       })
-//       .catch(error => {
-//         console.error('Error fetching paper:', error);
-//         setLoading(false);
-//       });
-//   };
-
-//   const fetchPrograms = () => {
-//     fetch(`${baseUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-//       .then(response => response.json())
-//       .then(data => {
-//         setPrograms(data);
-//       })
-//       .catch(error => {
-//         console.error('Error fetching programs:', error);
-//       });
-//   };
-
-//   const fetchSubjects = () => {
-//     fetch(`${baseUrl}/api/Subjects`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-//       .then(response => response.json())
-//       .then(data => {
-//         setSubjects(data);
-//       })
-//       .catch(error => {
-//         console.error('Error fetching subjects:', error);
-//       });
-//   };
-
-//   useEffect(() => {
-//     fetchPaper();
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, []);
-
-//   useEffect(() => {
-//     if (paper) {
-//       fetchPrograms();
-//       fetchSubjects();
-//     }
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [paper]);
-
-//   const formatDate = (dateString) => {
-//     const date = new Date(dateString);
-//     const day = date.getDate();
-//     const month = date.getMonth() + 1;
-//     const year = date.getFullYear();
-//     return `${day}/${month}/${year}`;
-//   };
-
-//   return (
-//     <Container className="userform border border-3 p-4 my-3">
-//       <div className="d-flex justify-content-between m-3">
-//         <h3>View Paper</h3>
-//       </div>
-//       <hr />
-//       {loading && <div>Loading...</div>}
-//       {paper && (
-//         <Form>
-//           <Row className='mb-3'>
-//             <Col>
-//               <Form.Group controlId='paperName'>
-//                 <Form.Label>Paper Name</Form.Label>
-//                 <Form.Control
-//                   type='text'
-//                   name='paperName'
-//                   value={paper.paperName}
-//                   onChange={(e) => handleChange('paperName', e.target.value)}
-//                   disabled={formDisabled}
-//                 />
-//               </Form.Group>
-//             </Col>
-//             <Col>
-//               <Form.Group controlId='catchNumber'>
-//                 <Form.Label>Catch Number</Form.Label>
-//                 <Form.Control
-//                   type='text'
-//                   name='catchNumber'
-//                   value={paper.catchNumber}
-//                   onChange={(e) => handleChange('catchNumber', e.target.value)}
-//                   disabled={formDisabled}
-//                 />
-//               </Form.Group>
-//             </Col>
-//             <Col>
-//               <Form.Group controlId='paperCode'>
-//                 <Form.Label>Paper Code</Form.Label>
-//                 <Form.Control
-//                   type='text'
-//                   name='paperCode'
-//                   value={paper.paperCode}
-//                   onChange={(e) => handleChange('paperCode', e.target.value)}
-//                   disabled={formDisabled}
-//                 />
-//               </Form.Group>
-//             </Col>
-//           </Row>
-//           <Row className='mb-3'>
-//             <Col>
-//               <Form.Group controlId='program'>
-//                 <Form.Label>Program</Form.Label>
-//                 <Form.Control
-//                   as='select'
-//                   name='program'
-//                   value={paper.programmeID}
-//                   onChange={(e) => handleChange('program', e.target.value)}
-//                   disabled={formDisabled}
-//                 >
-//                   {programs.map(program => (
-//                     <option key={program.programmeID} value={program.programmeID}>
-//                       {program.programmeName}
-//                     </option>
-//                   ))}
-//                 </Form.Control>
-//               </Form.Group>
-//             </Col>
-//             <Col>
-//               <Form.Group controlId='examCode'>
-//                 <Form.Label>Exam Code</Form.Label>
-//                 <Form.Control
-//                   type='text'
-//                   name='examCode'
-//                   value={paper.examCode}
-//                   onChange={(e) => handleChange('examCode', e.target.value)}
-//                   disabled={formDisabled}
-//                 />
-//               </Form.Group>
-//             </Col>
-//             <Col>
-//               <Form.Group controlId='subjectID'>
-//                 <Form.Label>Subject</Form.Label>
-//                 <Form.Control
-//                   as='select'
-//                   name='subjectID'
-//                   value={paper.subjectID}
-//                   onChange={(e) => handleChange('subjectID', e.target.value)}
-//                   disabled={formDisabled}
-//                 >
-//                   {subjects.map(subject => (
-//                     <option key={subject.subjectID} value={subject.subjectID}>
-//                       {subject.subjectName}
-//                     </option>
-//                   ))}
-//                 </Form.Control>
-//               </Form.Group>
-//             </Col>
-//           </Row>
-//           <Row className='mb-3'>
-//             <Col>
-//               <Form.Group controlId='paperNumber'>
-//                 <Form.Label>Paper Number</Form.Label>
-//                 <Form.Control
-//                   type='text'
-//                   name='paperNumber'
-//                   value={paper.paperNumber}
-//                   onChange={(e) => handleChange('paperNumber', e.target.value)}
-//                   disabled={formDisabled}
-//                 />
-//               </Form.Group>
-//             </Col>
-//             <Col>
-//               <Form.Group controlId='examDate'>
-//                 <Form.Label>Exam Date</Form.Label>
-//                 <Form.Control
-//                   type='text'
-//                   name='examDate'
-//                   value={formatDate(paper.examDate)}
-//                   onChange={(e) => handleChange('examDate', e.target.value)}
-//                   disabled={formDisabled}
-//                 />
-//               </Form.Group>
-//             </Col>
-//             <Col>
-//               <Form.Group controlId='bookletSize'>
-//                 <Form.Label>Booklet Size</Form.Label>
-//                 <Form.Control
-//                   type='text'
-//                   name='bookletSize'
-//                   value={paper.bookletSize}
-//                   onChange={(e) => handleChange('bookletSize', e.target.value)}
-//                   disabled={formDisabled}
-//                 />
-//               </Form.Group>
-//             </Col>
-//           </Row>
-//         </Form>
-//       )}
-//       <button
-//         className="btn btn-primary"
-//         onClick={() => {
-//           if (formDisabled) {
-//             setFormDisabled(false);
-//             setButtonText('Submit');
-//           } else {
-//             updatePaper();
-//           }
-//         }}
-//       >
-//         {buttonText}
-//       </button>
-//       <button className="btn btn-primary m-3"
-//       >{gkbuttonText}</button>
-//     </Container>
-//   );
-// };
-
-// export default ViewPaper;
-
 import React, { useState, useEffect } from 'react';
-import { Form, Container, Row, Col } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
+import { Form, Container, Row, Col, Card, Table, Button } from 'react-bootstrap';
+import { Link, useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
 import { useUser } from './../../../context/UserContext';
 import axios from 'axios';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUpload, faDownload, faKey } from '@fortawesome/free-solid-svg-icons';
+
+
+// import Select from 'react-select';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const ViewPaper = () => {
   const { keygenUser } = useUser();
   const { decrypt } = useSecurity();
   const { paperID } = useParams();
+  const navigate = useNavigate();
   const [paper, setPaper] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [programs, setPrograms] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [formDisabled, setFormDisabled] = useState(true);
   const [buttonText, setButtonText] = useState('Update');
-  const [gkbuttonText, setGkButtonText] = useState('');
-  const navigate = useNavigate();
+  const [pdfFile, setPdfFile] = useState(null);
+  const [pdfDataUrl, setPdfDataUrl] = useState('');
+
+
+  useEffect(() => {
+    fetchPaper();
+    fetchSubjects();
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    if (paper && paper.paperID) {
+      axios.get(`${baseUrl}/api/getBooklet/${paper.paperID}`)
+        .then(response => {
+          setPdfDataUrl(response.data);
+        })
+        .catch(error => {
+          console.error('Error fetching file data:', error);
+        });
+    }
+  }, [paper]);
+  
+
 
   const handleChange = (name, value) => {
     setPaper({
       ...paper,
       [name]: value
     });
+  };
+
+  const handlePdfFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setPdfFile(selectedFile);
+  };
+
+  useEffect(() => {
+    if (pdfFile) {
+      handlePdfUpload();
+    }
+  }, [pdfFile]);
+
+
+  const handlePdfUpload = () => {
+    if (pdfFile) {
+      const reader = new FileReader();
+      reader.readAsDataURL(pdfFile);
+      reader.onload = () => {
+        const binaryData = reader.result;
+        console.log(binaryData);
+  
+        const decryptedPaperID = decrypt(paperID);
+  
+        axios.post(`${baseUrl}/api/uploadBooklet`, { paperID: decryptedPaperID, bookletData: binaryData }, {
+          headers: {
+            Authorization: `Bearer ${keygenUser?.token}`
+          }
+        }).then(() => {
+          alert('PDF uploaded successfully');
+          // Optionally, you can call fetchPaper() here to fetch updated paper data
+        }).catch(error => {
+          console.error('Error uploading PDF:', error);
+        });
+      };
+      reader.onerror = () => {
+        console.error('Error reading the PDF file');
+      };
+    } else {
+      console.error('No PDF file selected');
+    }
+  };
+  
+
+  const handleDownload = () => {
+    if (pdfDataUrl) {
+      const downloadLink = document.createElement('a');
+      downloadLink.href = pdfDataUrl;
+      downloadLink.download = `${paper.catchNumber}.pdf`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    } else {
+      console.error('No PDF data to download');
+    }
   };
 
   const updatePaper = () => {
@@ -290,46 +116,24 @@ const ViewPaper = () => {
       .then(response => {
         setFormDisabled(true);
         setButtonText('Update');
+        fetchPaper();
       })
       .catch(error => {
         console.error('Error updating paper:', error);
         // Handle error appropriately, such as displaying an error message to the user
       });
   };
-  // ${baseUrl}/api/Papers/${decrypt(paperID)}
+
   const fetchPaper = () => {
     fetch(`${baseUrl}/api/Papers/${decrypt(paperID)}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then(response => response.json())
       .then(data => {
         setPaper(data);
         setLoading(false);
-        if(!data.masterUploaded){
-          setGkButtonText("Upload Master");
-        }
-        else if (data.masterUploaded && !data.keyGenerated)
-        {
-          setGkButtonText("Generate Key");
-        }
-        else
-        {
-          setGkButtonText("View Keys");
-        }
-        
       })
       .catch(error => {
         console.error('Error fetching paper:', error);
         setLoading(false);
-      });
-  };
-
-  const fetchPrograms = () => {
-    fetch(`${baseUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
-      .then(response => response.json())
-      .then(data => {
-        setPrograms(data);
-      })
-      .catch(error => {
-        console.error('Error fetching programs:', error);
       });
   };
 
@@ -344,197 +148,257 @@ const ViewPaper = () => {
       });
   };
 
-  useEffect(() => {
-    fetchPaper();
-    fetchPrograms();
-    fetchSubjects();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const fetchCourses = () => {
+    fetch(`${baseUrl}/api/Courses`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+      .then(response => response.json())
+      .then(data => {
+        setCourses(data);
+      })
+      .catch(error => {
+        console.error('Error fetching courses:', error);
+      });
+  };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
+
+  const formatDateTimeForDisplay = (dateTimeString) => {
+    const date = new Date(dateTimeString);
     const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    let hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    const formattedDate = `${day}/${month}/${year}`;
+    const formattedTime = `${hours}:${minutes}:${seconds}`;
+    const amPM = hours >= 12 ? 'PM' : 'AM';
+
+    // Convert hours to 12-hour format
+    hours = hours % 12 || 12;
+
+    return `${formattedDate} ${hours}:${minutes} ${amPM}`;
   };
 
-  const handleClick = (gkbuttonTextinput) => {
-    if(gkbuttonTextinput === "Upload Master")
-    {
-      navigate("/KeyGenerator/Newkey")
-    }
-    else if(gkbuttonTextinput === "Generate Key")
-    {
-      
-      // const formData = {
-      //   iterations: parseInt(paperData.paperConfig.numberofJumblingSteps),
-      //   copies: parseInt(paperData.paperConfig.sets),
-      //   setofSteps: paperData.steps.map(step => step.split(',').map(s => s.trim())),
-      //   groupID: selectedPaperData.groupID,
-      //   subjectID: selectedPaperData.subjectID,
-      //   paperCode: selectedPaperData.paperCode,
-      //   catchNumber: selectedPaperData.catchNumber,
-      //   setID: 1,
-      // };
-    }
+  const formatDateTimeForInput = (dateTimeString) => {
+    const date = new Date(dateTimeString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    let hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day}`;
+    const formattedTime = `${hours}:${minutes}`;
 
-  
+    return `${formattedDate}T${formattedTime}`;
   };
+
+
 
   return (
     <Container className="userform border border-3 p-4 my-3">
-      <div className="d-flex justify-content-between m-3">
-        <h3>View Paper</h3>
-      </div>
-      <hr />
       {loading && <div>Loading...</div>}
       {paper && (
-        <Form>
-          <Row className='mb-3'>
-            <Col>
-              <Form.Group controlId='paperName'>
-                <Form.Label>Paper Name</Form.Label>
-                <Form.Control
-                  type='text'
-                  name='paperName'
-                  value={paper.paperName}
-                  onChange={(e) => handleChange('paperName', e.target.value)}
-                  disabled={formDisabled}
-                />
-              </Form.Group>
+        <>
+          <Row>
+            <Col md={6}>
+              <Card>
+                <Card.Header>
+                  <Card.Title className="text-center">Paper Details</Card.Title>
+                </Card.Header>
+                <Card.Body>
+                  <Table striped bordered hover>
+                    <tbody>
+                      <tr>
+                        <td>Program:</td>
+                        <td>{paper.programmeName}</td>
+                      </tr>
+                      <tr>
+                        <td>Catch Number:</td>
+                        <td>{paper.catchNumber}</td>
+                      </tr>
+                      <tr>
+                        <td>Course:</td>
+                        <td>
+                          {formDisabled ? (
+                            paper.courseName
+                          ) : (
+                            <Form.Control as="select" value={paper.courseID} onChange={(e) => handleChange('courseID', e.target.value)}>
+                              {courses.map(course => (
+                                <option key={course.courseID} value={course.courseID}>{course.courseName}</option>
+                              ))}
+                            </Form.Control>
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Exam Type:</td>
+                        <td>
+                          {formDisabled ? (
+                            paper.examType
+                          ) : (
+                            <Form.Control
+                              type='text'
+                              value={paper.examType}
+                              onChange={(e) => handleChange('examType', e.target.value)}
+                            />
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Subject:</td>
+                        <td>
+                          {formDisabled ? (
+                            paper.subjectName
+                          ) : (
+                            <Form.Control as="select" value={paper.subjectID} onChange={(e) => handleChange('subjectID', e.target.value)}>
+                              {subjects.map(subject => (
+                                <option key={subject.subjectID} value={subject.subjectID}>{subject.subjectName}</option>
+                              ))}
+                            </Form.Control>
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Paper Name:</td>
+                        <td>
+                          {formDisabled ? (
+                            paper.paperName
+                          ) : (
+                            <Form.Control
+                              type='text'
+                              value={paper.paperName}
+                              onChange={(e) => handleChange('paperName', e.target.value)}
+                            />
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Exam DateTime:</td>
+                        <td>
+                          {formDisabled ? (
+                            formatDateTimeForDisplay(paper.examDate)
+                          ) : (
+                            <Form.Control
+                              type='datetime-local'
+                              value={formatDateTimeForInput(paper.examDate)}
+                              onChange={(e) => handleChange('examDate', e.target.value)}
+                            />
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Booklet Size:</td>
+                        <td>
+                          {formDisabled ? (
+                            `${paper.bookletSize} Pages`
+                          ) : (
+                            <Form.Control
+                              type='text'
+                              value={paper.bookletSize}
+                              onChange={(e) => handleChange('bookletSize', e.target.value)}
+                            />
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Paper Created By:</td>
+                        <td>{paper.createdBy}</td>
+                      </tr>
+                      <tr>
+                        <td>Paper Created DateTime:</td>
+                        <td>{formatDateTimeForDisplay(paper.createdAt)}</td>
+                      </tr>
+                    </tbody>
+                  </Table>
+                  <div className="text-center">
+                    <Button onClick={() => {
+                      if (formDisabled) {
+                        setFormDisabled(false);
+                        setButtonText('Submit');
+                      } else {
+                        updatePaper();
+                      }
+                    }}>
+                      {buttonText}
+                    </Button>
+                  </div>
+                </Card.Body>
+              </Card>
             </Col>
-            <Col>
-              <Form.Group controlId='catchNumber'>
-                <Form.Label>Catch Number</Form.Label>
-                <Form.Control
-                  type='text'
-                  name='catchNumber'
-                  value={paper.catchNumber}
-                  onChange={(e) => handleChange('catchNumber', e.target.value)}
-                  disabled={formDisabled}
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId='paperCode'>
-                <Form.Label>Paper Code</Form.Label>
-                <Form.Control
-                  type='text'
-                  name='paperCode'
-                  value={paper.paperCode}
-                  onChange={(e) => handleChange('paperCode', e.target.value)}
-                  disabled={formDisabled}
-                />
-              </Form.Group>
+            <Col md={6}>
+              <Card>
+                <Card.Header>
+                  <Card.Title className="text-center">Paper Status</Card.Title>
+                </Card.Header>
+                <Card.Body>
+                  <div className="progress-container text-center">
+                    <ol className="progress-meter">
+                      <li className="progress-point done">Paper Added</li>
+                      <li className={`progress-point ${paper.masterUploaded ? 'done' : 'todo'} `}>Master Uploaded</li>
+                      <li className={`progress-point ${paper.keyGenerated ? 'done' : 'todo'} `}>Key Generated</li>
+                    </ol>
+                  </div>
+                  <div className="mt-2 text-align-center justify-content-center d-flex gap-2">
+                    {paper.masterUploaded ? (
+                      !paper.keyGenerated ? (
+                        <Button as={Link} to={'/KeyGenerator/Newkey'}>
+                          <FontAwesomeIcon icon={faKey} className="me-2" />
+                          Generate Keys
+                        </Button>
+                      ) : (
+                        <Button>
+                          <FontAwesomeIcon icon={faDownload} className="me-2" />
+                          Download Keys
+                        </Button>
+                      )
+                    ) : (
+                      <Button as={Link} to={'/KeyGenerator/Newkey'}>
+                        <FontAwesomeIcon icon={faUpload} className="me-2" />
+                        Upload Master
+                      </Button>
+                    )}
+                  </div>
+                </Card.Body>
+              </Card>
+              <Card className='mt-4'>
+                <Card.Header>
+                  <Card.Title className="text-center">PDF Booklet Status</Card.Title>
+                </Card.Header>
+                <Card.Body>
+                  <div className="mt-2 text-center">
+                    {pdfDataUrl ? (
+                      <>
+                        <p>Booklet Uploaded</p>
+                        <Button onClick={handleDownload}>
+                          <FontAwesomeIcon icon={faDownload} className="me-2" />
+                          Download Booklet
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <p>Booklet Not Uploaded </p>
+                        <div className="mt-2 text-center">
+                          <label htmlFor="pdf-upload" className="btn btn-primary">
+                            <FontAwesomeIcon icon={faUpload} className="me-2" />
+                            Upload PDF
+                          </label>
+                          <input
+                            id="pdf-upload"
+                            type="file"
+                            accept=".pdf"
+                            onChange={handlePdfFileChange}
+                            style={{ display: 'none' }}
+                          />
+                        </div>
+
+                      </>
+                    )}
+                  </div>
+                </Card.Body>
+              </Card>
             </Col>
           </Row>
-          <Row className='mb-3'>
-            <Col>
-              <Form.Group controlId='program'>
-                <Form.Label>Program</Form.Label>
-                <Form.Control
-                  as='select'
-                  name='program'
-                  value={paper.programmeID}
-                  onChange={(e) => handleChange('program', e.target.value)}
-                  disabled={formDisabled}
-                >
-                  {programs.map(program => (
-                    <option key={program.programmeID} value={program.programmeID}>
-                      {program.programmeName}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId='examCode'>
-                <Form.Label>Exam Code</Form.Label>
-                <Form.Control
-                  type='text'
-                  name='examCode'
-                  value={paper.examCode}
-                  onChange={(e) => handleChange('examCode', e.target.value)}
-                  disabled={formDisabled}
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId='subjectID'>
-                <Form.Label>Subject</Form.Label>
-                <Form.Control
-                  as='select'
-                  name='subjectID'
-                  value={paper.subjectID}
-                  onChange={(e) => handleChange('subjectID', e.target.value)}
-                  disabled={formDisabled}
-                >
-                  {subjects.map(subject => (
-                    <option key={subject.subjectID} value={subject.subjectID}>
-                      {subject.subjectName}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </Col>
-          </Row>
-          <Row className='mb-3'>
-            <Col>
-              <Form.Group controlId='paperNumber'>
-                <Form.Label>Paper Number</Form.Label>
-                <Form.Control
-                  type='text'
-                  name='paperNumber'
-                  value={paper.paperNumber}
-                  onChange={(e) => handleChange('paperNumber', e.target.value)}
-                  disabled={formDisabled}
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId='examDate'>
-                <Form.Label>Exam Date</Form.Label>
-                <Form.Control
-                  type='text'
-                  name='examDate'
-                  value={formatDate(paper.examDate)}
-                  onChange={(e) => handleChange('examDate', e.target.value)}
-                  disabled={formDisabled}
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group controlId='bookletSize'>
-                <Form.Label>Booklet Size</Form.Label>
-                <Form.Control
-                  type='text'
-                  name='bookletSize'
-                  value={paper.bookletSize}
-                  onChange={(e) => handleChange('bookletSize', e.target.value)}
-                  disabled={formDisabled}
-                />
-              </Form.Group>
-            </Col>
-          </Row>
-        </Form>
+        </>
       )}
-      <button
-        className="btn btn-primary"
-        onClick={() => {
-          if (formDisabled) {
-            setFormDisabled(false);
-            setButtonText('Submit');
-          } else {
-            updatePaper();
-          }
-        }}
-      >
-        {buttonText}
-      </button>
-      <button className="btn btn-primary m-3" onClick={() => handleClick(gkbuttonText)}>
-        {gkbuttonText}
-      </button>
     </Container>
   );
 };

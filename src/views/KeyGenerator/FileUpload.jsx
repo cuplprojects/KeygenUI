@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Form } from 'react-bootstrap';
+import { Col, Form, Row } from 'react-bootstrap';
 import * as XLSX from 'xlsx';
 import PropTypes from 'prop-types';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUpload } from '@fortawesome/free-solid-svg-icons';
 
 const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
   const [file, setFile] = useState(null);
@@ -23,6 +25,7 @@ const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
           page: row[2],
         }));
         setFormData(parsedData);
+        console.log(parsedData)
         setNumberOfQuestions(parsedData.length);
       };
       reader.readAsArrayBuffer(file);
@@ -30,14 +33,27 @@ const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
   };
   return (
     <Form.Group>
-      <Form.Label>Upload Excel File:</Form.Label>
-      <Form.Control
+<Row>
+  <Col md={8} className="mx-auto">
+    <div className="mt-2 text-center">
+      <label htmlFor="excel-upload" className={`btn btn-outline-primary btn-block w-100 ${disabled ? 'disabled' : ''}`}>
+        <FontAwesomeIcon icon={faUpload} className="me-2" />
+        Upload Excel
+      </label>
+      <input
+        id="excel-upload"
         type="file"
         accept=".xlsx"
         onChange={handleFileInputChange}
-        disabled={disabled} // Disable the input field if form is submitted and not in editing mode
+        style={{ display: 'none' }}
+        disabled={disabled}
       />
-    </Form.Group>
+    </div>
+  </Col>
+</Row>
+
+</Form.Group>
+
   );
 };
 

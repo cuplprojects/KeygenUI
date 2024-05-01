@@ -221,7 +221,7 @@ const AddPaper = () => {
                 {/* subject  */}
                 <Col>
                   <Form.Group controlId='subjectID'>
-                    <Form.Label>Subject ID<span className='text-danger'>*</span></Form.Label>
+                    <Form.Label>Subject<span className='text-danger'>*</span></Form.Label>
                     <Select
                       options={subjects.map(subject => ({ label: subject.subjectName, value: subject.subjectID }))}
                       value={formData.subjectID ? { label: subjects.find(s => s.subjectID === formData.subjectID).subjectName, value: formData.subjectID } : null}
@@ -245,7 +245,7 @@ const AddPaper = () => {
                   </Form.Group>
                 </Col>
                 {/* paper number  */}
-                <Col>
+                {/* <Col>
                   <Form.Group controlId='paperNumber'>
                     <Form.Label>Paper Number</Form.Label>
                     <Form.Control
@@ -255,7 +255,7 @@ const AddPaper = () => {
                       onChange={(e) => handleChange('paperNumber', e.target.value)}
                     />
                   </Form.Group>
-                </Col>
+                </Col> */}
                 {/* exam date  */}
                 <Col>
                   <Form.Group controlId='examDate'>

@@ -72,7 +72,6 @@ const ViewPaper = () => {
       reader.readAsDataURL(pdfFile);
       reader.onload = () => {
         const binaryData = reader.result;
-        console.log(binaryData);
   
         const decryptedPaperID = decrypt(paperID);
   

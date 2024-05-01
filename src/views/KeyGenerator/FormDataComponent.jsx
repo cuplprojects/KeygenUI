@@ -43,8 +43,10 @@ const FormDataComponent = ({ formData, handleInputChange, disabled }) => {
                                     value={data.key}
                                     onChange={(e) => handleInputChange(index, 'key', e.target.value)}
                                     disabled={disabled} // Disable the input field if form is submitted and not in editing mode
+                                    style={{ border: data.key.includes('*') ? '1px solid red' : '1px solid #ced4da' }}
                                 />
                             </td>
+
                         </tr>
                     ))}
                 </tbody>

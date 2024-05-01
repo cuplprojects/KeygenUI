@@ -52,7 +52,6 @@ const PaperTable = ({ papers, token }) => {
 
   const DownloadKey = async (paper) => {
     try {
-      console.log(paper)
       const progConfigResponse = await axios.get(`${apiUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${token}` } });
       const progConfigData = progConfigResponse.data[0]; // Assuming the API returns an array with a single object
       const progConfigID = progConfigData.progConfigID;

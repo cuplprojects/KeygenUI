@@ -18,14 +18,18 @@ const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
         const sheetName = 'Sheet1'; // Specify the sheet name here
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        const parsedData = jsonData.slice(2).filter(row => !isNaN(row[0]) && !isNaN(row[2])).map((row, index) => ({
-          sn: index + 1,
-          qNumber: row[0],
-          key: row[1],
-          page: row[2],
-        }));
+        let asteriskCounter = 1;
+        const parsedData = jsonData.slice(2).filter(row => !isNaN(row[0]) && !isNaN(row[2])).map((row, index) => {
+          const key = row[1] || '*'.repeat(asteriskCounter++);
+          return {
+            sn: index + 1,
+            qNumber: row[0],
+            key: key,
+            page: row[2],
+          };
+        });
+
         setFormData(parsedData);
-        console.log(parsedData)
         setNumberOfQuestions(parsedData.length);
       };
       reader.readAsArrayBuffer(file);
@@ -33,26 +37,26 @@ const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
   };
   return (
     <Form.Group>
-<Row>
-  <Col md={8} className="mx-auto">
-    <div className="mt-2 text-center">
-      <label htmlFor="excel-upload" className={`btn btn-outline-primary btn-block w-100 ${disabled ? 'disabled' : ''}`}>
-        <FontAwesomeIcon icon={faUpload} className="me-2" />
-        Upload Excel
-      </label>
-      <input
-        id="excel-upload"
-        type="file"
-        accept=".xlsx"
-        onChange={handleFileInputChange}
-        style={{ display: 'none' }}
-        disabled={disabled}
-      />
-    </div>
-  </Col>
-</Row>
+      <Row>
+        <Col md={8} className="mx-auto">
+          <div className="mt-2 text-center">
+            <label htmlFor="excel-upload" className={`btn btn-outline-primary btn-block w-100 ${disabled ? 'disabled' : ''}`}>
+              <FontAwesomeIcon icon={faUpload} className="me-2" />
+              Upload Excel
+            </label>
+            <input
+              id="excel-upload"
+              type="file"
+              accept=".xlsx"
+              onChange={handleFileInputChange}
+              style={{ display: 'none' }}
+              disabled={disabled}
+            />
+          </div>
+        </Col>
+      </Row>
 
-</Form.Group>
+    </Form.Group>
 
   );
 };

@@ -28,7 +28,7 @@ const Courses = lazy(() => import('./views/Masters/Courses/Courses'));
 const Subjects = lazy(() => import('./views/Masters/Subjects/Subjects'));
 const Papers = lazy(() => import('./views/Masters/Papers/Papers'));
 const Programs = lazy(() => import('./views/Masters/Programs/Programs'));
-const Reactpdf = lazy(() => import('./views/pages/ReactPdf/Reactpdf'));
+const ManageKeys = lazy(() => import('./views/Masters/ManageKeys/ManageKeys'));
 
 const routes = [
   { path: '/', name: 'Home', moduleId: null, permissionType: null, element: <Dashboard /> },
@@ -61,11 +61,11 @@ const routes = [
   { path: '/Masters/Subjects', name: ' Subjects', moduleId: 3, permissionType: 'can_Add', element: <Subjects /> },
   { path: '/Masters/Programs', name: ' Programs', moduleId: 3, permissionType: 'can_Add', element: <Programs /> },
   { path: '/Masters/ExamType', name: ' ExamType', moduleId: 3, permissionType: 'can_Add', element: <CTypeComponent /> },
+  { path: '/Masters/ManageKeys', name: ' ExamType', moduleId: 3, permissionType: 'can_View', element: <ManageKeys /> },
   
   { path: '/Masters/papers/ViewPaper/:paperID', name: 'View Paper', moduleId: 3, permissionType: 'can_View', element: <ViewPaper /> },
 
   { path: '/403', name: 'Access Denied', moduleId: null, permissionType: null, element: <AccessDeniedPage /> },
-  { path: '/reactpdf', name: ' reactpdf', moduleId: null, permissionType: null, element: <Reactpdf /> },
 ];
 
 export default routes;

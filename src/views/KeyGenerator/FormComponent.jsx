@@ -25,6 +25,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [editedBookletSize, setEditedBookletSize] = useState(null);
     const [noconfigError, setNoconfigError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [pagematcherror, setPageMatchError] = useState("")
 
 
     // useEffect(() => {
@@ -174,7 +175,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                 };
                 setBookletSize(editedBookletSize)
                 setSelectedPaperData(updatedPaperData);
-                setFormData([])
+                // setFormData([])
             } catch (error) {
                 console.error("Error updating paper data:", error);
             }
@@ -189,6 +190,14 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             clearTimeout(timeoutId);
         };
     }, [editedBookletSize]);
+
+    useEffect(() => {
+        if ((formData.length > 0 && formData[formData.length - 1].page != "") && (formData[formData.length - 1].page + 2) != editedBookletSize) {
+            setPageMatchError("Booklet size and page in Excel do not match.");
+        } else {
+            setPageMatchError("");
+        }
+    }, [editedBookletSize, formData]);
 
     const handleNumberOfQuestionsChange = (e) => {
         const inputNumber = e.target.value;
@@ -289,7 +298,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <Row>
                         <Col md={6}>
                             <Form.Group className='mb-2'>
-                                <Form.Label>Select Programme:<span className="text-danger">*</span></Form.Label>
+                                <Form.Label>Select Program:<span className="text-danger">*</span></Form.Label>
                                 <Select
                                     options={Programmes.map((program) => ({ value: program.programmeID, label: program.programmeName }))}
                                     value={selectedProgramme ? selectedProgramme : bookletSize}
@@ -341,12 +350,17 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                                         disabled={false || formSubmitted}
                                     />
                                     {formData.length > 0 && formData[formData.length - 1].page !== '' && (
-                                        <Form.Label>Page in Excel: {formData[formData.length - 1].page + 2}</Form.Label>
+                                        <>
+                                            <Form.Label>Page in Excel: {formData[formData.length - 1].page + 2}</Form.Label>
+                                        </>
                                     )}
 
 
                                 </Form.Group>
                             </Col>
+                            <div className="text-center">
+                                {pagematcherror && <p className="text-danger">{pagematcherror}</p>}
+                            </div>
                         </Row>
                         </>
                     )}
@@ -369,8 +383,9 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                         />
                     </Form.Group>
                     <div className="d-grid gap-2 mt-4">
-                        <Button type="submit" disabled={!editing && formSubmitted && loading}>Upload and Save Master data</Button>
-                        {!editing && formSubmitted && (
+                        <Button type="submit" disabled={!editing && formSubmitted && loading || pagematcherror != ""}>
+                            Upload and Save Master data
+                        </Button>                        {!editing && formSubmitted && (
                             // <Button onClick={handleEdit}>Edit Form</Button>
                             <></>
                         )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Container, Row, Col, Card, Table, Button } from 'react-bootstrap';
+import { Form, Container, Row, Col, Card, Table, Button, Alert } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
@@ -25,6 +25,7 @@ const ViewPaper = () => {
   const [buttonText, setButtonText] = useState('Update');
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfDataUrl, setPdfDataUrl] = useState('');
+  const [uploadAlert, setUploadAlert] = useState(null);
 
 
   useEffect(() => {
@@ -33,18 +34,12 @@ const ViewPaper = () => {
     fetchCourses();
   }, []);
 
+
   useEffect(() => {
     if (paper && paper.paperID) {
-      axios.get(`${baseUrl}/api/getBooklet/${paper.paperID}`)
-        .then(response => {
-          setPdfDataUrl(response.data);
-        })
-        .catch(error => {
-          console.error('Error fetching file data:', error);
-        });
+      fetchPdfData(paper.paperID);
     }
   }, [paper]);
-  
 
 
   const handleChange = (name, value) => {
@@ -66,24 +61,38 @@ const ViewPaper = () => {
   }, [pdfFile]);
 
 
+  const fetchPdfData = (paperID) => {
+    axios.get(`${baseUrl}/api/BookletPdfData/PaperID/${paperID}`, {
+      headers: {
+        Authorization: `Bearer ${keygenUser?.token}`
+      }
+    })
+      .then(response => {
+        setPdfDataUrl(response.data.bookletData);
+      })
+      .catch(error => {
+        console.error('Error fetching file data:', error);
+      });
+  };
+
   const handlePdfUpload = () => {
     if (pdfFile) {
       const reader = new FileReader();
       reader.readAsDataURL(pdfFile);
       reader.onload = () => {
         const binaryData = reader.result;
-  
+
         const decryptedPaperID = decrypt(paperID);
-  
-        axios.post(`${baseUrl}/api/uploadBooklet`, { paperID: decryptedPaperID, bookletData: binaryData }, {
+        axios.post(`${baseUrl}/api/BookletPdfData`, { paperID: decryptedPaperID, bookletData: binaryData }, {
           headers: {
             Authorization: `Bearer ${keygenUser?.token}`
           }
         }).then(() => {
-          alert('PDF uploaded successfully');
+          setUploadAlert(<Alert variant="success" onClose={() => setUploadAlert(null)} dismissible>Booklet uploaded successfully</Alert>);
+          fetchPdfData(paper.paperID);
           // Optionally, you can call fetchPaper() here to fetch updated paper data
         }).catch(error => {
-          console.error('Error uploading PDF:', error);
+          setUploadAlert(<Alert variant="danger" onClose={() => setUploadAlert(null)} dismissible>Error uploading PDF: {error.message}</Alert>);
         });
       };
       reader.onerror = () => {
@@ -93,7 +102,7 @@ const ViewPaper = () => {
       console.error('No PDF file selected');
     }
   };
-  
+
 
   const handleDownload = () => {
     if (pdfDataUrl) {
@@ -366,6 +375,7 @@ const ViewPaper = () => {
                   <div className="mt-2 text-center">
                     {pdfDataUrl ? (
                       <>
+                        {uploadAlert}
                         <p>Booklet Uploaded</p>
                         <Button onClick={handleDownload}>
                           <FontAwesomeIcon icon={faDownload} className="me-2" />
@@ -374,6 +384,7 @@ const ViewPaper = () => {
                       </>
                     ) : (
                       <>
+                        {uploadAlert}
                         <p>Booklet Not Uploaded </p>
                         <div className="mt-2 text-center">
                           <label htmlFor="pdf-upload" className="btn btn-primary">

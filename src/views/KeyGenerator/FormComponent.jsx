@@ -27,10 +27,10 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [loading, setLoading] = useState(false);
 
 
-    useEffect(() => {
-        setFormData([])
+    // useEffect(() => {
+    //     setFormData([])
 
-    }, [selectedPaper])
+    // }, [selectedPaper])
 
 
     useEffect(() => {

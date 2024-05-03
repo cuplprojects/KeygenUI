@@ -46,7 +46,6 @@ const FormDataComponent = ({ formData, handleInputChange, disabled }) => {
                                     style={{ border: data.key.includes('*') ? '1px solid red' : '1px solid #ced4da' }}
                                 />
                             </td>
-
                         </tr>
                     ))}
                 </tbody>

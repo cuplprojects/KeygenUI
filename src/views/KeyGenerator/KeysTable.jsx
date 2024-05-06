@@ -80,7 +80,7 @@ const KeysTable = ({ papers, token }) => {
               <td>
                 <DropdownButton id={`dropdown-button-${paper.paperID}`} title="Action" size="sm">
                   <Dropdown.Item onClick={() => handleDownloadClick(paper)}>
-                    <FontAwesomeIcon icon={faDownload} /> Download Key
+                    <FontAwesomeIcon icon={faDownload} className="me-2" />Download Key
                   </Dropdown.Item>
                 </DropdownButton>
               </td>

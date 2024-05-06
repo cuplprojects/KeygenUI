@@ -117,13 +117,19 @@ const _nav = [
         to: '/Masters/Programs',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
       },
+      
       {
         component: CNavItem,
         name: 'Jumble Configrations',
         to: '/Masters/JumblingConfig',
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
       },
-     
+      {
+        component: CNavItem,
+        name: 'Manage Keys',
+        to: '/Masters/ManageKeys',
+        icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
+      },
       
     ],
   },

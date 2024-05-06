@@ -61,7 +61,7 @@ const routes = [
   { path: '/Masters/Subjects', name: ' Subjects', moduleId: 3, permissionType: 'can_Add', element: <Subjects /> },
   { path: '/Masters/Programs', name: ' Programs', moduleId: 3, permissionType: 'can_Add', element: <Programs /> },
   { path: '/Masters/ExamType', name: ' ExamType', moduleId: 3, permissionType: 'can_Add', element: <CTypeComponent /> },
-  { path: '/Masters/ManageKeys', name: ' ExamType', moduleId: 3, permissionType: 'can_View', element: <ManageKeys /> },
+  { path: '/Masters/ManageKeys', name: ' Manage Keys', moduleId: 3, permissionType: 'can_View', element: <ManageKeys /> },
   
   { path: '/Masters/papers/ViewPaper/:paperID', name: 'View Paper', moduleId: 3, permissionType: 'can_View', element: <ViewPaper /> },
 

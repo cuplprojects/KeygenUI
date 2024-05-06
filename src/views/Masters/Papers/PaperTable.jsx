@@ -104,16 +104,16 @@ const PaperTable = ({ papers, token }) => {
                 <div>
                   <DropdownButton id="dropdown-basic-button" title="Action" className='btn btn-sm'>
                     {paper.keyGenerated ?
-                          <Dropdown.Item  onClick={() => DownloadKey(paper)}><FontAwesomeIcon icon={faDownload}/> Download Keys</Dropdown.Item>
+                          <Dropdown.Item  onClick={() => DownloadKey(paper)}><FontAwesomeIcon icon={faDownload} className="me-2"/>Download Keys</Dropdown.Item>
                           : <>
                         {paper.masterUploaded ?
-                          <Dropdown.Item onClick={() => Generatekey(paper)}><FontAwesomeIcon icon={faKey}/>Generate Key</Dropdown.Item>
+                          <Dropdown.Item onClick={() => Generatekey(paper)}><FontAwesomeIcon icon={faKey} className="me-2"/>Generate Key</Dropdown.Item>
                           :
-                          <Dropdown.Item onClick={() => Generatekey(paper)}><FontAwesomeIcon icon={faUpload}/>Upload Master</Dropdown.Item>
+                          <Dropdown.Item onClick={() => Generatekey(paper)}><FontAwesomeIcon icon={faUpload} className="me-2"/>Upload Master</Dropdown.Item>
                         }
                       </>
                     }
-                    <Dropdown.Item onClick={() => navigate(`/Masters/papers/ViewPaper/${encrypt(paper.paperID)}`)}> <FontAwesomeIcon icon={faEye} /> View Paper</Dropdown.Item>
+                    <Dropdown.Item onClick={() => navigate(`/Masters/papers/ViewPaper/${encrypt(paper.paperID)}`)}> <FontAwesomeIcon icon={faEye} className="me-2" />View Paper</Dropdown.Item>
                   </DropdownButton>
                 </div>
               </td>

@@ -137,6 +137,7 @@ const ViewPaper = () => {
       .then(response => response.json())
       .then(data => {
         setPaper(data);
+        console.log(data)
         setLoading(false);
       })
       .catch(error => {
@@ -167,6 +168,26 @@ const ViewPaper = () => {
       });
   };
 
+  const DownloadKey = async (paper) => {
+    try {
+      const progConfigResponse = await axios.get(`${baseUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+      const progConfigData = progConfigResponse.data[0]; // Assuming the API returns an array with a single object
+      const progConfigID = progConfigData.progConfigID;
+  
+      const paperData = {
+        programmeID: paper.programmeID,
+        paperID: paper.paperID,
+        catchNumber: paper.catchNumber,
+        progConfigID: progConfigID
+      };
+      localStorage.setItem('generatedKeys', JSON.stringify(paperData));
+      navigate('/KeyGenerator/Newkey/download-keys');
+    } catch (error) {
+      console.error("Error fetching progConfigID:", error);
+    }
+  };
+  
+
 
   const formatDateTimeForDisplay = (dateTimeString) => {
     const date = new Date(dateTimeString);
@@ -175,9 +196,9 @@ const ViewPaper = () => {
     const day = date.getDate().toString().padStart(2, '0');
     let hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
+    // const seconds = date.getSeconds().toString().padStart(2, '0');
     const formattedDate = `${day}/${month}/${year}`;
-    const formattedTime = `${hours}:${minutes}:${seconds}`;
+    // const formattedTime = `${hours}:${minutes}:${seconds}`;
     const amPM = hours >= 12 ? 'PM' : 'AM';
 
     // Convert hours to 12-hour format
@@ -353,7 +374,7 @@ const ViewPaper = () => {
                           Generate Keys
                         </Button>
                       ) : (
-                        <Button>
+                        <Button onClick={()=>DownloadKey(paper)}>
                           <FontAwesomeIcon icon={faDownload} className="me-2" />
                           Download Keys
                         </Button>

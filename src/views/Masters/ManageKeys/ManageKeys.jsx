@@ -62,7 +62,8 @@ const ManageKeys = () => {
         const response = await fetch(`${apiUrl}/Papers/Program/${selectedProgram?.value}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
         if (response.ok) {
           const data = await response.json();
-          setPapers(data);
+          const filteredPapers = data.filter(paper => paper.masterUploaded === true);
+          setPapers(filteredPapers);
           setSelectedPaper(null);
           setSelectedPaperData(null);
         } else {
@@ -91,18 +92,7 @@ const ManageKeys = () => {
   }, [selectedPaper, papers]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const keydata = await axios.get(`${apiUrl}/FormData?progID=${selectedPaperData.programmeID}&CatchNumber=${selectedPaperData.catchNumber}&PaperID=${selectedPaperData.paperID}`, {
-          headers: { Authorization: `Bearer ${keygenUser?.token}` }
-        });
-        const filteredData = keydata.data.filter(item => item.setID === 1);
-        setMasterKey(filteredData);
-        setNoMaster('');
-      } catch (error) {
-        console.log(error);
-      }
-    };
+
 
     if (selectedPaperData && selectedPaperData.masterUploaded) {
       fetchData();
@@ -115,6 +105,25 @@ const ManageKeys = () => {
       setNoMaster('');
     }
   }, [selectedPaperData, keygenUser]);
+
+  const fetchData = async () => {
+    try {
+      const keydata = await axios.get(`${apiUrl}/FormData/masterkeys?progID=${selectedPaperData.programmeID}&CatchNumber=${selectedPaperData.catchNumber}&PaperID=${selectedPaperData.paperID}`, {
+        headers: { Authorization: `Bearer ${keygenUser?.token}` }
+      });
+      if (keydata.data.length === 0) {
+        setMasterKey([]);
+        setNoMaster('Master Key Not Uploaded');
+      } else {
+        const filteredData = keydata.data.filter(item => item.setID === 1);
+        setMasterKey(filteredData);
+        setNoMaster('');
+      }
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const formatDateTimeForDisplay = (dateTimeString) => {
     const date = new Date(dateTimeString);
@@ -137,37 +146,71 @@ const ManageKeys = () => {
   const handleAnswerChange = (e, questionNumber) => {
     const newEditedAnswers = { ...editedAnswers, [questionNumber]: e.target.value };
     setEditedAnswers(newEditedAnswers);
+  
 
     // Add the questionNumber to editedFields set
     setEditedFields(new Set([...editedFields, questionNumber]));
+    console.log(new Set([...editedFields, questionNumber]));
   };
 
   const isFieldEdited = (questionNumber) => {
     return editedFields.has(questionNumber);
   };
 
+
   const handleConfirmUpdate = async () => {
     setShowConfirmation(false); // Hide the confirmation modal
     setEditMode(false);
 
-    console.log("Updated Answers:");
-    console.log(editedDataRows);
+    try {
+      const response = await axios.post(`${apiUrl}/Keys/UpdateAnswers`, editedDataRows, {
+        headers: { Authorization: `Bearer ${keygenUser?.token}` }
+      });
+
+      if (response.status === 200) {
+        fetchData();
+        console.log('Answers updated successfully.');
+      } else {
+        console.error('Failed to update answers:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error updating answers:', error);
+    }
   };
+
+
   const handleDeleteClick = (paperID) => {
     setDeletedPaperID(paperID);
     setShowDeleteConfirmation(true);
   };
 
-  const handleConfirmDelete = () => {
-    // Perform deletion logic here, e.g., call an API to delete the paper
-    console.log(`Paper with ID ${deletedPaperID} has been deleted.`);
+  const handleConfirmDelete = async () => {
+    try {
+      // Perform deletion logic here, e.g., call an API to delete the paper
+      const response = await axios.delete(`${apiUrl}/Keys?PaperID=${deletedPaperID}&catchNumber=${selectedPaperData.catchNumber}`, {
+        headers: { Authorization: `Bearer ${keygenUser?.token}` }
+      });
+
+      if (response.status === 200) {
+        fetchData()
+        console.log(`Paper with ID ${deletedPaperID} has been deleted.`);
+      } else {
+        console.error('Failed to delete paper:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error deleting paper:', error);
+    }
+
     // Close the modal
     setShowDeleteConfirmation(false);
   };
+
   const handleSubmit = () => {
+    const processedQuestionNumbers = new Set(); // Track processed question numbers
     const updatedRows = masterkey.map((item, index) => {
       const editedAnswer = editedAnswers[item.questionNumber];
-      if (editedAnswer !== undefined) {
+      if (editedAnswer !== undefined && !processedQuestionNumbers.has(item.questionNumber)) {
+        processedQuestionNumbers.add(item.questionNumber); // Add question number to processed set
         return {
           paperID: selectedPaperData.paperID,
           questionNumber: item.questionNumber,
@@ -177,9 +220,20 @@ const ManageKeys = () => {
       }
       return null;
     }).filter(Boolean);
-    setEditedDataRows(updatedRows);
+  
+    // Filter out existing rows with the same paperID and questionNumber
+    const filteredUpdatedRows = updatedRows.filter(updatedRow =>
+      !editedDataRows.some(editedRow =>
+        editedRow.paperID === updatedRow.paperID &&
+        editedRow.questionNumber === updatedRow.questionNumber
+      )
+    );
+  
+    setEditedDataRows([...editedDataRows, ...filteredUpdatedRows]); // Append the new rows to the existing editedDataRows
     setShowConfirmation(true); // Show the confirmation modal
   };
+  
+  
 
   return (
     <>
@@ -210,7 +264,7 @@ const ManageKeys = () => {
         </Row>
       </Form>
       <Row className='mt-3'>
-        <Col md={6}>
+        <Col md={6} className='mb-3'>
           {nomaster && (
             <p className='text-center text-danger'>{nomaster}</p>
           )}
@@ -229,8 +283,8 @@ const ManageKeys = () => {
                         <FontAwesomeIcon icon={faPencil} />
                       </Button>
                     )}
-                    <Button variant='outline-danger' size='sm'>
-                      <FontAwesomeIcon icon={faTrash} onClick={() => handleDeleteClick(selectedPaperData.paperID)} />
+                    <Button variant='outline-danger' size='sm' onClick={() => handleDeleteClick(selectedPaperData.paperID)} >
+                      <FontAwesomeIcon icon={faTrash} />
                     </Button>
                   </span>
                 </div>
@@ -378,7 +432,8 @@ const ManageKeys = () => {
             <Modal.Title>Delete Confirmation</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            Are you sure you want to delete this paper?
+            Are you sure you want to delete All the keys data releted to Catch Number {selectedPaperData.catchNumber}?
+            <p> This action is irreversible.</p>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShowDeleteConfirmation(false)}>Cancel</Button>

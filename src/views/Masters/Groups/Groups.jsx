@@ -45,7 +45,7 @@ const Groups = () => {
 
   const handleToggleStatus = async (groupId, groupName, newStatus) => {
     try {
-      const response = await axios.put(`${baseUrl}/api/Groups/${groupId}`, { groupId, status: newStatus }, {
+      const response = await axios.put(`${baseUrl}/api/Groups/${groupId}`, { groupId, groupName, status: newStatus }, {
         headers: {
           Authorization: `Bearer ${token}`
         }

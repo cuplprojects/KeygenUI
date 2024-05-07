@@ -4,15 +4,15 @@ import { Container, Alert } from 'react-bootstrap';
 import ActivityData from './ActivityData';
 import { useUser } from '../../context/UserContext';
 import SkeletonLoader from './SkeletonLoader'; // Import the SkeletonLoader component
+import PropTypes from 'prop-types';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
-const ActivityTable = () => {
+const ActivityTable = ({ datacount = 10 }) => {
     const { keygenUser } = useUser();
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [datacount, setDataCount] = useState(5)
-    
+
 
     useEffect(() => {
         fetch(`${baseUrl}/api/Logs/Events/User/${keygenUser?.userID}/count/${datacount}`, {
@@ -44,10 +44,14 @@ const ActivityTable = () => {
             ) : error ? (
                 <Alert variant="danger">{error}</Alert>
             ) : (
-                <ActivityData activities={activities} setDataCount={setDataCount} />
+                <ActivityData activities={activities}/>
             )}
         </Container>
     );
 };
+ActivityTable.propTypes = {
+    datacount: PropTypes.number,
+};
+
 
 export default ActivityTable;

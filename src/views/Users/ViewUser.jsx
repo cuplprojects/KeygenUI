@@ -9,6 +9,7 @@ import { faCircleCheck, faCircleXmark } from "@fortawesome/free-solid-svg-icons"
 import './viewuser.css'
 import { useUser } from "./../../context/UserContext";
 import { useProfileImage } from './../../context/ProfileImageProvider';
+import ActivityTable from "../dashboard/ActivityTable";
 
 const permissionApi = process.env.REACT_APP_API_PERMISSION;
 const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -38,6 +39,7 @@ const ViewUser = () => {
   const [permissions, setPermissions] = useState([]);
   const [modules, setModules] = useState([]);
   const [activeTab, setActiveTab] = useState("permissions");
+  const [datacount, setDataCount] = useState(100);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -248,7 +250,7 @@ const ViewUser = () => {
 
               {activeTab === "activities" && (
                 <div className="text-center">
-                  <p>No Activity Detected</p>
+                  <ActivityTable datacount={datacount}/>
                 </div>
               )}
             </Row>

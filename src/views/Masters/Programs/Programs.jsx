@@ -58,7 +58,8 @@ const Programs = () => {
         headers: { Authorization: `Bearer ${keygenUser?.token}` },
       });
       if (response.data) {
-        setGroups(response.data);
+        const filtergroup = response.data.filter(group =>group.status == true )
+        setGroups(filtergroup);
       }
     } catch (error) {
       console.error('Error fetching groups:', error);

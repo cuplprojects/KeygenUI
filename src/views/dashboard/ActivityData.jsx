@@ -3,7 +3,7 @@ import { Table } from 'react-bootstrap';
 import $ from 'jquery';
 import PropTypes from 'prop-types';
 
-const ActivityData = ({ activities, setDataCount }) => {
+const ActivityData = ({ activities }) => {
     const tableRef = useRef(null);
 
     useEffect(() => {

@@ -234,14 +234,14 @@ const JumblingConfig = () => {
                       <Col key={index}>
                         <Card className='mt-2'>
                           <Card.Body>
-                            <strong>Program Name:</strong> {programs.find((program) => program.programmeID === config.progID)?.programmeName} <br />
-                            <strong>Number of Questions:</strong> {config.numberofQuestions} <br />
-                            <strong>Booklet Size:</strong> {config.bookletSize} <br />
-                            <strong>Number of Jumbling Steps:</strong> {config.numberofJumblingSteps} <br />
-                            <strong>Steps:</strong>
+                            <span>Program Name:</span><strong> {programs.find((program) => program.programmeID === config.progID)?.programmeName}</strong> <br />
+                            <span>Number of Questions:</span><strong> {config.numberofQuestions}</strong> <br />
+                            <span>Booklet Size:</span> <strong>{config.bookletSize} </strong><br />
+                            <span>Number of Jumbling Steps:</span> <strong>{config.numberofJumblingSteps}</strong> <br />
+                            <span>Steps:</span>
                             <ul>
                               {config.steps.map((step, idx) => (
-                                <li key={idx}>{`Step ${idx + 1}: ${step}`}</li>
+                                <li key={idx}><strong>{`Step ${idx + 1}: ${step}`}</strong></li>
                               ))}
                             </ul>
                           </Card.Body>

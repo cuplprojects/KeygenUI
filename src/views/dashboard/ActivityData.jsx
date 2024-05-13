@@ -62,7 +62,7 @@ const ActivityData = ({ activities }) => {
 
 ActivityData.propTypes = {
     activities: PropTypes.array.isRequired,
-    setDataCount: PropTypes.func.isRequired,
+    // setDataCount: PropTypes.func.isRequired,
 };
 
 export default ActivityData;

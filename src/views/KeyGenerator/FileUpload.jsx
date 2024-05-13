@@ -5,12 +5,13 @@ import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpload } from '@fortawesome/free-solid-svg-icons';
 
-const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
-  const [file, setFile] = useState(null);
+const FileUpload = ({setExcelFile, setFormData, setNumberOfQuestions, disabled }) => {
+  // const [file, setFile] = useState(null);
 
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setExcelFile(file)
       const reader = new FileReader();
       reader.onload = (event) => {
         const data = event.target.result;
@@ -62,6 +63,7 @@ const FileUpload = ({ setFormData, setNumberOfQuestions, disabled }) => {
 };
 
 FileUpload.propTypes = {
+  setExcelFile: PropTypes.func.isRequired,
   setFormData: PropTypes.func.isRequired,
   setNumberOfQuestions: PropTypes.func.isRequired,
   disabled: PropTypes.bool.isRequired

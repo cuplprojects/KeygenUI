@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Table, Form, Button } from 'react-bootstrap';
 import * as XLSX from 'xlsx';
+import $ from 'jquery';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { useUser } from './../../../context/UserContext';
@@ -8,15 +9,45 @@ const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
   const { keygenUser } = useUser();
+  const tableRef = useRef(null);
   const [file, setFile] = useState(null);
   const [data, setData] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [papers, setPapers] = useState([]);
+  const [duplCatchInExcel, setDuplCatchInExcel] = useState([])
+  const [duplCatchInDB, setDuplCatchInDB] = useState([])
+
+  useEffect(() => {
+    if (tableRef.current) {
+      $(tableRef.current).DataTable();
+    }
+  }, [data]);
+  
 
   useEffect(() => {
     fetchSubjects();
     fetchCourses();
   }, []);
+
+  useEffect(() => {
+    const fetchPapers = async () => {
+      try {
+        const response = await axios.get(`${baseUrl}/api/Papers/CatchNumbersByProgramID/${programmeID}`, {
+          headers: {
+            Authorization: `Bearer ${keygenUser?.token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        setPapers(response.data);
+      } catch (error) {
+        console.error('Error fetching papers:', error);
+      }
+    };
+    if (programmeID > 0) {
+      fetchPapers();
+    }
+  }, [programmeID]);
 
   const fetchSubjects = async () => {
     try {
@@ -31,6 +62,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
       console.error('Error fetching subjects:', error);
     }
   };
+
 
   const fetchCourses = async () => {
     try {
@@ -136,16 +168,40 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
           mappedRow.paperName = row[headers.indexOf('Paper Name')];
         }
 
-        if (headers.includes('Exam Date & Time')) {
-          const examDateTimeString = row[headers.indexOf('Exam Date & Time')];
+        if (headers.includes('Exam Date')) {
+          const examDateTimeString = row[headers.indexOf('Exam Date')];
           const examDateTime = new Date(examDateTimeString);
           if (!isNaN(examDateTime.getTime())) {
             mappedRow.examDate = examDateTime.toISOString();
           }
           // Don't map if date is invalid
         }
-        
+
         mappedData.push(mappedRow);
+      }
+
+      // Check for duplicates in catchNumber
+      const duplicates = [];
+      const catchNumbers = mappedData.map(row => row.catchNumber);
+      catchNumbers.forEach((catchNumber, index) => {
+        if (catchNumbers.indexOf(catchNumber) !== index && !duplicates.includes(catchNumber)) {
+          duplicates.push(catchNumber);
+        }
+      });
+
+      // Store duplicates in state
+      setDuplCatchInExcel(duplicates);
+      if (papers.length > 0) {
+        const duplicatesCatchinDB = [];
+        const catchNumbersindb = papers.map(row => row.catchNumber);
+        catchNumbers.forEach((catchNumber) => {
+          if (catchNumbersindb.includes(catchNumber) && !duplicatesCatchinDB.includes(catchNumber)) {
+            duplicatesCatchinDB.push(catchNumber);
+          }
+        });
+
+        // Store duplicates in state
+        setDuplCatchInDB(duplicatesCatchinDB);
       }
 
       setData(mappedData);
@@ -154,10 +210,19 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
     reader.readAsArrayBuffer(file); // Read the file as an array buffer
   };
 
+
   const handleSubmitdata = async (e) => {
     e.preventDefault();
     if (!programmeID || !bookletSize || data.some(row => !row.catchNumber) || data.some(row => !row.courseName) || data.some(row => !row.examType)) {
       alert('Please fill in all required fields.');
+      return;
+    }
+    if (duplCatchInExcel) {
+      alert('Duplicate Catch Number Found In Excel.');
+      return;
+    }
+    if (duplCatchInDB) {
+      alert('Duplicate Catch Number Found In Database.');
       return;
     }
     // Convert data to JSON format for submission
@@ -197,14 +262,35 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
     }
   };
 
-  const handleCellChange = (e, rowIndex, cellIndex) => {
+  const handleCellChange = (e, rowIndex, key) => {
     const newValue = e.target.value;
     setData(prevData => {
       const newData = [...prevData];
-      newData[rowIndex][cellIndex] = newValue;
+      const oldValue = newData[rowIndex][key];
+
+      // Remove the old value from duplCatchInExcel if it was there
+      if (duplCatchInExcel.includes(oldValue)) {
+        setDuplCatchInExcel(prevDuplCatchInExcel => prevDuplCatchInExcel.filter(value => value !== oldValue));
+      }
+
+      // Check if the new value is a duplicate and add it to duplCatchInExcel if needed
+      if (duplCatchInExcel.includes(newValue) || newData.some((row, index) => index !== rowIndex && row.catchNumber === newValue)) {
+        setDuplCatchInExcel(prevDuplCatchInExcel => [...prevDuplCatchInExcel, newValue]);
+      }
+
+      // Check if the new value is a duplicate in the database
+      if (papers.some(row => row.catchNumber === newValue) && !duplCatchInDB.includes(newValue)) {
+        setDuplCatchInDB(prevDuplCatchInDB => [...prevDuplCatchInDB, newValue]);
+      } else if (!papers.some(row => row.catchNumber === newValue) && duplCatchInDB.includes(newValue)) {
+        // Remove from duplCatchInDB if no longer a duplicate
+        setDuplCatchInDB(prevDuplCatchInDB => prevDuplCatchInDB.filter(value => value !== newValue));
+      }
+
+      newData[rowIndex][key] = newValue;
       return newData;
     });
   };
+
 
   // Define a mapping from camel case headers to real names
   const headerMap = {
@@ -213,9 +299,11 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
     examType: 'Exam Type',
     subjectName: 'Subject',
     paperName: 'Paper Name',
-    examDate: 'Exam Date & Time',
+    examDate: 'Exam Date',
     SN: 'SN' // Add this if 'SN' should be displayed as is
   };
+
+  console.log(programmeID)
 
   return (
     <div>
@@ -225,7 +313,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
       </Form.Group>
       {data.length > 0 && (
         <div>
-          <Table striped bordered hover>
+          <Table striped bordered hover ref={tableRef}>
             <thead>
               <tr>
                 {Object.keys(data[0]).map((header, index) => (
@@ -237,7 +325,13 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
               {data.map((row, rowIndex) => (
                 <tr key={rowIndex}>
                   {Object.entries(row).map(([key, value], cellIndex) => (
-                    <td key={cellIndex} style={{ backgroundColor: (key === 'catchNumber') && !value ? '#FFB9AA' : 'inherit' }}>
+                    <td key={cellIndex} style={{ border: ((key === 'catchNumber') && (duplCatchInExcel.includes(value) || duplCatchInDB.includes(value))) ? '2px solid red' : 'none' }}>
+                      {duplCatchInExcel.includes(value) && (
+                        <span style={{ color: 'red', marginLeft: '5px' }}>Duplicate in Excel</span>
+                      )}
+                      {duplCatchInDB.includes(value) && (
+                        <span style={{ color: 'red', marginLeft: '5px' }}>Duplicate in DB</span>
+                      )}
                       {key === 'subjectName' && (
                         <>
                           <Form.Control
@@ -261,6 +355,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
 
                       {key === 'courseName' && (
                         <>
+
                           <Form.Control
                             type="text"
                             value={value}
@@ -279,8 +374,21 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
                           )}
                         </>
                       )}
+                      {key === 'examType' && (
+                        <>
+                          {!value && (
+                            <span className='text-center text-danger'>Required<sup>*</sup></span>
+                          )}
+                          <Form.Control
+                            type="text"
+                            value={value}
+                            onChange={(e) => handleCellChange(e, rowIndex, key)}
+                            style={{ borderColor: !value ? '#FFB9AA' : '#dadada' }}
+                          />
+                        </>
+                      )}
 
-                      {key !== 'subjectName' && key !== 'courseName' && (
+                      {key !== 'subjectName' && key !== 'courseName' && key !== 'examType' && (
                         <Form.Control disabled={key === 'SN'} type="text" defaultValue={value} onChange={(e) => handleCellChange(e, rowIndex, key)} />
                       )}
                     </td>

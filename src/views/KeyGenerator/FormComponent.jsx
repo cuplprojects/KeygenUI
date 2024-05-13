@@ -1,5 +1,3 @@
-//FormComponent.jsx
-
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import FormDataComponent from './FormDataComponent';
@@ -9,15 +7,16 @@ import Select from 'react-select';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { useUser } from './../../context/UserContext';
+
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const { keygenUser } = useUser();
     const [editing, setEditing] = useState(false);
     const [formData, setFormData] = useState([]);
+    const [Programmes, setProgrammes] = useState([]);
     const [selectedProgramme, setSelectedProgramme] = useState('');
     const [selectedPaper, setSelectedPaper] = useState('');
-    const [Programmes, setProgrammes] = useState([]);
     const [papers, setPapers] = useState([]);
     const [selectedPaperData, setSelectedPaperData] = useState(null);
     const [bookletSize, setBookletSize] = useState(null);
@@ -25,14 +24,8 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [editedBookletSize, setEditedBookletSize] = useState(null);
     const [noconfigError, setNoconfigError] = useState("");
     const [loading, setLoading] = useState(false);
-    const [pagematcherror, setPageMatchError] = useState("")
-
-
-    // useEffect(() => {
-    //     setFormData([])
-
-    // }, [selectedPaper])
-
+    const [pagematcherror, setPageMatchError] = useState("");
+    const [excelfile, setExcelFile] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -62,8 +55,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             fetchData();
         }
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedPaperData, keygenUser?.token]);
+    }, [selectedPaperData, keygenUser?.token, setFormSubmitted, selectedPaper.bookletSize]);
 
 
     useEffect(() => {
@@ -74,7 +66,6 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     const data = await response.json();
                     setProgrammes(data);
 
-                    // Check if there is a selected programme in sessionStorage
                     const selectedProgrammeFromStorage = sessionStorage.getItem('selectedProgramme');
                     if (selectedProgrammeFromStorage) {
                         const parsedProgramme = JSON.parse(selectedProgrammeFromStorage);
@@ -89,7 +80,8 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
             }
         }
         fetchProgrammes();
-    }, []);
+    }, [keygenUser?.token]);
+
 
     useEffect(() => {
         async function fetchPapers() {
@@ -110,7 +102,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         if (selectedProgramme.value) {
             fetchPapers();
         }
-    }, [selectedProgramme]);
+    }, [selectedProgramme, keygenUser?.token]);
 
     useEffect(() => {
         async function fetchData() {
@@ -192,7 +184,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     }, [editedBookletSize]);
 
     useEffect(() => {
-        if ((formData.length > 0 && formData[formData.length - 1].page != "") && (formData[formData.length - 1].page + 2) != editedBookletSize) {
+        if ((formData.length > 0 && formData[formData.length - 1].page !== "") && (formData[formData.length - 1].page + 2) != editedBookletSize) {
             setPageMatchError("Booklet size and page in Excel do not match.");
         } else {
             setPageMatchError("");
@@ -238,30 +230,42 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         try {
             const formdataForSubmit = new FormData();
             formdataForSubmit.append('file', blob, `file_${Date.now()}.csv`);
+
+            if (excelfile) {
+                const reader = new FileReader();
+                reader.readAsDataURL(excelfile);
+
+                reader.onload = () => {
+                    const binaryData = reader.result;
+                    axios.post(`${baseUrl}/api/MasterKeyFile`, { paperID: selectedPaper.value, masterKeyFileData: binaryData }, {
+                        headers: {
+                            Authorization: `Bearer ${keygenUser?.token}`
+                        }
+                    });
+                };
+            }
+
             const url = `${baseUrl}/api/FormData?ProgID=${selectedProgramme.value}&CatchNumber=${selectedPaperData.catchNumber}&PaperID=${selectedPaperData.paperID}`;
             setLoading(true);
 
             const response = await axios.post(url, formdataForSubmit, {
                 headers: {
                     'Authorization': `Bearer ${keygenUser?.token}`,
-                    'Content-Type': 'multipart/form-data' // Set content type to multipart/form-data
+                    'Content-Type': 'multipart/form-data'
                 }
             });
-            // const responseData = await response.json();
-            const responseData = await response.data;
 
-            if (responseData != null) {
-                console.log('File uploaded successfully!');
-                setFormSubmitted(true);
-                setEditing(false);
-            } else {
-                console.error('File upload failed.');
-            }
+            const responseData = response.data;
+            console.log(responseData ? 'File uploaded successfully!' : 'File upload failed.');
+            setFormSubmitted(responseData !== null);
+            setEditing(false);
+
         } catch (error) {
             console.error('Error uploading file:', error);
         }
     };
 
+    
     const resetFormState = () => {
         setFormData([]);
         setSelectedPaper('');
@@ -290,7 +294,6 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const handleEdit = () => {
         setEditing(true);
     };
-
     return (
         <Row>
             <Col lg={6}>
@@ -367,7 +370,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <hr />
                     <center className='text-primary fw-bold'><u>Input Master Data</u></center>
 
-                    <FileUpload setFormData={setFormData} setNumberOfQuestions={setNumberOfQuestions} disabled={!editing && formSubmitted} />
+                    <FileUpload setExcelFile={setExcelFile} setFormData={setFormData} setNumberOfQuestions={setNumberOfQuestions} disabled={!editing && formSubmitted} />
 
                     <center className='text-danger fw-bold'>OR</center>
                     <Form.Group>
@@ -383,7 +386,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                         />
                     </Form.Group>
                     <div className="d-grid gap-2 mt-4">
-                        <Button type="submit" disabled={!editing && formSubmitted && loading || pagematcherror != ""}>
+                        <Button type="submit" disabled={!editing && formSubmitted && loading || pagematcherror !== ""}>
                             Upload and Save Master data
                         </Button>                        {!editing && formSubmitted && (
                             // <Button onClick={handleEdit}>Edit Form</Button>

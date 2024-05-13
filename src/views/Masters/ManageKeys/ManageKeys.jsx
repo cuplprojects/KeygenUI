@@ -52,6 +52,9 @@ const ManageKeys = () => {
   const handleProgramChange = (selectedOption) => {
     setSelectedProgram(selectedOption);
     setEditMode(false);
+    setSelectedPaper(null);
+    setSelectedPaperData(null);
+    setPapers([])
     // Save selected programme to sessionStorage
     sessionStorage.setItem('selectedProgramme', JSON.stringify(selectedOption));
   };
@@ -150,7 +153,6 @@ const ManageKeys = () => {
 
     // Add the questionNumber to editedFields set
     setEditedFields(new Set([...editedFields, questionNumber]));
-    console.log(new Set([...editedFields, questionNumber]));
   };
 
   const isFieldEdited = (questionNumber) => {
@@ -168,6 +170,9 @@ const ManageKeys = () => {
       });
 
       if (response.status === 200) {
+        setEditedDataRows([])
+        setEditedAnswers({})
+        setEditedFields(new Set())
         fetchData();
         console.log('Answers updated successfully.');
       } else {
@@ -328,6 +333,11 @@ const ManageKeys = () => {
                 <Card.Title className='text-center'>Paper Data</Card.Title>
               </Card.Header>
               <Card.Body>
+              {selectedPaperData && selectedPaperData.masterUploaded && !selectedPaperData.keyGenerated && (
+                  <p className='text-danger text-center'>
+                  Master Uploded But Keys Not Generated.
+                </p>
+                )}
                 <Table striped bordered hover>
                   <tbody>
                     <tr>

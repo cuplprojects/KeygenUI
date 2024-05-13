@@ -8,8 +8,6 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpload, faDownload, faKey } from '@fortawesome/free-solid-svg-icons';
 
-
-// import Select from 'react-select';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const ViewPaper = () => {
@@ -26,7 +24,8 @@ const ViewPaper = () => {
   const [pdfFile, setPdfFile] = useState(null);
   const [pdfDataUrl, setPdfDataUrl] = useState('');
   const [uploadAlert, setUploadAlert] = useState(null);
-
+  const [masterKeyFile, setMasterKeyFile] = useState(null);
+  const [masterKeyData, setMasterKeyData] = useState(null);
 
   useEffect(() => {
     fetchPaper();
@@ -34,13 +33,12 @@ const ViewPaper = () => {
     fetchCourses();
   }, []);
 
-
   useEffect(() => {
     if (paper && paper.paperID) {
       fetchPdfData(paper.paperID);
+      fetchMasterKeyFile(paper.paperID);
     }
   }, [paper]);
-
 
   const handleChange = (name, value) => {
     setPaper({
@@ -60,7 +58,6 @@ const ViewPaper = () => {
     }
   }, [pdfFile]);
 
-
   const fetchPdfData = (paperID) => {
     axios.get(`${baseUrl}/api/BookletPdfData/PaperID/${paperID}`, {
       headers: {
@@ -72,6 +69,21 @@ const ViewPaper = () => {
       })
       .catch(error => {
         console.error('Error fetching file data:', error);
+      });
+  };
+
+  const fetchMasterKeyFile = (paperID) => {
+    axios.get(`${baseUrl}/api/MasterKeyFile/PaperID/${paperID}`, {
+      headers: {
+        Authorization: `Bearer ${keygenUser?.token}`
+      }
+    })
+      .then(response => {
+        setMasterKeyData(response.data)
+        setMasterKeyFile(response.data.masterKeyFileData);
+      })
+      .catch(error => {
+        console.error('Error fetching master key file:', error);
       });
   };
 
@@ -103,7 +115,6 @@ const ViewPaper = () => {
     }
   };
 
-
   const handleDownload = () => {
     if (pdfDataUrl) {
       const downloadLink = document.createElement('a');
@@ -116,6 +127,20 @@ const ViewPaper = () => {
       console.error('No PDF data to download');
     }
   };
+
+  const handleDownloadmaster = () => {
+    if (masterKeyFile ) {
+      const downloadLink = document.createElement('a');
+      downloadLink.href = masterKeyFile;
+      downloadLink.download = `${paper.catchNumber}.xlsx`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    } else {
+      console.error('No master key file data to download');
+    }
+  };
+  
 
   const updatePaper = () => {
     axios.put(`${baseUrl}/api/Papers/${decrypt(paperID)}`, paper, {
@@ -137,7 +162,6 @@ const ViewPaper = () => {
       .then(response => response.json())
       .then(data => {
         setPaper(data);
-        console.log(data)
         setLoading(false);
       })
       .catch(error => {
@@ -186,8 +210,6 @@ const ViewPaper = () => {
       console.error("Error fetching progConfigID:", error);
     }
   };
-  
-
 
   const formatDateTimeForDisplay = (dateTimeString) => {
     const date = new Date(dateTimeString);
@@ -196,15 +218,11 @@ const ViewPaper = () => {
     const day = date.getDate().toString().padStart(2, '0');
     let hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    // const seconds = date.getSeconds().toString().padStart(2, '0');
-    const formattedDate = `${day}/${month}/${year}`;
-    // const formattedTime = `${hours}:${minutes}:${seconds}`;
     const amPM = hours >= 12 ? 'PM' : 'AM';
 
-    // Convert hours to 12-hour format
     hours = hours % 12 || 12;
 
-    return `${formattedDate} ${hours}:${minutes} ${amPM}`;
+    return `${day}/${month}/${year} ${hours}:${minutes} ${amPM}`;
   };
 
   const formatDateTimeForInput = (dateTimeString) => {
@@ -214,13 +232,9 @@ const ViewPaper = () => {
     const day = date.getDate().toString().padStart(2, '0');
     let hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    const formattedDate = `${year}-${month}-${day}`;
-    const formattedTime = `${hours}:${minutes}`;
 
-    return `${formattedDate}T${formattedTime}`;
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
-
-
 
   return (
     <Container className="userform border border-3 p-4 my-3">
@@ -279,6 +293,7 @@ const ViewPaper = () => {
                             paper.subjectName
                           ) : (
                             <Form.Control as="select" value={paper.subjectID} onChange={(e) => handleChange('subjectID', e.target.value)}>
+                              <option  value={0}>Select The Subject</option>
                               {subjects.map(subject => (
                                 <option key={subject.subjectID} value={subject.subjectID}>{subject.subjectName}</option>
                               ))}
@@ -422,6 +437,26 @@ const ViewPaper = () => {
                         </div>
 
                       </>
+                    )}
+                  </div>
+                </Card.Body>
+              </Card>
+              <Card className='mt-4'>
+                <Card.Header>
+                  <Card.Title className="text-center">Master Key File</Card.Title>
+                </Card.Header>
+                <Card.Body>
+                  <div className="mt-2 text-center">
+                    {masterKeyFile ? (
+                      <>
+                        
+                        <Button onClick={handleDownloadmaster}>
+                          <FontAwesomeIcon icon={faDownload} className="me-2" />
+                          Download Master Key File
+                        </Button>
+                      </>
+                    ) : (
+                      <Alert variant="warning">Master Key File Not Uploaded</Alert>
                     )}
                   </div>
                 </Card.Body>

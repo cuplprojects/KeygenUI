@@ -64,25 +64,14 @@ const DownloadKeys = () => {
         console.error('Error fetching paper data:', error);
       }
     };
-  
+
     if (PaperID) {
       fetchPaperData();
     }
   }, [PaperID, keygenUser?.token]);
-  
 
 
-  useEffect(() => {
-    if (apiResponseold && setOrders.length > 0) {
-      const updatedApiResponse = apiResponseold.map((item) => {
-        return {
-          ...item,
-          setID: setOrders[item.setID - 1], // Adjusted index for 0-based array
-        };
-      });
-      setApiResponse(updatedApiResponse);
-    }
-  }, [apiResponseold, setOrders]);
+
 
   useEffect(() => {
     const fetchSetOrders = async () => {
@@ -102,6 +91,19 @@ const DownloadKeys = () => {
     fetchSetOrders(); // Moved fetchSetOrders outside of the if statement to ensure it always runs
   }, [progConfigID, keygenUser?.token]); // Added keygenUser?.token to the dependencies
 
+  useEffect(() => {
+    if (apiResponseold && setOrders.length > 0) {
+      const updatedApiResponse = apiResponseold.map((item) => {
+        return {
+          ...item,
+          setID: setOrders[item.setID - 1], // Adjusted index for 0-based array
+        };
+      });
+      setApiResponse(updatedApiResponse);
+    }
+  }, [apiResponseold, setOrders]);
+
+
   return (
     <div>
       <div className='d-flex align-items-center justify-content-between'>
@@ -118,9 +120,9 @@ const DownloadKeys = () => {
 
             </Dropdown.Item>
 
-              <PDFDownloadLink className='ms-3' document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
-                {({ loading }) => (loading ? <Button>Loading...</Button> : <Button><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
-              </PDFDownloadLink>
+            <PDFDownloadLink className='ms-3' document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
+              {({ loading }) => (loading ? <Button>Loading...</Button> : <Button><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
+            </PDFDownloadLink>
 
             {/* <Dropdown.Item>
               <PDFDownloadLink document={<Keyi data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>

@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
-import { Form, Button, Row, Col, Container, Alert } from "react-bootstrap";
+import { Form, Button, Row, Col, Container, Alert, Spinner } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import { useSecurity } from "./../../context/Security";
 import { useUser } from "./../../context/UserContext";
@@ -18,16 +18,23 @@ const UpdateUser = () => {
   const [apiError, setApiError] = useState(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false)
 
   useEffect(() => {
+    if (decryptid) {
+      fetchUserData();
+    }
+  }, [decryptid, keygenUser]);
+
+  const fetchUserData = () => {
     axios
-      .get(`${apiUserById}/${decryptid}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } })
+      .get(`${apiUserById}/${decryptid}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } })
       .then((res) => {
         setUserData(res.data);
       })
       .catch((err) => setApiError(err.message || "An error occurred"))
       .finally(() => setLoading(false));
-  }, [decryptid, keygenUser]);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,17 +45,20 @@ const UpdateUser = () => {
 
   const handleUserSubmit = async (event) => {
     event.preventDefault();
+    setSubmitLoading(true)
     setShowErrorAlert(false);
     setUpdateSuccess(false);
 
     try {
-      await axios.put(`${apiUserById}/${decryptid}`,{ headers: { Authorization: `Bearer ${keygenUser?.token}` } }, userData);
+      await axios.put(`${apiUserById}/${decryptid}`, userData, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       setUpdateSuccess(true);
+      setSubmitLoading(false)
       setApiError('');
     } catch (error) {
       if (error.response && error.response.status === 500) {
         setApiError("Email Already Exists!");
         setShowErrorAlert(true);
+        fetchUserData();
       } else {
         setApiError("An error occurred. Please try again later.");
         setShowErrorAlert(true);
@@ -162,8 +172,8 @@ const UpdateUser = () => {
           </Row>
           <hr />
           <div className="text-center">
-            <Button variant="primary" type="submit">
-              Update User
+            <Button variant="primary" type="submit" disabled={submitLoading}>
+              {submitLoading ? <><Spinner animation="border" size="sm" />Updating... </> : 'Update User'}
             </Button>
           </div>
         </Form>

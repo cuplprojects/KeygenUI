@@ -1,23 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { Table, Card, Form, Button, Placeholder } from 'react-bootstrap';
+import { Table, Card, Form, Button, Placeholder, Spinner } from 'react-bootstrap';
 import { useUser } from './../../../context/UserContext';
 import $ from 'jquery';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
 const Subjects = () => {
     const { keygenUser } = useUser();
-    const token = keygenUser?.token
+    const token = keygenUser?.token;
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [subjectName, setSubjectName] = useState('');
     const [existingSubjects, setExistingSubjects] = useState([]);
+    const [addingSubject, setAddingSubject] = useState(false);
 
     const tableRef = useRef(null);
 
     useEffect(() => {
         fetchSubjects();
-    }, [subjects]); // Fetch subjects whenever there's a change in the subjects state
+    }, []);
 
     useEffect(() => {
         if (!loading && tableRef.current) {
@@ -45,6 +46,7 @@ const Subjects = () => {
 
     const handleAddSubject = async () => {
         try {
+            setAddingSubject(true);
             const response = await axios.post(`${baseUrl}/api/Subjects`, { subjectName }, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -52,10 +54,13 @@ const Subjects = () => {
             });
             if (response.status === 200) {
                 setSubjectName('');
-                setExistingSubjects([...existingSubjects, subjectName.toLowerCase()]); // Clear the input field
+                setExistingSubjects([...existingSubjects, subjectName.toLowerCase()]);
+                fetchSubjects();
             }
         } catch (error) {
             console.error('Error adding subject:', error);
+        } finally {
+            setAddingSubject(false);
         }
     };
 
@@ -69,15 +74,15 @@ const Subjects = () => {
                         </Card.Header>
                         <Card.Body>
                             {loading ? (
-                                 <div className="d-flex flex-wrap">
-                                 {Array.from({ length: 20 }).map((_, index) => (
-                                     <div key={index} className="p-1" style={{ flexBasis: '50%', maxWidth: '50%' }}>
-                                         <Placeholder as="div" animation="glow">
-                                             <Placeholder xs={12} className='p-3' />
-                                         </Placeholder>
-                                     </div>
-                                 ))}
-                             </div>
+                                <div className="d-flex flex-wrap">
+                                    {Array.from({ length: 20 }).map((_, index) => (
+                                        <div key={index} className="p-1" style={{ flexBasis: '50%', maxWidth: '50%' }}>
+                                            <Placeholder as="div" animation="glow">
+                                                <Placeholder xs={12} className='p-3' />
+                                            </Placeholder>
+                                        </div>
+                                    ))}
+                                </div>
                             ) : (
                                 <Table striped bordered hover ref={tableRef}>
                                     <thead>
@@ -114,17 +119,23 @@ const Subjects = () => {
                                         type="text"
                                         placeholder="Enter subject name"
                                         value={subjectName}
-                                        onChange={(e) => {
-                                            setSubjectName(e.target.value)
-                                        }}
+                                        onChange={(e) => setSubjectName(e.target.value)}
                                     />
                                 </Form.Group>
                                 <div className='mt-4 text-end'>
-                                    <Button variant="primary" onClick={handleAddSubject} disabled={existingSubjects.includes(subjectName.toLowerCase())}>Add Subject</Button>
+                                    <Button variant="primary" onClick={handleAddSubject} disabled={addingSubject || existingSubjects.includes(subjectName.toLowerCase())}>
+                                        {addingSubject ? (
+                                            <>
+                                                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                                                Adding Subject...
+                                            </>
+                                        ) : 'Add Subject'}
+                                    </Button>
                                 </div>
                             </Form>
                         </Card.Body>
-                    </Card>
+                    </Card> 
+                     
                 </div>
             </div>
         </div>

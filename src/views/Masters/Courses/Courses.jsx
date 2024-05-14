@@ -12,6 +12,7 @@ const Courses = () => {
     const [loading, setLoading] = useState(true);
     const [courseName, setCourseName] = useState('');
     const [existingCourses, setExistingCourses] = useState([]);
+    const [addingCourse, setAddingCourse] = useState(false);
 
     const tableRef = useRef(null);
 
@@ -45,6 +46,7 @@ const Courses = () => {
 
     const handleAddCourse = async () => {
         try {
+            setAddingCourse(true);
             const response = await axios.post(`${baseUrl}/api/Courses`, { courseName }, {
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -52,9 +54,12 @@ const Courses = () => {
             });
             if (response.status === 200) {
                 setCourseName('');
+                fetchCourses(); // Fetch updated courses
             }
         } catch (error) {
             console.error('Error adding course:', error);
+        } finally {
+            setAddingCourse(false); // Stop loading spinner
         }
     };
 
@@ -119,7 +124,14 @@ const Courses = () => {
                                     />
                                 </Form.Group>
                                 <div className='mt-4 text-end'>
-                                    <Button variant="primary" onClick={handleAddCourse} disabled={existingCourses.includes(courseName.toLowerCase()) || !courseName.trim()}>Add Course</Button>
+                                    <Button variant="primary" onClick={handleAddCourse} disabled={addingCourse || existingCourses.includes(courseName.toLowerCase()) || !courseName.trim()}>
+                                        {addingCourse ? (
+                                            <>
+                                                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                                                Adding Course...
+                                            </>
+                                        ) : 'Add Course'}
+                                    </Button>
                                 </div>
                             </Form>
                         </Card.Body>

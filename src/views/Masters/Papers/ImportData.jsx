@@ -23,12 +23,13 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
       $(tableRef.current).DataTable();
     }
   }, [data]);
-  
 
   useEffect(() => {
-    fetchSubjects();
-    fetchCourses();
-  }, []);
+    if (tableRef.current) {
+      $(tableRef.current).DataTable();
+    }
+  }, [data]);
+
 
   useEffect(() => {
     const fetchPapers = async () => {
@@ -45,6 +46,11 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
       }
     };
     if (programmeID > 0) {
+      setPapers([])
+      setData([])
+      setFile(null)
+      setDuplCatchInDB([])
+      setDuplCatchInDB([])
       fetchPapers();
     }
   }, [programmeID]);

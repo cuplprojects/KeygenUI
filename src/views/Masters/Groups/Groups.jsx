@@ -12,6 +12,7 @@ const Groups = () => {
   const [loading, setLoading] = useState(true);
   const [groupName, setGroupName] = useState('');
   const [existingGroups, setExistingGroups] = useState([]);
+  const [addingGroup, setAddingGroup] = useState(false);
 
   const tableRef = useRef(null);
 
@@ -60,16 +61,20 @@ const Groups = () => {
 
   const handleAddGroup = async () => {
     try {
-      const response = await axios.post(`${baseUrl}/api/Groups`, { groupName }, {
+      setAddingGroup(true);
+      const response = await axios.post(`${baseUrl}/api/Groups`, { groupName, status: true }, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       if (response.status === 200) {
         setGroupName('');
+        fetchGroups(); // Fetch updated groups
       }
     } catch (error) {
       console.error('Error adding group:', error);
+    } finally {
+      setAddingGroup(false); // Stop loading spinner
     }
   };
 
@@ -144,7 +149,14 @@ const Groups = () => {
                   />
                 </Form.Group>
                 <div className='mt-4 text-end'>
-                  <Button variant="primary" onClick={handleAddGroup} disabled={existingGroups.includes(groupName.toLowerCase()) || !groupName.trim()}>Add Group</Button>
+                  <Button variant="primary" onClick={handleAddGroup} disabled={addingGroup || existingGroups.includes(groupName.toLowerCase()) || !groupName.trim()}>
+                    {addingGroup ? (
+                      <>
+                        <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                        Adding Group...
+                      </>
+                    ) : 'Add Group'}
+                  </Button>
                 </div>
               </Form>
             </Card.Body>
@@ -154,6 +166,5 @@ const Groups = () => {
     </div>
   );
 };
-
 
 export default Groups;

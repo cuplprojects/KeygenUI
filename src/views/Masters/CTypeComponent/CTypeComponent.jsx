@@ -12,11 +12,12 @@ const CTypeComponent = () => {
     const [loading, setLoading] = useState(true);
     const [typeName, setTypeName] = useState('');
     const [existingTypes, setExistingTypes] = useState([]);
+    const [addingType, setAddingType] = useState(false);
     const tableRef = useRef(null);
 
     useEffect(() => {
         fetchTypes();
-    }, []); // Fetch types only once when the component mounts
+    }, []);
 
     useEffect(() => {
         if (!loading && tableRef.current) {
@@ -44,19 +45,22 @@ const CTypeComponent = () => {
 
     const handleAddType = async () => {
         try {
+            setAddingType(true);
             const response = await axios.post(`${baseUrl}/api/CTypes`, { typeName }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
             if (response.status >= 200 && response.status < 300) {
-                setTypes([...types, response.data]); // Update types state with the new type
-                setTypeName(''); // Clear the input field
+                setTypes([...types, response.data]);
+                setTypeName('');
             } else {
                 console.error('Failed to add type:', response);
             }
         } catch (error) {
             console.error('Error adding type:', error);
+        } finally {
+            setAddingType(false);
         }
     };
 
@@ -119,7 +123,14 @@ const CTypeComponent = () => {
                                     />
                                 </Form.Group>
                                 <div className='mt-4 text-end'>
-                                    <Button variant="primary" onClick={handleAddType} disabled={existingTypes.includes(typeName.toLowerCase()) || !typeName.trim()}>Add Type</Button>
+                                    <Button variant="primary" onClick={handleAddType} disabled={addingType || existingTypes.includes(typeName.toLowerCase()) || !typeName.trim()}>
+                                        {addingType ? (
+                                            <>
+                                                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                                                Adding Type...
+                                            </>
+                                        ) : 'Add Type'}
+                                    </Button>
                                 </div>
                             </Form>
                         </Card.Body>

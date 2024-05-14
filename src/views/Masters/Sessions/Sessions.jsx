@@ -17,7 +17,7 @@ const Sessions = () => {
 
   useEffect(() => {
     fetchSessions();
-  }, [sessions]); // Fetch sessions whenever there's a change in the sessions state
+  }, []); // Fetch sessions whenever there's a change in the sessions state
 
   useEffect(() => {
     if (!loading && tableRef.current) {

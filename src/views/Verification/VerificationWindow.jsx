@@ -43,8 +43,9 @@ const VerificationWindow = () => {
   ])
   const statusOptions = [
     { value: 'notverified', label: 'Not Verified' },
-    { value: 'verified', label: 'Verified' },
-    { value: 'all', label: 'All Catch' }
+    { value: 'verified', label: 'Verified (Correct)' },
+    { value: 'verifiedincorrect', label: 'Verified (Incorrect)' },
+    { value: 'all', label: 'All' }
   ];
   const [selectedFilter, setSelectedFilter] = useState(null);
   const { pdfStatusCounts, loadingstatus, error, refetch } = useStatusCounts(selectedProgram?.value);

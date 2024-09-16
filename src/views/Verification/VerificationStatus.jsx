@@ -208,16 +208,16 @@ const VerificationStatus = () => {
       const formattedVerifiedAt = `${verifiedAt.toLocaleDateString()} ${verifiedAt.toLocaleTimeString()}`;
       switch (pdf.status) {
         case 1:
-          return <FaCheckCircle color="green" title={`${pdf.verifiedByName} ${formattedVerifiedAt}`} />;
+          return <FaCheckCircle color="green" title={`Verified - ${pdf.verifiedByName} ${formattedVerifiedAt}`} />;
         case 0:
           return <FaCircle color="gray" title="Not verified" />; // Assuming a gray circle for not verified
         case 2:
-          return <FaTimesCircle color="red" title="PDF is invalid" />;
+          return <FaTimesCircle color="red"  title={`Incorrect - ${pdf.verifiedByName} ${formattedVerifiedAt}`} />;
         default:
           return <FaQuestionCircle color="gray" />; // Fallback to question mark if status is unknown
       }
     } else {
-      return <FaQuestionCircle color="gray" />;
+      return <FaQuestionCircle color="gray" title="No Status" />;
     }
   };
 

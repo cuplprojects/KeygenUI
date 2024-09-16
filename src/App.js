@@ -1,5 +1,5 @@
 // src/App.js
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect,lazy } from 'react';
 import { HashRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { CSpinner, useColorModes } from '@coreui/react';
@@ -14,9 +14,9 @@ import { ProfileImageProvider } from './context/ProfileImageProvider';
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
 
 // Pages
-const Login = React.lazy(() => import('./views/pages/login/Login'));
-const ForgotPassword = React.lazy(() => import('./views/pages/ForgotPassword/ForgotPassword'));
-const ChangePassword = React.lazy(() => import('./views/pages/ChangePassword/ChangePassword'));
+const Login = lazy(() => import('./views/pages/login/Login'));
+const ForgotPassword = lazy(() => import('./views/pages/ForgotPassword/ForgotPassword'));
+const ChangePassword = lazy(() => import('./views/pages/ChangePassword/ChangePassword'));
 // const ImageUpload = React.lazy(() => import('./components/ImageUpload'));
 
 const App = () => {

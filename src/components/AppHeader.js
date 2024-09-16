@@ -114,7 +114,7 @@ const AppHeader = () => {
 
   return (
     <>
-      <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
+      <CHeader position="sticky" className="mb-3 p-0" ref={headerRef}>
         <CContainer className="border-bottom px-4" fluid>
           <CHeaderToggler
             onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
@@ -213,9 +213,7 @@ const AppHeader = () => {
             <AppHeaderDropdown />
           </CHeaderNav>
         </CContainer>
-        <CContainer className="px-4" fluid>
-          <AppBreadcrumb />
-        </CContainer>
+        <AppBreadcrumb />
       </CHeader>
     </>
   );

@@ -30,6 +30,11 @@ const Papers = lazy(() => import('./views/Masters/Papers/Papers'));
 const Programs = lazy(() => import('./views/Masters/Programs/Programs'));
 const ManageKeys = lazy(() => import('./views/Masters/ManageKeys/ManageKeys'));
 
+// Pdf upload 
+const BulkPdfUpload = lazy(() => import('./views/Verification/BulkPdfUpload'));
+const VerificationStatus = lazy(() => import('./views/Verification/VerificationStatus'));
+const VerificationWindow = lazy(() => import('./views/Verification/VerificationWindow'));
+
 const routes = [
   { path: '/', name: 'Home', moduleId: null, permissionType: null, element: <Dashboard /> },
   { path: '*', name: 'Dashboard', moduleId: null, permissionType: null, element: <Dashboard /> },
@@ -62,6 +67,11 @@ const routes = [
   { path: '/Masters/Programs', name: ' Programs', moduleId: 3, permissionType: 'can_Add', element: <Programs /> },
   { path: '/Masters/ExamType', name: ' ExamType', moduleId: 3, permissionType: 'can_Add', element: <CTypeComponent /> },
   { path: '/Masters/ManageKeys', name: ' Manage Keys', moduleId: 3, permissionType: 'can_View', element: <ManageKeys /> },
+  
+    // pdf upload 
+    { path: '/verification/upload', name: 'Upload PDF', moduleId: null, permissionType: null, element: <BulkPdfUpload /> },
+    { path: '/verification/verificationstatus', name: 'Upload PDF', moduleId: null, permissionType: null, element: <VerificationStatus /> },
+    { path: '/verification/verificaton', name: 'Upload PDF', NoBreadcrumb:true, moduleId: null, permissionType: null, element: <VerificationWindow /> },
   
   { path: '/Masters/papers/ViewPaper/:paperID', name: 'View Paper', moduleId: 3, permissionType: 'can_View', element: <ViewPaper /> },
 

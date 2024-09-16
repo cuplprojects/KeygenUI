@@ -42,6 +42,7 @@ const ForgotPassword = () => {
       console.log(error);
     } finally {
       setLoading(false);
+      setEmail('')
       // setAlertMessage(true) //Temprary
     }
   };

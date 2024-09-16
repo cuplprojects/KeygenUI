@@ -1,0 +1,487 @@
+import React, { useState, useEffect, useRef } from 'react'
+import Select from 'react-select'
+import { Col, Row, Form, Button, Collapse, Badge, ButtonGroup } from 'react-bootstrap'
+import axios from 'axios'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faCheckCircle, faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCompress, faExclamationCircle, faExpand, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
+import './Btn.css'
+import { useUser } from 'src/context/UserContext'
+import { ToastContainer, toast } from 'react-toastify'
+import { FaCheckCircle } from 'react-icons/fa'
+
+const apiUrl = process.env.REACT_APP_BASE_API_URL
+const apiBasaUrl = process.env.REACT_APP_BASE_URL
+
+const VerificationWindow = () => {
+  const { keygenUser } = useUser()
+  const [programs, setPrograms] = useState([])
+  const [catchNumbers, setCatchNumbers] = useState([])
+  const [selectedProgram, setSelectedProgram] = useState(null)
+  const [selectedCatchNumber, setSelectedCatchNumber] = useState(null)
+  const [showPdfs, setShowPdfs] = useState(false)
+  const [pdfUrls, setPdfUrls] = useState([])
+  const [selectedPages, setSelectedPages] = useState([1, 1, 1, 1])
+  const [iframeKey, setIframeKey] = useState(0)
+  const [showFilters, setShowFilters] = useState(true)
+  const [pagePattern, setPagePattern] = useState([])
+  const iframesRef = useRef([])
+  const fullscreenRef = useRef(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [papers, setPapers] = useState({})
+  const [numPages, setNumPages] =useState(32)
+  const [currentPage, setCurrentPage] = useState([0,3])
+  const [verificationData, setVerificationData]= useState([])
+  const [setOrders, setSetOrders]= useState([])
+
+
+  useEffect(() => {
+    handlePageClick()
+  }, [])
+
+  const cleardata = ()=>{
+    setShowPdfs(false)
+    setPdfUrls([])
+    setSelectedPages([1, 1, 1, 1])
+    setIframeKey(0)
+    setIsFullscreen(false)
+    setPagePattern([])
+    setPapers({})
+    setNumPages(32)
+    setCurrentPage([0,3])
+
+  }
+
+  useEffect(() => {
+    async function fetchPrograms() {
+      try {
+        const response = await axios.get(`${apiUrl}/Programmes`, {
+          headers: { Authorization: `Bearer ${keygenUser?.token}` },
+        })
+        const programOptions = response.data.map((program) => ({
+          value: program.programmeID,
+          label: program.programmeName,
+        }))
+        setPrograms(programOptions)
+
+        const storedProgram = sessionStorage.getItem('selectedProgram')
+        if (storedProgram) {
+          setSelectedProgram(JSON.parse(storedProgram))
+        }
+      } catch (error) {
+        console.error('Error fetching programmes:', error)
+      }
+    }
+    fetchPrograms()
+  }, [keygenUser, apiUrl])
+
+  useEffect(() => {
+    if (selectedProgram) {
+      async function fetchCatchNumbers() {
+        try {
+          const response = await axios.get(
+            `${apiUrl}/Papers/CatchNumbersByProgramID/${selectedProgram.value}`,
+            {
+              headers: { Authorization: `Bearer ${keygenUser?.token}` },
+            },
+          )
+          const catchNumberOptions = response.data.map((catchNumber) => ({
+            value: catchNumber.catchNumber,
+            label: `${catchNumber.catchNumber}`,
+          }))
+          setCatchNumbers(catchNumberOptions)
+
+          const storedCatchNumber = sessionStorage.getItem('selectedCatchNumber')
+          if (storedCatchNumber) {
+            setSelectedCatchNumber(JSON.parse(storedCatchNumber))
+          }
+        } catch (error) {
+          console.error('Error fetching catch numbers:', error)
+        }
+      }
+      fetchCatchNumbers()
+    }
+  }, [selectedProgram, keygenUser, apiUrl])
+
+  useEffect(() => {
+    if (selectedProgram && selectedCatchNumber) {
+      async function fetchPapers() {
+        try {
+          const response = await axios.get(
+            `${apiUrl}/Papers/ByProgramAndCatchNumber/${selectedProgram.value}/${selectedCatchNumber.value}`,
+            {
+              headers: { Authorization: `Bearer ${keygenUser?.token}` },
+            },
+          )
+          const paperData = response.data[0]
+          setPapers(paperData)
+          setNumPages(paperData.bookletSize)
+        } catch (error) {
+          console.error('Error fetching papers:', error)
+          setPapers({})
+        }
+      }
+      fetchPapers()
+    }
+  }, [selectedProgram, selectedCatchNumber, apiUrl, keygenUser])
+
+
+  useEffect(() => {
+    if (selectedProgram && papers) {
+      async function fetchorders() {
+        try {
+          const response = await axios.get(
+            `${apiUrl}/ProgConfigs/Programme/${selectedProgram.value}/${papers.bookletSize}`,
+            {
+              headers: { Authorization: `Bearer ${keygenUser?.token}` },
+            },
+          )
+          const paperData = response.data[0];
+
+          // Split the setOrder string by commas to create an array
+          const setOrderArray = paperData.setOrder.split(',');
+          
+          // Set the orders using the transformed array
+          setSetOrders(setOrderArray);
+          
+        } catch (error) {
+          console.error('Error fetching papers:', error)
+          setSetOrders({})
+        }
+      }
+      fetchorders()
+    }
+  }, [papers])
+
+    
+      async function fetchPagePattern() {
+        if (selectedProgram && selectedCatchNumber && papers){
+          try {
+          const response = await axios.post(`${apiUrl}/FormData/GetPatternbyLine`, null, {
+            params: {
+              bookletsize: papers.bookletSize,
+              CatchNumber: selectedCatchNumber.value,
+              progId: selectedProgram.value,
+            },
+          })
+          const pagePatternData = response.data
+          const groupedData = pagePatternData.reduce((acc, item) => {
+            const { questionNumber, setID, pageNumber } = item
+            if (!acc[questionNumber - 1]) {
+              acc[questionNumber - 1] = {}
+            }
+            if (pageNumber !== null && pageNumber !== undefined) {
+              acc[questionNumber - 1][setID] = pageNumber
+            }
+            return acc
+          }, [])
+          const cleanedGroupedData = groupedData.filter((item) => Object.keys(item).length > 0)
+          setPagePattern(cleanedGroupedData)
+        } catch (error) {
+          toast.error('No Pattern Found.')
+          console.error('Error fetching page pattern:', error)
+        }
+        } 
+      }
+      
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      iframesRef.current.forEach((iframe, index) => {
+        if (iframe && iframe.contentDocument) {
+          const iframeDocument = iframe.contentDocument
+          const scrollTop = iframeDocument.documentElement.scrollTop
+          const pageHeight = iframeDocument.documentElement.scrollHeight / 32
+          const currentPage = Math.ceil(scrollTop / pageHeight)
+          if (currentPage !== selectedPages[index]) {
+            setSelectedPages((prevPages) => {
+              const updatedPages = [...prevPages]
+              updatedPages[index] = currentPage
+              return updatedPages
+            })
+          }
+        }
+      })
+    }, 1000)
+
+    return () => clearInterval(intervalId)
+  }, [selectedPages])
+
+  const fetchPdfs = async () => {
+    if (selectedProgram && selectedCatchNumber) {
+      fetchPagePattern()
+      try {
+        const url = `${apiUrl}/PDFfile/GetPdfs?CatchNumber=${selectedCatchNumber.value}&ProgramId=${selectedProgram.value}`
+        const response = await axios.get(url, {
+          headers: { Authorization: `Bearer ${keygenUser?.token}` },
+        })
+        const pdfData = response.data
+        const pdfUrls = pdfData.map((pdf) => `${apiBasaUrl}/CatchPdfs/${pdf.fileName}`)
+        setPdfUrls(pdfUrls)
+      } catch (error) {
+        toast.error('Error fetching PDFs:', error)
+        setPdfUrls([])
+      }
+    }
+  }
+  
+  const fetchVerificationData= async ()=> {
+    if (selectedProgram && selectedCatchNumber) {
+      fetchPagePattern()
+      try {
+        const url = `${apiUrl}/PDFfile?CatchNumber=${selectedCatchNumber.value}&ProgramId=${selectedProgram.value}`
+        const response = await axios.get(url, {
+          headers: { Authorization: `Bearer ${keygenUser?.token}` },
+        })
+        setVerificationData(response.data)
+      } catch (error) {
+        toast.error('Error fetching PDFs:', error)
+        setVerificationData([])
+      }
+    }
+  }
+
+
+  const handleVerification = async (isCorrect) => {
+    const requestBody = {
+      id: 0, // Replace with actual ID if available
+      catchNumber: selectedCatchNumber.value,
+      programId: selectedProgram.value,
+      pageNumber: currentPage[1], // Current page number
+      isCorrect: isCorrect, // true for Verified, false for Wrong
+      verifiedBy: keygenUser.userID, // Assuming you have the verifier's ID
+      seriesName : setOrders ? setOrders[currentPage[0]] : null, // Assuming this is available from papers
+      verifiedAt: new Date().toISOString(),
+    }
+
+    try {
+      await axios.post(`${apiUrl}/PDFfile/VerifyPageNumber`, requestBody, {
+        headers: { Authorization: `Bearer ${keygenUser?.token}` },
+      })
+      toast.success(`Page ${currentPage[1]} has been ${isCorrect ? 'Verified' : 'Marked as Wrong'}.`, {
+        autoClose: 1000
+      })
+    } catch (error) {
+      toast.error('Error submitting verification.')
+      console.error('Error submitting verification:', error)
+    }
+  }
+
+  const handleProgramChange = (selectedOption) => {
+    setSelectedProgram(selectedOption)
+    setSelectedCatchNumber(null)
+    cleardata()
+    setIframeKey((prevKey) => prevKey + 1)
+    sessionStorage.setItem('selectedProgram', JSON.stringify(selectedOption))
+  }
+
+  const handleCatchNumberChange = (selectedOption) => {
+    setSelectedCatchNumber(selectedOption)
+    cleardata()
+    setIframeKey((prevKey) => prevKey + 1)
+    sessionStorage.setItem('selectedCatchNumber', JSON.stringify(selectedOption))
+  }
+
+  const handleShowPdfs = () => {
+    fetchPdfs()
+    fetchVerificationData()
+    setShowPdfs(true)
+  }
+  useEffect(()=>{
+if (currentPage) {
+  handlePageClick(currentPage[0],currentPage[1])
+}
+  },[currentPage])
+
+  const handlePageClick = (pdfIndex, pageNumber) => {
+    const key = (pdfIndex + 1).toString()
+    if (pagePattern) {
+      const selectedObject = pagePattern.find((page) => page[key] === pageNumber)
+      if (selectedObject) {
+        const newSelectedPages = Object.values(selectedObject)
+        setSelectedPages(newSelectedPages)
+        setIframeKey((prevKey) => prevKey + 1)
+      } else {
+        console.log('No object found')
+      }
+    }
+  }
+
+  const toggleFullscreen = () => {
+    if (!fullscreenRef.current) {
+      console.error('The ref is not attached to any element.')
+      return
+    }
+
+    if (!document.fullscreenElement) {
+      fullscreenRef.current
+        .requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch((err) => {
+          console.error('Error attempting to enable fullscreen mode:', err)
+          alert('Error attempting to enter fullscreen mode. Please try again.')
+        })
+    } else {
+      document
+        .exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch((err) => {
+          console.error('Error attempting to exit fullscreen mode:', err)
+          alert('Error attempting to exit fullscreen mode. Please try again.')
+        })
+    }
+  }
+
+  return (
+    <div className="verification-window">
+      <ToastContainer />
+      <div className="d-flex justify-content-between">
+        <div>
+          <Button variant="link" onClick={() => setShowFilters((prev) => !prev)} >
+            <FontAwesomeIcon icon={showFilters ? faChevronUp : faChevronDown} />
+          </Button>
+          <Button variant="link" onClick={toggleFullscreen}>
+            <FontAwesomeIcon icon={isFullscreen ? faCompress : faExpand} /> 
+          </Button>
+        </div>
+        <div>
+          <Badge bg="secondary" className="p-2">
+            Total Catch Numbers: {catchNumbers.length}
+          </Badge>
+        </div>
+        <div className="d-flex align-items-center justify-content-end gap-3"> 
+        <div>
+          <ButtonGroup className='gap-2 d-flex'>
+              {/* Wrong Mark (Red) */}
+              <Button className='p-0' variant="link" size="sm" onClick={() => handleVerification(false)}>
+                <FontAwesomeIcon icon={faChevronLeft} className="text-danger fs-4" />
+              </Button>
+
+             {/* Mark for Review (Blue) */}
+              <Button className='p-0' variant="link" size="sm" onClick={() => 
+                toast.info('Marked for Review', {
+                  autoClose: 1000
+                })
+              }>
+                <FontAwesomeIcon icon={faChevronLeft} className="text-info fs-4 " />
+              </Button>
+              
+              {/* Success Mark (Green) */}
+              <Button className='p-0' variant="link" size="sm" onClick={() => handleVerification(true)}>
+                <FontAwesomeIcon icon={faChevronLeft} className="text-success fs-4" />
+              </Button>
+            </ButtonGroup>
+        </div>
+        <div>
+        <ButtonGroup>
+              {/* Wrong Mark (Red) */}
+              <Button className='p-0' variant="link" size="sm" onClick={() => handleVerification(false)}>
+                <FontAwesomeIcon icon={faChevronRight} className="text-danger fs-4" />
+              </Button>
+
+              {/* Mark for Review (Blue) */}
+              <Button className='p-0' variant="link" size="sm" onClick={() => toast.info('Marked for Review')}>
+                <FontAwesomeIcon icon={faChevronRight} className="text-info fs-4 " />
+              </Button>
+              
+              {/* Success Mark (Green) */}
+              <Button className='p-0' variant="link" size="sm" onClick={() => handleVerification(true)}>
+                <FontAwesomeIcon icon={faChevronRight} className="text-success fs-4" />
+              </Button>
+            </ButtonGroup>
+        </div>
+</div>
+
+
+      </div>
+
+      <Collapse in={showFilters}>
+        <div>
+          <Form>
+            <Row className="mb-3">
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Label>Program</Form.Label>
+                  <Select
+                    value={selectedProgram}
+                    onChange={handleProgramChange}
+                    options={programs}
+                    placeholder="Select Program"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Label>Catch Number</Form.Label>
+                  <Select
+                    value={selectedCatchNumber}
+                    onChange={handleCatchNumberChange}
+                    options={catchNumbers}
+                    placeholder="Select Catch Number"
+                    isDisabled={!selectedProgram}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={3} className='mt-4'>
+                <Form.Group>
+                  <Button
+                    variant="primary"
+                    onClick={handleShowPdfs}
+                    disabled={!selectedCatchNumber}
+                  >
+                    Show PDFs
+                  </Button>
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
+        </div>
+      </Collapse>
+
+      <Row className="g-2">
+        {showPdfs && (
+          <div ref={fullscreenRef}>
+            <Row>
+              {pdfUrls.map((url, pdfIndex) => (
+                <Col md={6} className="mt-3 border border-2 p-3" key={pdfIndex}>
+                  <Row className="mb-2">
+                    <div className="pagination-container">
+                      {[...Array(numPages).slice(4)].map((_, pageIndex) => (
+                        <Button
+                          key={pageIndex}
+                          variant={
+                            selectedPages[pdfIndex] === pageIndex + 3
+                              ? 'primary'
+                              : 'outline-primary'
+                          }
+                          onClick={() => setCurrentPage([pdfIndex, pageIndex + 3])}
+                          className="rounded-circle"
+                          style={{ margin: '0 2px' }}
+                          disabled={pagePattern.length<=0}
+                        >
+                          {pageIndex + 3}
+                        </Button>
+                      ))}
+                    </div>
+                  </Row>
+
+                  <iframe
+                    ref={(el) => (iframesRef.current[pdfIndex] = el)}
+                    key={`${pdfIndex}-${iframeKey}`}
+                    src={`${url}#page=${selectedPages[pdfIndex]}`}
+                    title={`PDF ${pdfIndex + 1}`}
+                    width="100%"
+                    height="260px"
+                    frameBorder="0"
+                    style={{ overflow: 'auto' }}
+                  />
+                </Col>
+              ))}
+            </Row>
+          </div>
+        )}
+      </Row>
+    </div>
+  )
+}
+
+export default VerificationWindow

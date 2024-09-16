@@ -11,6 +11,10 @@ import {
   cilClock,
   cilPaperPlane,
   cilBook,
+  cilCheckCircle,
+  cilCloudUpload,
+  cilCheck,
+  cilShieldAlt,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -131,6 +135,33 @@ const _nav = [
         icon: <CIcon icon={cilHamburgerMenu} customClassName="nav-icon" />,
       },
       
+    ],
+  },
+  {
+    component: CNavGroup,
+    name: 'Verification',
+    icon: <CIcon icon={cilCheckCircle} customClassName="nav-icon" />,
+    module: 3,
+    permissiontype: 'can_View',
+    items: [
+      {
+        component: CNavItem,
+        name: 'Upload PDF',
+        to: 'verification/upload',
+        icon: <CIcon icon={cilCloudUpload} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Verification Status',
+        to: 'verification/verificationstatus',
+        icon: <CIcon icon={cilShieldAlt} customClassName="nav-icon" />,
+      },
+      {
+        component: CNavItem,
+        name: 'Veification Window',
+        to: 'verification/verificaton',
+        icon: <CIcon icon={cilCheck} customClassName="nav-icon" />,
+      },
     ],
   },
   

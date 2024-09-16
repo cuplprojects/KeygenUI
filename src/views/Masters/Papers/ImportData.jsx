@@ -309,12 +309,10 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
     SN: 'SN' // Add this if 'SN' should be displayed as is
   };
 
-  console.log(programmeID)
-
   return (
     <div>
       <Form.Group className='mb-3'>
-        <Form.Label>Import File</Form.Label>
+        <Form.Label>Import Bulk Paper Data (Excel)</Form.Label>
         <Form.Control type="file" onChange={handleFileChange} accept=".xlsx, .csv" />
       </Form.Group>
       {data.length > 0 && (

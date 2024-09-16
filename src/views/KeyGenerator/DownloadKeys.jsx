@@ -6,6 +6,8 @@ import KeyPdf from './Downloads/KeyPdf';
 import { useUser } from './../../context/UserContext';
 
 import ExportToExcel from './Downloads/ExportToExcel';
+import ExportFormat2 from './Downloads/ExportFormat2';
+
 // import Keyi from './Downloads/Keyi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
@@ -103,7 +105,7 @@ const DownloadKeys = () => {
     }
   }, [apiResponseold, setOrders]);
 
-
+// console.log(apiResponse)
   return (
     <div>
       <div className='d-flex align-items-center justify-content-between'>
@@ -117,7 +119,9 @@ const DownloadKeys = () => {
           <DropdownButton id="export-dropdown" title={<><FontAwesomeIcon icon={faFilePdf} className="me-2" />Export</>} variant="primary">
             <Dropdown.Item>
               <ExportToExcel data={apiResponse} paperData={paperData} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
-
+            </Dropdown.Item>
+            <Dropdown.Item>
+              <ExportFormat2 data={apiResponse} paperData={paperData} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
             </Dropdown.Item>
 
             <PDFDownloadLink className='ms-3' document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>

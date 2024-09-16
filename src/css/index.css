@@ -360,3 +360,20 @@ ol.progress-meter li.todo {
 ol.progress-meter li.todo:before {
     color: silver;
 }
+
+
+/* Add this CSS to your stylesheet or style component */
+
+.pagination-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .pagination-container .btns {
+    width: 25px; /* Fixed width */
+    height: 25px; /* Fixed height */
+    padding: 0; /* Remove default padding */
+    font-size: 15px; /* Adjust font size */
+    margin-left: 3px !important;
+  }
+  

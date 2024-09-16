@@ -9,6 +9,7 @@ import './css/index.css'
 import store from './store'
 import 'datatables.net-dt/css/jquery.dataTables.css';
 import 'datatables.net';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 createRoot(document.getElementById('root')).render(

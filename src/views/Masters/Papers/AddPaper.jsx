@@ -169,8 +169,10 @@ const AddPaper = () => {
           setSelecedfile={setSelecedfile}
           bookletSize={formData.bookletSize ? parseInt(formData.bookletSize, 10) : 0}
         />
-
-        {
+        <div className='text-center'>
+        <span className='text-danger'>OR</span>
+        </div>
+            {
           !selecedfile && (
             <>
               {/* Show field only when bulk import is not */}

@@ -7,15 +7,16 @@ import SkeletonLoader from './SkeletonLoader'; // Import the SkeletonLoader comp
 import PropTypes from 'prop-types';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
-const ActivityTable = ({ datacount = 10 }) => {
+const ActivityTable = ({ datacount = 10, userId }) => {
     const { keygenUser } = useUser();
+    const user = userId || keygenUser?.userID
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
 
     useEffect(() => {
-        fetch(`${baseUrl}/api/Logs/Events/User/${keygenUser?.userID}/count/${datacount}`, {
+        fetch(`${baseUrl}/api/Logs/Events/User/${user}/count/${datacount}`, {
             headers: {
                 'Authorization': `Bearer ${keygenUser?.token}`
             }
@@ -42,7 +43,7 @@ const ActivityTable = ({ datacount = 10 }) => {
             {loading ? (
                 <SkeletonLoader /> // Render the SkeletonLoader component while loading
             ) : error ? (
-                <Alert variant="danger">{error}</Alert>
+                <Alert variant="danger">No Activity Found!</Alert>
             ) : (
                 <ActivityData activities={activities}/>
             )}
@@ -51,6 +52,7 @@ const ActivityTable = ({ datacount = 10 }) => {
 };
 ActivityTable.propTypes = {
     datacount: PropTypes.number,
+    userId: PropTypes.number,
 };
 
 

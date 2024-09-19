@@ -1,3 +1,4 @@
+//updated read line 88
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
@@ -41,7 +42,7 @@ const ViewUser = () => {
   const [activeTab, setActiveTab] = useState("permissions");
   const [datacount, setDataCount] = useState(100);
 
-  useEffect(() => {
+ 
     const fetchUserData = async () => {
       try {
         const userResponse = await axios.get(`${apiUserbyid}/${decodedUserId}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
@@ -69,6 +70,7 @@ const ViewUser = () => {
       }
     };
 
+ useEffect(() => {
     fetchUserData();
     fetchPermissions();
     fetchModules();
@@ -83,7 +85,38 @@ const ViewUser = () => {
     }
 };
 
+// addedd new useEffect having function to check all module if any don't have permission post that as false.
+// by shivom 18/09/24
+useEffect(() => {
+  if (!modules.length || !permissions.length) return;
 
+  const missingPermissions = modules.filter(module => !permissions.some(p => p.moduleID === module.moduleID));
+  if (missingPermissions.length > 0) {
+    // Prepare the data to be sent
+    const dataToSend = missingPermissions.map(module => ({
+      userID: decodedUserId || 0, // Ensure you have the correct userID
+      moduleID: module.moduleID,
+      can_Add: false,
+      can_Delete: false,
+      can_Update: false,
+      can_View: false
+    }));
+
+    axios.post(`${baseUrl}/api/permissions`, dataToSend, {
+      headers: { 
+        Authorization: `Bearer ${keygenUser?.token}`, 
+        'Content-Type': 'application/json' 
+      }
+    })
+    .then(response => {
+      console.log('Default permissions posted successfully:', response.data);
+      fetchPermissions()
+    })
+    .catch(error => {
+      console.error('Error posting default permissions:', error);
+    });
+  }
+}, [modules, permissions, keygenUser?.token, keygenUser?.userID, baseUrl]);
   useEffect(() => {
     const handleUpload = async () => {
       if (selectedImage) {
@@ -250,7 +283,7 @@ const ViewUser = () => {
 
               {activeTab === "activities" && (
                 <div className="text-center">
-                  <ActivityTable datacount={datacount}/>
+                  <ActivityTable datacount={datacount} userId={decodedUserId}/>
                 </div>
               )}
             </Row>

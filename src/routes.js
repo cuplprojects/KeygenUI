@@ -69,9 +69,9 @@ const routes = [
   { path: '/Masters/ManageKeys', name: ' Manage Keys', moduleId: 3, permissionType: 'can_View', element: <ManageKeys /> },
   
     // pdf upload 
-    { path: '/verification/upload', name: 'Upload PDF', moduleId: null, permissionType: null, element: <BulkPdfUpload /> },
-    { path: '/verification/verificationstatus', name: 'Upload PDF', moduleId: null, permissionType: null, element: <VerificationStatus /> },
-    { path: '/verification/verificaton', name: 'Upload PDF', NoBreadcrumb:true, moduleId: null, permissionType: null, element: <VerificationWindow /> },
+    { path: '/verification/upload', name: 'Upload PDF', moduleId: 4, permissionType: 'can_Add', element: <BulkPdfUpload /> },
+    { path: '/verification/verificationstatus', name: 'Verification Status', moduleId: 4, permissionType: 'can_Add', element: <VerificationStatus /> },
+    { path: '/verification/verificaton', name: 'Upload PDF', NoBreadcrumb:true, moduleId: 4, permissionType: 'can_Add', element: <VerificationWindow /> },
   
   { path: '/Masters/papers/ViewPaper/:paperID', name: 'View Paper', moduleId: 3, permissionType: 'can_View', element: <ViewPaper /> },
 

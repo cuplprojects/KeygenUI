@@ -23,6 +23,26 @@ const DownloadKeys = () => {
   const [setOrders, setSetOrders] = useState([]);
   const [paperData, setPaperData] = useState(null);
   const [programData, setProgramData] = useState(null);
+  const [pdfVerification, setPdfVerification] = useState(false);
+
+  const fetchPDFVerification = async () => {
+    try {
+      const response = await axios.get(
+        `${baseUrl}/api/PDFfile/GetPDFVerificationStatus?ProgramId=${progID}&CatchNumber=${catchNumber}`,
+        { headers: { Authorization: `Bearer ${keygenUser?.token}` } }
+      );
+
+      // Update the state based on the API response
+      setPdfVerification(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error fetching PDF verification status:', error);
+    }
+  };
+
+useEffect(() => {
+    fetchPDFVerification();
+}, [progID, catchNumber]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -116,17 +136,19 @@ const DownloadKeys = () => {
           </h5>
         </span>
         <div className='d-flex gap-2'>
-          <DropdownButton id="export-dropdown" title={<><FontAwesomeIcon icon={faFilePdf} className="me-2" />Export</>} variant="primary">
-            <Dropdown.Item>
+          <DropdownButton id="export-dropdown" title={<><FontAwesomeIcon icon={faFilePdf} className="me-2" />Export</>} variant="primary" disabled={!pdfVerification}>
+            <Dropdown.Item disabled={!pdfVerification}>
               <ExportToExcel data={apiResponse} paperData={paperData} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
             </Dropdown.Item>
-            <Dropdown.Item>
+            <Dropdown.Item disabled={!pdfVerification}>
               <ExportFormat2 data={apiResponse} paperData={paperData} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
             </Dropdown.Item>
 
-            <PDFDownloadLink className='ms-3' document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
-              {({ loading }) => (loading ? <Button>Loading...</Button> : <Button><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
-            </PDFDownloadLink>
+            <Dropdown.Item disabled={!pdfVerification}>
+              <PDFDownloadLink className='ms-3' document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
+                {({ loading }) => (loading ? <Button disabled={!pdfVerification}>Loading...</Button> : <Button disabled={!pdfVerification}><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
+              </PDFDownloadLink>
+            </Dropdown.Item>
 
             {/* <Dropdown.Item>
               <PDFDownloadLink document={<Keyi data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>

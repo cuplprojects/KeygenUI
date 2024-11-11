@@ -43,12 +43,12 @@ const FileUpload = ({ setExcelFile, setFormData, setNumberOfQuestions, disabled,
         .slice(2)
         .filter((row) => !isNaN(row[0]) && !isNaN(row[2]))
         .map((row, index) => {
-          const key = row[1] || '*'.repeat(asteriskCounter++);
+          const key = row[2];
           return {
             sn: index + 1,
-            qNumber: row[0],
+            qNumber: row[1],
             key: key,
-            page: row[2],
+            page: row[0],
           };
         });
 

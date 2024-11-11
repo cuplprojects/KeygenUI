@@ -114,14 +114,9 @@ const BulkPdfUpload = () => {
       let totalSuccess = 0;
       let successfiles = [];
       for (const file of selectedFiles) {
-        const arrayBuffer = await file.arrayBuffer();
-            const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const numPages = pdfDoc.numPages;
-            console.log(numPages)
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('bookletsize',numPages)
-        
+  
         try {
           await axios.post(`${apiUrl}/PDFfile?ProgramId=${selectedProgram.value}`, formData, {
             headers: {
@@ -132,6 +127,25 @@ const BulkPdfUpload = () => {
           successfiles.push(file);
           // Increment the success count
           totalSuccess++;
+  
+          // Call the ProcessPDF function after each successful upload
+          // await ProcessPDF(file);  // Ensure to await the processing function
+          // const formData2 = new FormData();
+          // formData2.append('pdf',file);
+          // formData2.append('programid',selectedProgram.value)
+          // try{
+
+          //   const nodeapiresponse = await axios.post(`${nodeapiUrl}/upload`, formData2, {
+          //     headers: {
+          //         'Content-Type': 'multipart/form-data' // Important to set the correct content type
+          //     }
+          // });
+          // console.log("Upload successful: ", nodeapiresponse.data);
+          // }
+          // catch(error)
+          // {
+          //   console.log(error?.response?.data)
+          // }
   
           // Update progress after processing the file
           completedFiles++;
@@ -159,27 +173,22 @@ const BulkPdfUpload = () => {
         }
       }
       
-      if (successfiles.length > 0) {
-        setUploading(false);
-        const formData2 = new FormData();
-        
-        // Append each successful file as an array
-        successfiles.forEach((file, index) => {
-          formData2.append(`pdf`, file); // Appending each file in array-like syntax
-        });
-        
-        formData2.append('programid', selectedProgram.value);
-        try {
-          const nodeApiResponse = await axios.post(`${nodeapiUrl}/upload`, formData2, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
+      const formData2 = new FormData();
+          formData2.append('pdf',successfiles);
+          formData2.append('programid',selectedProgram.value)
+          try{
+
+            const nodeapiresponse = await axios.post(`${nodeapiUrl}/upload`, formData2, {
+              headers: {
+                  'Content-Type': 'multipart/form-data' // Important to set the correct content type
+              }
           });
-          console.log("Upload successful: ", nodeApiResponse.data);
-        } catch (error) {
-          console.log(error?.response?.data);
-        }
-      }
+          console.log("Upload successful: ", nodeapiresponse.data);
+          }
+          catch(error)
+          {
+            console.log(error?.response?.data)
+          }
       // Final feedback after all uploads
       if (totalSuccess > 0) {
         toast.success('PDF files uploaded and processed successfully.');

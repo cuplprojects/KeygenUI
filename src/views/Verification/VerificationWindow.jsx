@@ -20,7 +20,14 @@ const VerificationWindow = () => {
   const [selectedCatchNumber, setSelectedCatchNumber] = useState(null)
   const [showPdfs, setShowPdfs] = useState(false)
   const [pdfUrls, setPdfUrls] = useState([])
-  const [selectedPages, setSelectedPages] = useState([1, 1, 1, 1])
+  const [persistedState, setPersistedState] = useState(() => {
+    const saved = sessionStorage.getItem('verificationState')
+    return saved ? JSON.parse(saved) : {
+      selectedPages: [1, 1, 1, 1],
+      currentPage: [0, 3]
+    }
+  })
+  const [selectedPages, setSelectedPages] = useState(persistedState.selectedPages)
   const [iframeKey, setIframeKey] = useState(0)
   const [showFilters, setShowFilters] = useState(true)
   const [pagePattern, setPagePattern] = useState([])
@@ -29,7 +36,7 @@ const VerificationWindow = () => {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [papers, setPapers] = useState({})
   const [numPages, setNumPages] =useState(32)
-  const [currentPage, setCurrentPage] = useState([0,3])
+  const [currentPage, setCurrentPage] = useState(persistedState.currentPage)
   const [verificationData, setVerificationData]= useState([])
   const [setOrders, setSetOrders]= useState([])
   const [showVerificationBtn, setShowVerificationBtn] = useState(false)
@@ -37,6 +44,11 @@ const VerificationWindow = () => {
   const [masterAnswers, setMasterAnswers] = useState([]);
   const [progConfigId, setProgConfigId] = useState();
   const [jumblingConfig, setJumblingConfig] = useState();
+  const [scanPages, setScanPages] = useState();
+  const [jpbc, setJpbc] = useState([]);
+  const [jpbcMapping, setJpbcMapping] = useState({});
+  const [matchingStatus, setMatchingStatus] = useState([]);
+  
   const [verificationStatus, setVerificationStatus]= useState([
     {seriesname: 1, status: 1}, // 1 for verified 0 for not verified
 
@@ -62,6 +74,7 @@ const VerificationWindow = () => {
     }
   }, [selectedProgram, refetch]);
 
+  
 
   useEffect(() => {
     // Retrieve the selected filter from sessionStorage
@@ -76,17 +89,42 @@ const VerificationWindow = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const stateToSave = {
+      selectedPages,
+      currentPage
+    }
+    sessionStorage.setItem('verificationState', JSON.stringify(stateToSave))
+    console.log('State persisted:', stateToSave)
+  }, [selectedPages, currentPage])
+
+  useEffect(() => {
+    const handleError = (error) => {
+      console.error('State Update Error:', error)
+      const saved = sessionStorage.getItem('verificationState')
+      if (saved) {
+        const { selectedPages: savedPages, currentPage: savedCurrent } = JSON.parse(saved)
+        setSelectedPages(savedPages)
+        setCurrentPage(savedCurrent)
+      }
+    }
+  
+    window.addEventListener('error', handleError)
+    return () => window.removeEventListener('error', handleError)
+  }, [])
+
+
   const cleardata = ()=>{
     setShowPdfs(false)
     setPdfUrls([])
-    setSelectedPages([1, 1, 1, 1])
+    // setSelectedPages([1, 1, 1, 1])
     setIframeKey(0)
     setIsFullscreen(false)
     setPagePattern([])
     setPapers({})
     setNumPages(32)
-    setCurrentPage([0,3])
-
+    // setCurrentPage([0,3])
+    setShowFilters(true)
   }
 
   useEffect(() => {
@@ -117,6 +155,28 @@ const VerificationWindow = () => {
   useEffect(() => {
     fetchCatchNumbers();
   }, [selectedProgram, selectedFilter, keygenUser, apiUrl]);
+
+  const fetchMatchingStatus = async () => {
+    if (selectedProgram && selectedCatchNumber) {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/FormData/GetMatchingStatus?CatchNumber=${selectedCatchNumber.value}&ProgramId=${selectedProgram.value}`,
+          {
+            headers: { Authorization: `Bearer ${keygenUser?.token}` },
+          }
+        );
+        setMatchingStatus(response?.data?.matches);
+
+      } catch (error) {
+        console.error('Error fetching matching status:', error);
+        setMatchingStatus([]);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchMatchingStatus();
+  }, [selectedProgram, selectedCatchNumber]);
 
   const fetchCatchNumbers = async () => {
     if (selectedProgram && selectedFilter) {
@@ -160,6 +220,52 @@ const VerificationWindow = () => {
     }
   }, [selectedProgram, selectedCatchNumber, apiUrl, keygenUser])
 
+  useEffect(()=>{
+    if (selectedProgram && selectedCatchNumber && papers) {
+      fetchJpbc()
+    }
+  },[selectedProgram,selectedCatchNumber,papers])
+
+  const fetchJpbc = async ()=>{
+    try{
+      const response = await axios.get(`${apiUrl}/FormData/GetJumblingPatternByConfig?ProgramId=${selectedProgram.value}&BookletSize=${papers.bookletSize}`,{
+        headers: { Authorization: `Bearer ${keygenUser?.token}` },
+      })
+      const jpbcData = response?.data;
+      setJpbc(jpbcData)
+    }
+    catch (error) {
+      console.error('Error fetching papers:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (jpbc && jpbc.length > 0) {
+      const mapping = jpbc.reduce((acc, item) => {
+        acc[item.id] = {
+          A: item.setA,
+          B: item.setB,
+          C: item.setC,
+          D: item.setD
+        };
+        return acc;
+      }, {});
+      setJpbcMapping(mapping);
+    }
+  }, [jpbc]);
+
+  const updateSelectedPages = (questionNumber) => {
+    if (Object.keys(jpbcMapping).length > 0 && questionNumber) {
+      const pageSet = jpbcMapping[questionNumber];
+      if (pageSet) {
+        const newSelectedPages = [pageSet.A, pageSet.B, pageSet.C, pageSet.D];
+        setSelectedPages(newSelectedPages);
+        setIframeKey((prevKey) => prevKey + 1);
+      }
+    }
+  };
+
+  
 
   useEffect(() => {
     if (selectedProgram && papers) {
@@ -172,7 +278,6 @@ const VerificationWindow = () => {
             },
           )
           const paperData = response?.data[0];
-          console.log(paperData?.progConfigID)
           setProgConfigId(paperData?.progConfigID)
           // Split the setOrder string by commas to create an array
           const setOrderArray = paperData.setOrder.split(',');
@@ -202,7 +307,6 @@ const VerificationWindow = () => {
             },
           );
           setJumblingConfig(response.data?.steps)
-          console.log(response.data?.steps)
         } catch (error) {
           console.error('Error fetching papers:', error);
           
@@ -212,12 +316,35 @@ const VerificationWindow = () => {
     }
   }, [progConfigId]);
 
+
+useEffect(() => {
+  if (jumblingConfig && selectedCatchNumber) {
+    const GetPageDataByScanPdf = async () => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/PDFfile/GetExtractedData?programId=${selectedProgram.value}&catchNumber=${selectedCatchNumber.value}&series=${setOrders[0]}`, // Adjust endpoint as necessary
+          {
+            headers: { Authorization: `Bearer ${keygenUser?.token}` },
+          }
+        );
+        setScanPages(response.data)
+      } catch (error) {
+        console.error('Error fetching jumbling steps:', error);
+      }
+    };
+    
+    GetPageDataByScanPdf();
+  }
+}, [jumblingConfig, selectedProgram , selectedCatchNumber]);
+
+
   // Get answers by page number 
 
    
     const fetchAnswersByPage = async ()=> {
          if (selectedCatchNumber && currentPage && selectedProgram ) {
         try {
+          console.log(currentPage)
           const response = await axios.get(`${apiUrl}/PDFfile/GetAnswersbyPage`, {
             params: {
               CatchNumber: selectedCatchNumber?.value,
@@ -231,7 +358,6 @@ const VerificationWindow = () => {
           // Process the response here
           const answersData = response.data;
           setMasterAnswers(response.data)
-          console.log('Fetched answers data:', answersData);
           // Update your state or perform any action with answersData
   
         } catch (error) {
@@ -282,31 +408,35 @@ const VerificationWindow = () => {
   }
   
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      iframesRef.current.forEach((iframe, index) => {
-        if (iframe && iframe.contentDocument) {
-          const iframeDocument = iframe.contentDocument
-          const scrollTop = iframeDocument.documentElement.scrollTop
-          const pageHeight = iframeDocument.documentElement.scrollHeight / 32
-          const currentPage = Math.ceil(scrollTop / pageHeight)
-          if (currentPage !== selectedPages[index]) {
-            setSelectedPages((prevPages) => {
-              const updatedPages = [...prevPages]
-              updatedPages[index] = currentPage
-              return updatedPages
-            })
-          }
-        }
-      })
-    }, 1000)
-
-    return () => clearInterval(intervalId)
-  }, [selectedPages])
+  // useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     iframesRef.current.forEach((iframe, index) => {
+  //       if (iframe && iframe.contentDocument) {
+  //         const iframeDocument = iframe.contentDocument;
+  //         const scrollTop = iframeDocument.documentElement.scrollTop;
+  //         const pageHeight = iframeDocument.documentElement.scrollHeight / 32;
+  //         const currentPage = Math.ceil(scrollTop / pageHeight);
+  //         console.log(currentPage)
+  
+  //         // Update only if the current page is different from the selected page
+  //         if (currentPage !== selectedPages[index]) {
+  //           setSelectedPages((prevPages) => {
+  //             const updatedPages = [...prevPages];
+  //             updatedPages[index] = currentPage;
+  //             console.log(updatedPages)
+  //             return updatedPages;
+  //           });
+  //         }
+  //       }
+  //     });
+  //   }, 1000);
+  
+  //   return () => clearInterval(intervalId);
+  // }, [selectedPages, iframesRef]);
 
   const fetchPdfs = async () => {
     if (selectedProgram && selectedCatchNumber) {
-      fetchPagePattern()
+      // fetchPagePattern()
       try {
         const url = `${apiUrl}/PDFfile/GetPdfs?CatchNumber=${selectedCatchNumber.value}&ProgramId=${selectedProgram.value}`
         const response = await axios.get(url, {
@@ -337,27 +467,82 @@ const VerificationWindow = () => {
     }
   }
   
-
+  // const handleVerification = async (isCorrect) => {
+  //   if (pdfUrls.length === 0) {
+  //     toast.error("No PDFs to verify.")
+  //     return
+  //   }
+  //   if (JSON.stringify(selectedPages) === JSON.stringify([1, 1, 1, 1])) {
+  //     return;
+  //   }
+  
+  //   const verificationPromises = pdfUrls.map((_, index) => {
+  //     const requestBody = {
+  //       id: 0,
+  //       catchNumber: selectedCatchNumber.value,
+  //       programId: selectedProgram.value,
+  //       pageNumber: selectedPages[index],
+  //       isCorrect: isCorrect,
+  //       verifiedBy: keygenUser.userID,
+  //       seriesName: setOrders ? setOrders[index] : null,
+  //       verifiedAt: new Date().toISOString(),
+  //     }
+  
+  //     return axios.post(`${apiUrl}/PDFfile/VerifyPageNumber`, requestBody, {
+  //       headers: { Authorization: `Bearer ${keygenUser?.token}` },
+  //     })
+  //   })
+  
+  //   try {
+  //     await Promise.all(verificationPromises)
+      
+  //     // Update the current page based on the first PDF (index 0)
+  //     const currentPageNumber = selectedPages[0]
+  //     console.log(currentPageNumber)
+  //     const nextPage = currentPageNumber + 1
+  //     console.log(nextPage)
+  //     if (nextPage <= numPages - 2) {
+  //       setSelectedPages(prevPages => {
+  //         const newPages = [...prevPages]
+  //         newPages[0] = nextPage
+  //         // Only update other pages if jpbcMapping for nextPage exists
+  //         if (jpbcMapping[nextPage]) {
+  //           newPages[1] = jpbcMapping[nextPage].B || prevPages[1]
+  //           newPages[2] = jpbcMapping[nextPage].C || prevPages[2]
+  //           newPages[3] = jpbcMapping[nextPage].D || prevPages[3]
+  //         }
+  //         return newPages
+  //       })
+  //       setCurrentPage([0, nextPage])
+  //     } else {
+  //       toast.info("Reached the end of pages for this catch number.")
+  //     }
+  
+  //     await handleShowPdfs()
+  //   } catch (error) {
+  //     toast.error('Error submitting verification for some pages.')
+  //     console.error('Error submitting verification:', error)
+  //   }
+  // }
 
   const handleVerification = async (isCorrect) => {
     if (pdfUrls.length === 0) {
       toast.error("No PDFs to verify.")
       return
     }
-    if (JSON.stringify(selectedPages) === JSON.stringify([1, 1, 1])) {
+    if (JSON.stringify(selectedPages) === JSON.stringify([1, 1, 1, 1])) {
       return;
-  }
-  
+    }
   
     const verificationPromises = pdfUrls.map((_, index) => {
       const requestBody = {
-        id: 0, // Replace with actual ID if available
+        id: 0,
         catchNumber: selectedCatchNumber.value,
         programId: selectedProgram.value,
-        pageNumber: selectedPages[index], // Current page number for each PDF
-        isCorrect: isCorrect, // true for Verified, false for Wrong
-        verifiedBy: keygenUser.userID, // Assuming you have the verifier's ID
-        seriesName: setOrders ? setOrders[index] : null, // Assuming this is available from papers
+        pageNumber: selectedPages[index],
+        isCorrect: isCorrect,
+        verifiedBy: keygenUser.userID,
+        seriesName: setOrders ? setOrders[index] : null,
         verifiedAt: new Date().toISOString(),
       }
   
@@ -368,17 +553,45 @@ const VerificationWindow = () => {
   
     try {
       await Promise.all(verificationPromises)
-       handleShowPdfs()
-      setCurrentPage(currentPage => [currentPage[0], currentPage[1] + 1])
-      // toast.success(`All pages have been ${isCorrect ? 'Verified' : 'Marked as Wrong'}.`)
+      
+      setSelectedPages(prevPages => {
+        const newPages = [...prevPages]
+        const nextPage = newPages[0] + 1
+        
+        if (nextPage > numPages - 2) {
+          toast.info("Reached the end of pages for this catch number.")
+          return prevPages
+        }
+  
+        newPages[0] = nextPage
+        if (jpbcMapping[nextPage]) {
+          newPages[1] = jpbcMapping[nextPage].B || prevPages[1]
+          newPages[2] = jpbcMapping[nextPage].C || prevPages[2]
+          newPages[3] = jpbcMapping[nextPage].D || prevPages[3]
+        }
+        
+        console.log('Updating selectedPages to:', newPages)
+        return newPages
+      })
+  
+      setCurrentPage(prev => {
+        const nextPage = prev[1] + 1
+        if (nextPage > numPages - 2) return prev
+        
+        console.log('Updating currentPage to:', [prev[0], nextPage])
+        return [prev[0], nextPage]
+      })
+  
+      await handleShowPdfs()
     } catch (error) {
-      toast.error('Error submitting verification for some pages.')
       console.error('Error submitting verification:', error)
-    }
-    finally {
-    
+      toast.error('Error submitting verification for some pages.')
     }
   }
+
+  useEffect(() => {
+    fetchAnswersByPage();
+  }, [currentPage]);
   
 
   const handleSingleVerification = async (isCorrect, pageIndex) => {
@@ -474,7 +687,6 @@ const VerificationWindow = () => {
       const catchNumberMap = new Map();
     
       // Log the incoming data for debugging
-      console.log('Verification Data:', verificationData);
     
       verificationData.forEach(pdf => {
         const { seriesName, isCorrect, pageNumber } = pdf;
@@ -511,7 +723,6 @@ const VerificationWindow = () => {
           validPageSet.add(pageNumber);
     
           // Debug log to verify correct page addition
-          console.log(`Added page ${pageNumber} to validPages for series ${seriesName}`);
     
           // Update overall correctness
           if (!isCorrect) {
@@ -527,9 +738,6 @@ const VerificationWindow = () => {
         }
       });
     
-      // Debug log to verify content of catchNumberMap
-      console.log('Catch Number Map:', Array.from(catchNumberMap.entries()));
-    
       // Update verificationStatus state based on results
       const finalVerificationStatus = new Map();
     
@@ -541,11 +749,6 @@ const VerificationWindow = () => {
           // Check if all valid pages are accounted for
           const expectedPages = new Set(Array.from({ length: numPages - 4 }, (_, i) => i + 3)); // Pages 3 to numPages-2
           const missingPages = Array.from(expectedPages).filter(page => !validPageSet.has(page));
-    
-          // Debug log to verify expected and missing pages
-          console.log(`Series ${seriesName}: Expected Pages`, Array.from(expectedPages));
-          console.log(`Series ${seriesName}: Valid Pages`, Array.from(validPageSet));
-          console.log(`Series ${seriesName}: Missing Pages`, missingPages);
     
           // Determine final status for the series
           if (missingPages.length > 0 || !isVerified) {
@@ -560,7 +763,6 @@ const VerificationWindow = () => {
       const updatedVerificationStatus = Array.from(finalVerificationStatus, ([seriesKey, status]) => ({ seriesKey, status }));
     
       // Debug log to verify final verification status
-      console.log('Final Verification Status:', updatedVerificationStatus);
     
       // Update state with verification status
       setVerificationStatus(updatedVerificationStatus);
@@ -576,38 +778,61 @@ const VerificationWindow = () => {
     sessionStorage.setItem('selectedProgram', JSON.stringify(selectedOption))
   }
 
-  const handleCatchNumberChange = (selectedOption) => {
-    setSelectedCatchNumber(selectedOption)
-    cleardata()
-    setIframeKey((prevKey) => prevKey + 1)
-    // sessionStorage.setItem('selectedCatchNumber', JSON.stringify(selectedOption))
-  }
+  const handleCatchNumberChange = async (selectedOption) => {
+    setSelectedCatchNumber(selectedOption);
+    cleardata();
+    setIframeKey((prevKey) => prevKey + 1);
+    const fetchMatchingStatus = async (catchNumber, programId) => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/FormData/GetMatchingStatus?CatchNumber=${catchNumber}&ProgramId=${programId}`,
+          {
+            headers: { Authorization: `Bearer ${keygenUser?.token}` },
+          }
+        );
+        setMatchingStatus(response?.data?.matches);
+      } catch (error) {
+        console.error('Error fetching matching status:', error);
+        setMatchingStatus([]);
+      }
+    };
+    const postjumblingpattern = async (catchNumber, programId) => {
+    try {
+      const response = await axios.post(`${apiUrl}/PdfData/MakeJumblingPattern?CatchNumber=${catchNumber}&ProgramId=${programId}`);
+    } catch (error) {
+      console.error('Error posting jumbling pattern:', error);
+    }
+  };
+    if (selectedOption && selectedProgram) {
+      await postjumblingpattern(selectedOption.value, selectedProgram.value);
+      await fetchMatchingStatus(selectedOption.value, selectedProgram.value);
+    }
+  };
 
   const handleShowPdfs = async () => {
    await fetchPdfs()
    await fetchVerificationData()
     setShowPdfs(true)
+    setShowFilters(false)
   }
-  useEffect(()=>{
-    if (currentPage) {
-      handlePageClick(currentPage[0],currentPage[1])
-    }
-  },[currentPage])
 
-  const handlePageClick = (pdfIndex, pageNumber) => {
-    const key = (pdfIndex + 1).toString()
-    fetchAnswersByPage()
-    if (pagePattern) {
-      const selectedObject = pagePattern.find((page) => page[key] === pageNumber)
-      if (selectedObject) {
-        const newSelectedPages = Object.values(selectedObject)
-        setSelectedPages(newSelectedPages)
-        setIframeKey((prevKey) => prevKey + 1)
-      } else {
-        console.log('No object found')
+  useEffect(() => {
+    if (currentPage) {
+      fetchAnswersByPage();
+      const [pdfIndex, pageNumber] = currentPage;
+      const questionNumber = Object.keys(jpbcMapping).find(key => 
+        jpbcMapping[key][['A', 'B', 'C', 'D'][pdfIndex]] === pageNumber
+      );
+      if (questionNumber) {
+        updateSelectedPages(parseInt(questionNumber));
       }
     }
-  }
+  }, [currentPage]);
+
+  const handlePageClick = (pdfIndex, pageNumber) => {
+    setCurrentPage([pdfIndex, pageNumber]);
+    console.log(pdfIndex, pageNumber)
+  };
 
     const handleverificationreview = ()=>{
         setCurrentPage(currentPage => [currentPage[0], currentPage[1] + 1])
@@ -655,12 +880,33 @@ const VerificationWindow = () => {
   
 
   const getStatusColor = (status) => {
-    if (status === true) return 'success'; // Replace with your actual color
-    if (status === false) return 'danger'; // Replace with your actual color
-    return 'outline-primary'; // Default color when status is null or undefined
+    if (status === true) return 'success';
+    if (status === false) return 'danger';
+    return 'outline-primary';
   };
   
 
+  const extractFirstQuestionNumber = (pageNumber) => {
+    const pageData = scanPages?.find(page => page.pageNumber === pageNumber);
+    const qus = pageData ? pageData.firstQuestionNumber : null;
+    return qus
+  };
+  useEffect(() => {
+    return () => {
+      // Cleanup function
+      console.log('Component unmounting, cleaning up...')
+      // Uncomment the following line if you want to clear persisted state on unmount
+      // sessionStorage.removeItem('verificationState')
+    }
+  }, [])
+
+
+  const isTextDanger = masterAnswers[0]?.questionNumber > 0 && 
+                     extractFirstQuestionNumber(currentPage[1]) > 0 &&
+                     masterAnswers[0]?.questionNumber !== extractFirstQuestionNumber(currentPage[1]);
+
+
+                     
   return (
     <div className="verification-window">
       <ToastContainer />
@@ -724,7 +970,7 @@ const VerificationWindow = () => {
         <div>
           <Form>
             <Row className="mb-3">
-              <Col md={3}>
+              <Col md={2}>
                 <Form.Group>
                   <Form.Label>Program</Form.Label>
                   <Select
@@ -735,7 +981,7 @@ const VerificationWindow = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={3}>
+              <Col md={2}>
                 <Form.Group>
                   <Form.Label>Select Filter:</Form.Label>
                   <Select
@@ -747,7 +993,7 @@ const VerificationWindow = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={3}>
+              <Col md={2}>
                 <Form.Group>
                   <Form.Label>Catch Number</Form.Label>
                   <Select
@@ -759,7 +1005,7 @@ const VerificationWindow = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={3} className='mt-4'>
+              <Col md={2} className='mt-4'>
                 <Form.Group>
                   <Button
                     variant="primary"
@@ -781,29 +1027,43 @@ const VerificationWindow = () => {
             <Row>
               
             {pdfUrls.map((url, pdfIndex) => (
-                  <Col md={6} className="mt-3 border border-2 p-3" key={pdfIndex}>
-                     <div className="mb-2 d-flex align-items-center justify-content-between">
-                     <div className="pagination-container">
-                      {[...Array(numPages).slice(4)].map((_, pageIndex) => {
-                        const pageNum = pageIndex + 3;
-                        const status = getStatus(pdfIndex, pageNum); // Get the status for the current page
+        <Col md={6} className="mt-3 border border-2 p-3" key={pdfIndex}>
+          <div className="mb-2 d-flex align-items-center justify-content-between">
+            <div className="pagination-container">
+              {Array.from({ length: numPages - 4 }, (_, i) => i + 3).map((pageNum) => {
+                const status = getStatus(pdfIndex, pageNum);
+                const isSelected = selectedPages[pdfIndex] === pageNum;
+                const matchingStatusItem = matchingStatus.find(item => item.setA === pageNum);
+                const verificationItem = verificationData.find(item => 
+                  item.seriesName === setOrders[pdfIndex] && item.pageNumber === pageNum
+                );
 
-                        return (
-                          <Button
-                            key={pageIndex}
-                            variant={
-                              selectedPages[pdfIndex] === pageIndex + 3
-                                ? 'primary'
-                                : getStatusColor(status)
-                            }
-                            onClick={() => setCurrentPage([pdfIndex, pageNum])}
-                            className={`rounded-circle fw-bold btns ${selectedPages[pdfIndex] === pageIndex + 3 ? `text-${getStatusColor(status)}` : ''}`}
-                            disabled={pagePattern.length <= 0}
-                          >
-                            {pageNum}
-                          </Button>
-                        );
-                      })}
+                const statusColors = {
+                  default: '',
+                  warning: 'warning',
+                  success: 'success',
+                  danger: 'danger'
+                };
+
+                let buttonStatus = 'default';
+                if (matchingStatusItem && !matchingStatusItem.matchStatus && pdfIndex === 0) {
+                  buttonStatus = 'warning';
+                }
+                if (verificationItem) {
+                  buttonStatus = verificationItem.isCorrect ? 'success' : 'danger';
+                }
+
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={isSelected ? 'primary' : statusColors[buttonStatus] || getStatusColor(status)}
+                    onClick={() => handlePageClick(pdfIndex, pageNum)}
+                    className={`rounded-circle fw-bold btns ${isSelected ? `text-${getStatusColor(status)}` : ''}`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
                     </div>
                       <div className="btn">
                         <div className="d-flex align-items-center justify-content-end gap-1"> 
@@ -837,7 +1097,7 @@ const VerificationWindow = () => {
                             </span>
                             {
                               pdfIndex === 0 && masterAnswers.length>0 ? (
-                                <span>&nbsp;
+                                <span className={isTextDanger ? 'text-danger' : ''}>&nbsp;
                                   <strong className='text-center'>Keys: </strong>
                                   {
                                     masterAnswers.map((key,index)=>(
@@ -872,13 +1132,13 @@ const VerificationWindow = () => {
                          </>
                       )} 
                       <iframe
-                        ref={(el) => (iframesRef.current[pdfIndex] = el)}
-                        key={`${pdfIndex}-${iframeKey}`}
-                        src={`${url}#page=${selectedPages[pdfIndex]}`}
-                        title={`PDF ${pdfIndex + 1}`}
-                        width="100%"
-                        height="260px"
-                        frameBorder="0"
+                ref={(el) => (iframesRef.current[pdfIndex] = el)}
+                key={`${pdfIndex}-${iframeKey}`}
+                src={`${url}#page=${selectedPages[pdfIndex]}`}
+                title={`PDF ${pdfIndex + 1}`}
+                width="100%"
+                height="260px"
+                frameBorder="0"
                       />
                     </div>
                   </Col>

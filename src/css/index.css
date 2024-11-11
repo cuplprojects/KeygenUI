@@ -377,3 +377,15 @@ ol.progress-meter li.todo:before {
     margin-left: 3px !important;
   }
   
+
+  .table-wrapper {
+    overflow-y: auto;
+    max-height: 70vh;
+  }
+  
+  .table-wrapper thead th {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 1;
+  }

@@ -413,8 +413,8 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                 {numberOfQuestions > 0 && noconfigError === "" && (
                     <Form className="rounded">
                         <Form.Group className='mt-2'>
-                            <Form.Label>Fill Master Data:<span className="text-danger">*</span></Form.Label>
-                            <FormDataComponent formData={formData} handleInputChange={handleInputChange} disabled={!editing && formSubmitted} />
+                            
+                            <FormDataComponent programId={selectedProgramme?.value} formData={formData} setFormData={setFormData} handleInputChange={handleInputChange} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber}/>
                         </Form.Group>
                     </Form>
                 )}

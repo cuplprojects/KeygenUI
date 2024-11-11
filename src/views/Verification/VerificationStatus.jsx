@@ -116,9 +116,13 @@ const VerificationStatus = () => {
     };
   }, [searchTerm, entriesPerPage, currentPage]);
 
-  const handleShowStatus = () => {
-    fetchStatuses();
-  };
+
+  useEffect(()=>{
+    if(selectedProgram){
+       fetchStatuses()
+    }
+  },[selectedProgram])
+
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -237,7 +241,7 @@ const VerificationStatus = () => {
             </Form.Group>
           </Col>
           <Col md={3}>
-            <Form.Group controlId="formShowButton">
+            {/* <Form.Group controlId="formShowButton">
               <Button
                 variant="primary"
                 onClick={handleShowStatus}
@@ -246,7 +250,7 @@ const VerificationStatus = () => {
               >
                 Show
               </Button>
-            </Form.Group>
+            </Form.Group> */}
           </Col>
           <Col md={5}>
             <div className="status-summary mb-3">
@@ -265,63 +269,73 @@ const VerificationStatus = () => {
           </Col>
         </Row>
 
-        <div className="filter-controls d-flex justify-content-between">
-          <div className="entries-per-page">
-            <p>
-              Show{' '}
-              <Form.Select
-                value={entriesPerPage}
-                onChange={handleSelectEntries}
-                className="d-inline-block w-auto"
-              >
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-              </Form.Select>{' '}
-              entries per page
-            </p>
-          </div>
-          <div className="search">
-            <Form.Control
-              type="text"
-              placeholder="Search by catch number"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <Table striped bordered hover responsive>
-          <thead className="text-center">
-            <tr>
-              <th>Catch Number</th>
-              <th>Status Series of A</th>
-              <th>Status Series of B</th>
-              <th>Status Series of C</th>
-              <th>Status Series of D</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pdfStatuses.map((item) => (
-              <tr key={item.catchNumber}>
-                <td className="text-center">{item.catchNumber}</td>
-                <td className="text-center">{getStatusForSeries(item.pdfs, 'A')}</td>
-                <td className="text-center">{getStatusForSeries(item.pdfs, 'B')}</td>
-                <td className="text-center">{getStatusForSeries(item.pdfs, 'C')}</td>
-                <td className="text-center">{getStatusForSeries(item.pdfs, 'D')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
- {totalPages > 1 && (
-            <Row>
-              <Col md={12}>
-                <div className="pagination justify-content-end">
-                  <Pagination>{renderPageNumbers()}</Pagination>
+        <div className='border border p-3 rounded'>
+          <div className="filter-controls d-flex justify-content-between">
+                  <div className="entries-per-page">
+                    <p>
+                      Show{' '}
+                      <Form.Select
+                        value={entriesPerPage}
+                        onChange={handleSelectEntries}
+                        className="d-inline-block w-auto"
+                      >
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                      </Form.Select>{' '}
+                      entries per page
+                    </p>
+                  </div>
+                  <div className="search">
+                    <Form.Control
+                      type="text"
+                      placeholder="Search by catch number"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
                 </div>
-              </Col>
-            </Row>
-          )}
+
+                <Table striped bordered hover responsive className=''>
+                    <thead className="text-center">
+                      <tr>
+                        <th>Catch Number</th>
+                        <th>Status Series of A</th>
+                        <th>Status Series of B</th>
+                        <th>Status Series of C</th>
+                        <th>Status Series of D</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pdfStatuses.length > 0 ? (
+                        pdfStatuses.map((item) => (
+                          <tr key={item.catchNumber}>
+                            <td className="text-center">{item.catchNumber}</td>
+                            <td className="text-center">{getStatusForSeries(item.pdfs, 'A')}</td>
+                            <td className="text-center">{getStatusForSeries(item.pdfs, 'B')}</td>
+                            <td className="text-center">{getStatusForSeries(item.pdfs, 'C')}</td>
+                            <td className="text-center">{getStatusForSeries(item.pdfs, 'D')}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={5} className="text-center">No Data found</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </Table>
+
+                {totalPages > 1 && (
+                    <Row>
+                      <Col md={12}>
+                        <div className="pagination justify-content-end">
+                          <Pagination>{renderPageNumbers()}</Pagination>
+                        </div>
+                      </Col>
+                    </Row>
+                  )}
+        </div>
+       
         
       </Form>
     </div>

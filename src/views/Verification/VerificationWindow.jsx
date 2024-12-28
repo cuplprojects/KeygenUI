@@ -466,64 +466,6 @@ useEffect(() => {
       }
     }
   }
-  
-  // const handleVerification = async (isCorrect) => {
-  //   if (pdfUrls.length === 0) {
-  //     toast.error("No PDFs to verify.")
-  //     return
-  //   }
-  //   if (JSON.stringify(selectedPages) === JSON.stringify([1, 1, 1, 1])) {
-  //     return;
-  //   }
-  
-  //   const verificationPromises = pdfUrls.map((_, index) => {
-  //     const requestBody = {
-  //       id: 0,
-  //       catchNumber: selectedCatchNumber.value,
-  //       programId: selectedProgram.value,
-  //       pageNumber: selectedPages[index],
-  //       isCorrect: isCorrect,
-  //       verifiedBy: keygenUser.userID,
-  //       seriesName: setOrders ? setOrders[index] : null,
-  //       verifiedAt: new Date().toISOString(),
-  //     }
-  
-  //     return axios.post(`${apiUrl}/PDFfile/VerifyPageNumber`, requestBody, {
-  //       headers: { Authorization: `Bearer ${keygenUser?.token}` },
-  //     })
-  //   })
-  
-  //   try {
-  //     await Promise.all(verificationPromises)
-      
-  //     // Update the current page based on the first PDF (index 0)
-  //     const currentPageNumber = selectedPages[0]
-  //     console.log(currentPageNumber)
-  //     const nextPage = currentPageNumber + 1
-  //     console.log(nextPage)
-  //     if (nextPage <= numPages - 2) {
-  //       setSelectedPages(prevPages => {
-  //         const newPages = [...prevPages]
-  //         newPages[0] = nextPage
-  //         // Only update other pages if jpbcMapping for nextPage exists
-  //         if (jpbcMapping[nextPage]) {
-  //           newPages[1] = jpbcMapping[nextPage].B || prevPages[1]
-  //           newPages[2] = jpbcMapping[nextPage].C || prevPages[2]
-  //           newPages[3] = jpbcMapping[nextPage].D || prevPages[3]
-  //         }
-  //         return newPages
-  //       })
-  //       setCurrentPage([0, nextPage])
-  //     } else {
-  //       toast.info("Reached the end of pages for this catch number.")
-  //     }
-  
-  //     await handleShowPdfs()
-  //   } catch (error) {
-  //     toast.error('Error submitting verification for some pages.')
-  //     console.error('Error submitting verification:', error)
-  //   }
-  // }
 
   const handleVerification = async (isCorrect) => {
     if (pdfUrls.length === 0) {
@@ -1027,41 +969,68 @@ useEffect(() => {
             <Row>
               
             {pdfUrls.map((url, pdfIndex) => (
-        <Col md={6} className="mt-3 border border-2 p-3" key={pdfIndex}>
-          <div className="mb-2 d-flex align-items-center justify-content-between">
-            <div className="pagination-container">
-              {Array.from({ length: numPages - 4 }, (_, i) => i + 3).map((pageNum) => {
-                const status = getStatus(pdfIndex, pageNum);
-                const isSelected = selectedPages[pdfIndex] === pageNum;
-                const matchingStatusItem = matchingStatus.find(item => item.setA === pageNum);
-                const verificationItem = verificationData.find(item => 
-                  item.seriesName === setOrders[pdfIndex] && item.pageNumber === pageNum
-                );
+  <Col md={6} className="mt-3 border border-2 p-3" key={pdfIndex}>
+    <div className="mb-2 d-flex align-items-center justify-content-between">
+      <div className="pagination-container">
+        {Array.from({ length: numPages - 4 }, (_, i) => i + 3).map((pageNum) => {
+          const status = getStatus(pdfIndex, pageNum);
+          const isSelected = selectedPages[pdfIndex] === pageNum;
+          const verificationItem = verificationData.find(item => 
+            item.seriesName === setOrders[pdfIndex] && item.pageNumber === pageNum
+          );
 
-                const statusColors = {
-                  default: '',
-                  warning: 'warning',
-                  success: 'success',
-                  danger: 'danger'
-                };
+          const statusColors = {
+            default: '',
+            warning: 'warning',
+            success: 'success',
+            danger: 'danger'
+          };
 
-                let buttonStatus = 'default';
-                if (matchingStatusItem && !matchingStatusItem.matchStatus && pdfIndex === 0) {
-                  buttonStatus = 'warning';
-                }
-                if (verificationItem) {
-                  buttonStatus = verificationItem.isCorrect ? 'success' : 'danger';
-                }
+          let buttonStatus = 'default';
 
-                return (
-                  <Button
-                    key={pageNum}
-                    variant={isSelected ? 'primary' : statusColors[buttonStatus] || getStatusColor(status)}
-                    onClick={() => handlePageClick(pdfIndex, pageNum)}
-                    className={`rounded-circle fw-bold btns ${isSelected ? `text-${getStatusColor(status)}` : ''}`}
-                  >
-                    {pageNum}
-                  </Button>
+          // Check if current page should be highlighted as warning
+          if (pdfIndex > 0) { // Only for sets B, C, D
+            const matchingItem = matchingStatus.find(item => {
+              // Only proceed if matchStatus is false
+              if (item.matchStatus) return false;
+              
+              // Find the mapping object where A matches setA
+              const mappingKey = Object.keys(jpbcMapping).find(key => 
+                jpbcMapping[key].A === item.setA
+              );
+              
+              if (!mappingKey) return false;
+              
+              const mapping = jpbcMapping[mappingKey];
+              
+              // Check if current page matches the jumbled page for this set
+              // We only need to check the page numbers since matchStatus: false
+              // implies all sets are mismatched
+              return (
+                (pdfIndex === 1 && pageNum === mapping.B) ||
+                (pdfIndex === 2 && pageNum === mapping.C) ||
+                (pdfIndex === 3 && pageNum === mapping.D)
+              );
+            });
+
+            if (matchingItem) {
+              buttonStatus = 'warning';
+            }
+          }
+
+          if (verificationItem) {
+            buttonStatus = verificationItem.isCorrect ? 'success' : 'danger';
+          }
+
+          return (
+            <Button
+              key={pageNum}
+              variant={isSelected ? 'primary' : statusColors[buttonStatus] || getStatusColor(status)}
+              onClick={() => handlePageClick(pdfIndex, pageNum)}
+              className={`rounded-circle fw-bold btns ${isSelected ? `text-${getStatusColor(status)}` : ''}`}
+            >
+              {pageNum}
+            </Button>
                 );
               })}
                     </div>

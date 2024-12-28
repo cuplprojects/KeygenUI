@@ -117,6 +117,8 @@ const JumblingConfig = () => {
         throw new Error('Failed to submit form');
       }
 
+      const res = await axios.post(`${baseUrl}/api/FormData/GenerateKeyPattern`, dataForSubmission, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+      
       // Reset form data
       setFormData({
         progID: 0,

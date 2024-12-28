@@ -7,7 +7,7 @@
   "author": "The CUPL Team",
   "scripts": {
     "build": "react-scripts build",
-    "devbuild": "react-scripts build && xcopy build \"\\\\192.168.1.24\\e\\hosted apps\\KeygenDev\\UI\" /E /I /Y",
+    "devbuild": "react-scripts build && xcopy build \"\\192.168.1.24\\e\\hosted apps\\KEYGEN\\UI\\build",
     "eject": "react-scripts eject",
     "lint": "eslint \"src/**/*.js\"",
     "start": "react-scripts start",

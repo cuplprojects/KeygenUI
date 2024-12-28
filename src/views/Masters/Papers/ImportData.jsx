@@ -148,23 +148,40 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
 
       for (let i = 1; i < jsonData.length; i++) {
         const row = jsonData[i];
-        const mappedRow = { SN: i };
+        const mappedRow = {
+          SN: i,
+          createdByID: keygenUser?.userID,
+          programmeID: programmeID,
+          bookletSize: bookletSize,
+        };
 
+        // Map Course and get real courseID
+        if (headers.includes('Course')) {
+          const courseName = row[headers.indexOf('Course')];
+          mappedRow.courseName = courseName;
+          const matchedCourse = matchCourse(courseName);
+          mappedRow.courseID = matchedCourse?.courseID || null;
+        }
+
+        // Map Subject and get real subjectID
+        if (headers.includes('Subject')) {
+          const subjectName = row[headers.indexOf('Subject')];
+          mappedRow.subjectName = subjectName;
+          const matchedSubject = matchSubject(subjectName);
+          mappedRow.subjectID = matchedSubject?.subjectID || null;
+        }
+
+        // Map other fields
         if (headers.includes('Catch No.')) {
           const catchNumberIndex = headers.indexOf('Catch No.');
           const catchNumberValue = row[catchNumberIndex];
           mappedRow.catchNumber = catchNumberValue ? String(catchNumberValue) : '';
         }
 
-        if (headers.includes('Course')) {
-          mappedRow.courseName = row[headers.indexOf('Course')];
-        }
         if (headers.includes('Exam Type')) {
           mappedRow.examType = row[headers.indexOf('Exam Type')];
         }
-        if (headers.includes('Subject')) {
-          mappedRow.subjectName = row[headers.indexOf('Subject')];
-        }
+
         if (headers.includes('Paper Name')) {
           mappedRow.paperName = row[headers.indexOf('Paper Name')];
         }
@@ -181,7 +198,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
       }
 
       setData(mappedData);
-      setIsFileReading(false); // End file reading process
+      setIsFileReading(false);
     };
 
     reader.readAsArrayBuffer(file);
@@ -203,7 +220,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
     // Process records in a loop
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
-      const updatedRow = { ...row, programmeID: 6 }; // Add programmeID to the record
+      const updatedRow = { ...row, programmeID}; // Add programmeID to the record
   
       try {
         const response = await axios.post(`${baseUrl}/api/Papers`, updatedRow, {
@@ -298,15 +315,19 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
               <Table striped bordered hover ref={tableRef}>
                 <thead>
                   <tr>
-                    {Object.keys(data[0]).map((header, index) => (
-                      <th key={index} className='text-center align-middle'>{headerMap[header]}</th>
-                    ))}
+                    {Object.keys(data[0])
+                      .filter(header => !header.endsWith('ID') && header !== 'bookletSize')
+                      .map((header, index) => (
+                        <th key={index} className='text-center align-middle'>{headerMap[header]}</th>
+                      ))}
                   </tr>
                 </thead>
                 <tbody>
                   {data.map((row, rowIndex) => (
                     <tr key={rowIndex}>
-                      {Object.entries(row).map(([key, value], index) => (
+                      {Object.entries(row)
+                        .filter(([key]) => !key.endsWith('ID') && key !== 'bookletSize')
+                        .map(([key, value], index) => (
                         <td key={index}>
                           {key === 'subjectName' && (
                             <>

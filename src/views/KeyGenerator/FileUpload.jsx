@@ -41,7 +41,7 @@ const FileUpload = ({ setExcelFile, setFormData, setNumberOfQuestions, disabled,
       let asteriskCounter = 1;
       const parsedData = jsonData
         .slice(2)
-        .filter((row) => !isNaN(row[0]) && !isNaN(row[2]))
+        // .filter((row) => !isNaN(row[0]) && !isNaN(row[2]))
         .map((row, index) => {
           const key = row[2];
           return {

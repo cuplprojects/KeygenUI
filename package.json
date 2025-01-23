@@ -6,6 +6,7 @@
   "license": "MIT",
   "author": "The CUPL Team",
   "scripts": {
+    "dev": "react-scripts start",
     "build": "react-scripts build",
     "devbuild": "react-scripts build && xcopy build \"\\192.168.1.24\\e\\hosted apps\\KEYGEN\\UI\\build",
     "eject": "react-scripts eject",

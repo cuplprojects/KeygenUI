@@ -6,9 +6,9 @@ import * as XLSX from 'xlsx';
 import $ from 'jquery';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { useUser } from './../../../context/UserContext';
+import { useUser } from '../../../../context/UserContext';
 import { ToastContainer, toast } from 'react-toastify';
-import DownloadFailedRecords from './downloadExcels/DownloadFailedRecords';
+import DownloadFailedRecords from '../downloadExcels/DownloadFailedRecords';
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -186,6 +186,10 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
           mappedRow.paperName = row[headers.indexOf('Paper Name')];
         }
 
+        if (headers.includes('Paper Language')) {
+          mappedRow.language = row[headers.indexOf('Paper Language')];
+        }
+
         if (headers.includes('Exam Date')) {
           const examDateTimeString = row[headers.indexOf('Exam Date')];
           const examDateTime = new Date(examDateTimeString);
@@ -286,14 +290,17 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
   };
 
   const headerMap = {
+    SN: '#',
     catchNumber: 'Catch No.',
     courseName: 'Course',
     examType: 'Exam Type',
     subjectName: 'Subject',
     paperName: 'Paper Name',
     examDate: 'Exam Date',
-    SN: 'SN'
+    language: 'Paper Language'
   };
+
+  const displayOrder = ['SN', 'catchNumber', 'courseName', 'examType', 'subjectName', 'paperName', 'examDate', 'language'];
 
   return (
     <div>
@@ -315,34 +322,33 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
               <Table striped bordered hover ref={tableRef}>
                 <thead>
                   <tr>
-                    {Object.keys(data[0])
-                      .filter(header => !header.endsWith('ID') && header !== 'bookletSize')
-                      .map((header, index) => (
-                        <th key={index} className='text-center align-middle'>{headerMap[header]}</th>
-                      ))}
+                    {displayOrder.map((key) => (
+                      <th key={key} className='text-center align-middle' style={{
+                        width: key === 'SN' ? '50px' : 
+                               key === 'language' ? '100px' : 'auto'
+                      }}>{headerMap[key]}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {data.map((row, rowIndex) => (
                     <tr key={rowIndex}>
-                      {Object.entries(row)
-                        .filter(([key]) => !key.endsWith('ID') && key !== 'bookletSize')
-                        .map(([key, value], index) => (
-                        <td key={index}>
+                      {displayOrder.map((key) => (
+                        <td key={key}>
                           {key === 'subjectName' && (
                             <>
                               <Form.Control
                                 type="text"
-                                value={value}
+                                value={row[key]}
                                 onChange={(e) => handleCellChange(e, rowIndex, key)}
-                                style={{ backgroundColor: !value ? '#FFB9AA' : 'inherit' }}
+                                style={{ backgroundColor: !row[key] ? '#FFB9AA' : 'inherit' }}
                               />
-                              {!matchSubject(value) && (
+                              {!matchSubject(row[key]) && (
                                 <Button
                                   variant="primary"
                                   size="sm"
-                                  onClick={() => handleAddSubject(value)}
-                                  disabled={!value}
+                                  onClick={() => handleAddSubject(row[key])}
+                                  disabled={!row[key]}
                                 >
                                   Add
                                 </Button>
@@ -354,16 +360,16 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
                             <>
                               <Form.Control
                                 type="text"
-                                value={value}
+                                value={row[key]}
                                 onChange={(e) => handleCellChange(e, rowIndex, key)}
-                                style={{ backgroundColor: !value ? '#FFB9AA' : 'inherit' }}
+                                style={{ backgroundColor: !row[key] ? '#FFB9AA' : 'inherit' }}
                               />
-                              {!matchCourse(value) && (
+                              {!matchCourse(row[key]) && (
                                 <Button
                                   variant="primary"
                                   size="sm"
-                                  onClick={() => handleAddCourse(value)}
-                                  disabled={!value}
+                                  onClick={() => handleAddCourse(row[key])}
+                                  disabled={!row[key]}
                                 >
                                   Add
                                 </Button>
@@ -373,20 +379,29 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
 
                           {key === 'examType' && (
                             <>
-                              {!value && (
+                              {!row[key] && (
                                 <span className='text-center text-danger'>Required<sup>*</sup></span>
                               )}
                               <Form.Control
                                 type="text"
-                                value={value}
+                                value={row[key]}
                                 onChange={(e) => handleCellChange(e, rowIndex, key)}
-                                style={{ borderColor: !value ? '#FFB9AA' : '#dadada' }}
+                                style={{ borderColor: !row[key] ? '#FFB9AA' : '#dadada' }}
                               />
                             </>
                           )}
 
-                          {key !== 'subjectName' && key !== 'courseName' && key !== 'examType' && (
-                            <Form.Control disabled={key === 'SN'} type="text" value={value} onChange={(e) => handleCellChange(e, rowIndex, key)} />
+                          {key === 'language' && (
+                            <Form.Control
+                              type="text"
+                              value={row[key]}
+                              onChange={(e) => handleCellChange(e, rowIndex, key)}
+                              style={{width: '100px'}}
+                            />
+                          )}
+
+                          {key !== 'subjectName' && key !== 'courseName' && key !== 'examType' && key !== 'language' && (
+                            <Form.Control disabled={key === 'SN'} type="text" value={row[key]} onChange={(e) => handleCellChange(e, rowIndex, key)} />
                           )}
                         </td>
                       ))}

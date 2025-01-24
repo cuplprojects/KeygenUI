@@ -1,3 +1,5 @@
+// updated 23-01-2025
+// added paper language selection
 import React, { useState, useEffect } from 'react';
 import { Form, Container, Row, Col, Card, Table, Button, Alert } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
@@ -236,6 +238,16 @@ const ViewPaper = () => {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
+  const getLanguageText = (code) => {
+    switch(code) {
+      case 'B': return 'Bilingual';
+      case 'H': return 'Hindi';
+      case 'E': return 'English';
+      case 'S': return 'Sanskrit';
+      default: return code;
+    }
+  };
+
   return (
     <Container className="userform border border-3 p-4 my-3">
       {loading && <div>Loading...</div>}
@@ -312,6 +324,25 @@ const ViewPaper = () => {
                               value={paper.paperName}
                               onChange={(e) => handleChange('paperName', e.target.value)}
                             />
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Paper Language:</td>
+                        <td>
+                          {formDisabled ? (
+                            getLanguageText(paper.language)
+                          ) : (
+                            <Form.Select
+                              value={paper.language}
+                              onChange={(e) => handleChange('language', e.target.value)}
+                            >
+                              <option value="">Select Language</option>
+                              <option value="B">Bilingual</option>
+                              <option value="H">Hindi</option>
+                              <option value="E">English</option>
+                              <option value="S">Sanskrit</option>
+                            </Form.Select>
                           )}
                         </td>
                       </tr>

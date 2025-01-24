@@ -2,6 +2,7 @@
 // Change only for Logo
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import packageJson from '../../package.json'
 
 import {
   CCloseButton,
@@ -10,6 +11,7 @@ import {
   CSidebarFooter,
   CSidebarHeader,
   CSidebarNav,
+  CSidebarToggler,
   // CSidebarToggler,
 } from '@coreui/react'
 // import CIcon from '@coreui/icons-react'
@@ -60,9 +62,11 @@ const AppSidebar = () => {
         </SimpleBar>
       </CSidebarNav>
       <CSidebarFooter className="border-top d-none d-lg-flex">
-        {/* <CSidebarToggler
-          onClick={() => dispatch({ type: 'set', sidebarUnfoldable: !unfoldable })}
-        /> */}
+        <div className="text-center">
+          <small>
+            UI V{packageJson.version} | API V{process.env.REACT_APP_BACKEND_VERSION}
+          </small>
+        </div>
       </CSidebarFooter>
     </CSidebar>
   )

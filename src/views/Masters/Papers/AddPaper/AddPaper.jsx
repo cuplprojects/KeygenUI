@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Alert, Container, Row, Col } from 'react-bootstrap';
 import Select from 'react-select';
-import { useUser } from '../../../context/UserContext';
+import { useUser } from '../../../../context/UserContext';
 import axios from 'axios';
 import ImportData from './ImportData';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -30,7 +30,8 @@ const AddPaper = () => {
     bookletSize: 0,
     createdAt: new Date().toISOString(),
     createdByID: userId || '',
-    KeyGenerated: false
+    KeyGenerated: false,
+    language: ''
   });
 
   const [error, setError] = useState(null);
@@ -119,7 +120,8 @@ const AddPaper = () => {
         bookletSize: 0,
         createdAt: new Date().toISOString(),
         createdByID: userId || '',
-        KeyGenerated: false
+        KeyGenerated: false,
+        language: ''
       });
       setLoading(false);
     } catch (error) {
@@ -129,24 +131,24 @@ const AddPaper = () => {
     }
   };
 
-const downloadSampleExcel = () => {
-  // URL of the sample file
-  const fileUrl = `/files/BulkPaperDataUploadSample.xlsx`; // Replace 'sample.xlsx' with your actual file name
+  const downloadSampleExcel = () => {
+    // URL of the sample file
+    const fileUrl = `/files/BulkPaperDataUploadSample.xlsx`; // Replace 'sample.xlsx' with your actual file name
 
-  // Create a link element
-  const link = document.createElement('a');
-  link.href = fileUrl;
-  link.download = 'Sample_Excel_Template.xlsx'; // Name of the file to be downloaded
+    // Create a link element
+    const link = document.createElement('a');
+    link.href = fileUrl;
+    link.download = 'Sample_Excel_Template.xlsx'; // Name of the file to be downloaded
 
-  // Append the link to the body (not visible)
-  document.body.appendChild(link);
+    // Append the link to the body (not visible)
+    document.body.appendChild(link);
 
-  // Programmatically click the link to trigger download
-  link.click();
+    // Programmatically click the link to trigger download
+    link.click();
 
-  // Remove the link from the body
-  document.body.removeChild(link);
-};
+    // Remove the link from the body
+    document.body.removeChild(link);
+  };
 
 
   return (
@@ -154,7 +156,7 @@ const downloadSampleExcel = () => {
       <div className="d-flex justify-content-between align-items-center">
         <h3>Add Paper</h3>
         <Button size='sm'>
-          <FontAwesomeIcon onClick={downloadSampleExcel} icon={faDownload} title='Download Sample Excel Templete for Bulk Paper Upload'/>
+          <FontAwesomeIcon onClick={downloadSampleExcel} icon={faDownload} title='Download Sample Excel Templete for Bulk Paper Upload' />
         </Button>
       </div>
 
@@ -194,12 +196,12 @@ const downloadSampleExcel = () => {
           setSelecedfile={setSelecedfile}
           bookletSize={formData.bookletSize ? parseInt(formData.bookletSize, 10) : 0}
         />
-       
-            {
-          !selecedfile  && (
+
+        {
+          !selecedfile && (
             <>
               <div className='text-center'>
-                  <span className='text-danger'>OR</span>
+                <span className='text-danger'>OR</span>
               </div>
               {/* Show field only when bulk import is not */}
               {/* other data */}
@@ -286,15 +288,37 @@ const downloadSampleExcel = () => {
                 </Col> */}
                 {/* exam date  */}
                 <Col>
-                  <Form.Group controlId='examDate'>
-                    <Form.Label>Exam Date</Form.Label>
-                    <Form.Control
-                      type='date'
-                      name='examDate'
-                      value={formData.examDate}
-                      onChange={(e) => handleChange('examDate', e.target.value)}
-                    />
-                  </Form.Group>
+                  <Row>
+                    <Col>
+                      <Form.Group controlId='examDate'>
+                        <Form.Label>Exam Date</Form.Label>
+                        <Form.Control
+                          type='date'
+                          name='examDate'
+                          value={formData.examDate}
+                          onChange={(e) => handleChange('examDate', e.target.value)}
+                        />
+                      </Form.Group>
+                    </Col>
+                    <Col>
+                    <Form.Group controlId='language'>
+                        <Form.Label>Paper Language</Form.Label>
+                        <Form.Select
+                          name='language'
+                          value={formData.language}
+                          onChange={(e) => handleChange('language', e.target.value)}
+                        >
+                          <option value="">Select Language</option>
+                          <option value="B">Bilingual</option>
+                          <option value="H">Hindi</option>
+                          <option value="E">English</option>
+                          <option value="S">Sanskrit</option>
+                        </Form.Select>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+
+
                 </Col>
               </Row>
 

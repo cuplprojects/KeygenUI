@@ -19,7 +19,7 @@ const AllGroups = lazy(() => import('./views/Masters/Groups/Groups'));
 // const ViewGroup = lazy(() => import('./views/Group/ViewGroup'));
 // papers 
 // const PaperComponent = lazy(() => import('./views/Group/PaperComponent'));
-const AddPaper = lazy(() => import('./views/Masters/Papers/AddPaper'));
+const AddPaper = lazy(() => import('./views/Masters/Papers/AddPaper/AddPaper'));
 const ViewPaper = lazy(() => import('./views/Masters/Papers/ViewPaper'));
 // Masters
 const JumblingConfig = lazy(() => import('./views/Masters/JumblingConfig/JumblingConfig'));

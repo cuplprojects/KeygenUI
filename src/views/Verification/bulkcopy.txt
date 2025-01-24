@@ -27,11 +27,7 @@ const BulkPdfUpload = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [sortConfig, setSortConfig] = useState({ key: 'file', direction: 'asc' })
   const [uploadSuccessCount, setUploadSuccessCount] = useState(0)
-  const [text, setText] = useState("");
-  const [language, setLanguage] = useState("eng");
-  // const [readingMode, setReadingMode] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [currentCatchNumber, setCurrentCatchNumber] = useState('')
 
   useEffect(() => {
     async function fetchPrograms() {
@@ -78,7 +74,6 @@ const BulkPdfUpload = () => {
     })
 
     if (invalidFiles.length > 0) {
-      // Show error message for invalid files
       toast.warning('Only PDF files are allowed. Some files were not added.')
       setUploadStatus((prevStatus) => [
         ...prevStatus,
@@ -90,7 +85,6 @@ const BulkPdfUpload = () => {
       ])
     }
 
-    // Clear the table when new files are selected
     setUploadStatus([])
     setSelectedFiles(validFiles)
   }
@@ -108,279 +102,116 @@ const BulkPdfUpload = () => {
   
     setUploading(true);
     setOverallProgress(0);
+    setUploadSuccessCount(0);
   
     try {
       let completedFiles = 0;
-      let totalSuccess = 0;
-      let successfiles = [];
+      let successFiles = [];
+
+      // First upload to main API
       for (const file of selectedFiles) {
-        const formData = new FormData();
-        formData.append('file', file);
-  
         try {
-          await axios.post(`${apiUrl}/PDFfile?ProgramId=${selectedProgram.value}`, formData, {
+          const arrayBuffer = await file.arrayBuffer();
+          const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          const numPages = pdfDoc.numPages;
+          
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('bookletsize', numPages);
+          
+          const response = await axios.post(`${apiUrl}/PDFfile?ProgramId=${selectedProgram.value}`, formData, {
             headers: {
               Authorization: `Bearer ${keygenUser?.token}`,
               'Content-Type': 'multipart/form-data',
             },
           });
-          successfiles.push(file);
-          // Increment the success count
-          totalSuccess++;
-  
-          // Call the ProcessPDF function after each successful upload
-          // await ProcessPDF(file);  // Ensure to await the processing function
-          // const formData2 = new FormData();
-          // formData2.append('pdf',file);
-          // formData2.append('programid',selectedProgram.value)
-          // try{
 
-          //   const nodeapiresponse = await axios.post(`${nodeapiUrl}/upload`, formData2, {
-          //     headers: {
-          //         'Content-Type': 'multipart/form-data' // Important to set the correct content type
-          //     }
-          // });
-          // console.log("Upload successful: ", nodeapiresponse.data);
-          // }
-          // catch(error)
-          // {
-          //   console.log(error?.response?.data)
-          // }
-  
-          // Update progress after processing the file
+          // Extract catch number from response if available
+          const catchNumber = response.data?.catchNumber || '';
+          setCurrentCatchNumber(catchNumber);
+
+          successFiles.push(file);
+          
           completedFiles++;
-          const totalProgress = Math.round((completedFiles / selectedFiles.length) * 100);
-          setOverallProgress(totalProgress); // Update overall progress after processing
-  
+          const mainProgress = Math.round((completedFiles / selectedFiles.length) * 50);
+          setOverallProgress(mainProgress);
+          
+          setUploadStatus(prev => [...prev, {
+            file: file.name,
+            status: 'Upload successful',
+            remark: 'Uploaded'
+          }]);
+
         } catch (error) {
-          const responseMessage = error?.response?.data || 'An error occurred during upload.';
-          
-          // Increment completed files even if upload failed
           completedFiles++;
+          const mainProgress = Math.round((completedFiles / selectedFiles.length) * 50);
+          setOverallProgress(mainProgress);
           
-          // Update progress immediately for failures
-          const totalProgress = Math.round((completedFiles / selectedFiles.length) * 100);
-          setOverallProgress(totalProgress); // Update overall progress after failure
-  
-          setUploadStatus((prevStatus) => [
-            ...prevStatus,
-            {
-              file: file.name,
-              status: 'Upload failed',
-              remark: responseMessage,
-            },
-          ]);
+          setUploadStatus(prev => [...prev, {
+            file: file.name,
+            status: 'Upload failed',
+            remark: error?.response?.data || 'Failed to upload to main API'
+          }]);
         }
       }
-      
-      const formData2 = new FormData();
-          formData2.append('pdf',successfiles);
-          formData2.append('programid',selectedProgram.value)
-          try{
 
-            const nodeapiresponse = await axios.post(`${nodeapiUrl}/upload`, formData2, {
-              headers: {
-                  'Content-Type': 'multipart/form-data' // Important to set the correct content type
-              }
+      // Then upload successful files one by one to node API
+      let nodeCompletedFiles = 0;
+      
+      for (const file of successFiles) {
+        try {
+          const formData2 = new FormData();
+          formData2.append('pdf', file);
+          formData2.append('programid', selectedProgram.value);
+          
+          await axios.post(`${nodeapiUrl}/upload`, formData2, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
           });
-          console.log("Upload successful: ", nodeapiresponse.data);
-          }
-          catch(error)
-          {
-            console.log(error?.response?.data)
-          }
-      // Final feedback after all uploads
-      if (totalSuccess > 0) {
-        toast.success('PDF files uploaded and processed successfully.');
+          
+          nodeCompletedFiles++;
+          setUploadSuccessCount(prev => prev + 1);
+          
+          const nodeProgress = Math.round((nodeCompletedFiles / successFiles.length) * 50);
+          setOverallProgress(50 + nodeProgress);
+          
+          setUploadStatus(prev => 
+            prev.map(status => 
+              status.file === file.name 
+                ? {...status, remark: 'Uploaded and processed'}
+                : status
+            )
+          );
+
+        } catch (error) {
+          nodeCompletedFiles++;
+          const nodeProgress = Math.round((nodeCompletedFiles / successFiles.length) * 50);
+          setOverallProgress(50 + nodeProgress);
+          
+          setUploadStatus(prev => 
+            prev.map(status => 
+              status.file === file.name 
+                ? {...status, status: 'Upload partially failed', remark: `Uploaded but not processed (Catch No: ${currentCatchNumber})`}
+                : status
+            )
+          );
+        }
+      }
+
+      if (successFiles.length > 0) {
+        toast.success(`Successfully processed ${successFiles.length} files`);
       } else {
         toast.error('All uploads failed. Please check the errors.');
       }
-      
+
     } catch (error) {
       console.error('Error during upload:', error);
+      toast.error('An unexpected error occurred');
     } finally {
       setUploading(false);
-      setSelectedFiles([]);
-      document.querySelector('input[type="file"]').value = ''; // Clear file input
     }
   };
-  
-  
-  const ProcessPDF = async (pdfFile) => {
-    console.log(pdfFile);
-    const files = [pdfFile];
-    
-    if (files.length > 0) {
-      setLoading(true);
-      setError("");
-      const allPromises = [];
-  
-      for (const file of files) {
-        if (file.type !== "application/pdf") {
-          setError("Only PDF files are accepted.");
-          continue;
-        }
-        // setReadingMode("");
-        let readingmode = "";
-        // Process page 3 to determine reading mode and language
-        const pagenumbers = await processPage(file, 3, true,"");
-        console.log(pagenumbers)
-        const isBilingual = checkForDuplicateQuestions(pagenumbers);
-        console.log(isBilingual)
-        // setReadingMode(isBilingual ? "bilingual" : "monolingual");
-        readingmode = isBilingual ? "bilingual" : "monolingual";
-  
-        const processFile = async (file) => {
-          let extractedText = "";
-          try {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const numPages = pdfDoc.numPages;
-  
-            const pagePromises = [];
-            for (let i = 3; i <= numPages - 2; i++) {
-              pagePromises.push(processPage(file, i, false, readingmode));
-            }
-  
-            const pageTexts = await Promise.all(pagePromises);
-            extractedText = pageTexts.join("\n");
-  
-            // Update overall progress after processing all pages
-            const totalProgress = Math.round((1 / selectedFiles.length) * 100); // Each file contributes equally
-            setOverallProgress((prev) => Math.min(prev + totalProgress, 100)); // Ensure it does not exceed 100%
-          } catch (error) {
-            console.error("Error processing file:", error);
-            setError("Error processing file. Please try again.");
-          }
-  
-          return `File: ${file.name}\n${extractedText}\n`;
-        };
-  
-        allPromises.push(processFile(file));
-      }
-  
-      const allExtractedTexts = await Promise.all(allPromises);
-      setText(allExtractedTexts.join("\n"));
-      setLoading(false);
-    }
-  };
-
-  const processPage = async (file, pageNum, isReading, readingMode) => {
-    let pagenumbers = "";
-
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const page = await pdfDoc.getPage(pageNum);
-      const viewport = page.getViewport({ scale: 2 });
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      const renderContext = {
-        canvasContext: context,
-        viewport: viewport,
-      };
-
-      await page.render(renderContext).promise;
-      const imageData = canvas.toDataURL("image/png");
-
-      const preprocessImage = (canvas, context) => {
-        context.filter = "grayscale(100%) contrast(200%)";
-        context.drawImage(canvas, 0, 0);
-        return canvas.toDataURL("image/png");
-      };
-
-      const extractColumn = async (imageData, width, height, side) => {
-        return new Promise((resolve) => {
-          const columnCanvas = document.createElement("canvas");
-          const columnContext = columnCanvas.getContext("2d");
-          const columnWidth = width * 0.5;
-          const xOffset = side === "left" ? 0 : columnWidth;
-          columnCanvas.width = columnWidth;
-          columnCanvas.height = height * 0.9;
-          const img = new Image();
-          img.src = imageData;
-          img.onload = () => {
-            columnContext.drawImage(img, xOffset, 0, columnWidth, height, 0, 0, columnWidth, height);
-            resolve(preprocessImage(columnCanvas, columnContext));
-          };
-        });
-      };
-
-      const recognizeText = async (imageData, lang) => {
-        try {
-          const { data: { text } } = await Tesseract.recognize(imageData, lang, {
-            tessedit_pageseg_mode: Tesseract.PSM.SINGLE_COLUMN,
-            oem: Tesseract.OEM.LSTM_ONLY,
-            config: {
-              tessedit_char_whitelist: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ+-=÷×/*()[]{}<>πΣ∫√σαβγδεζωψχφλμξυ",
-            },
-          });
-          return text;
-        } catch (error) {
-          console.error("Error recognizing text:", error);
-          return "";
-        }
-      };
-
-      const leftColumn = await extractColumn(imageData, viewport.width, viewport.height, "left");
-      const leftText = await recognizeText(leftColumn, language);
-      let finalText = leftText;
-
-      if (readingMode === "monolingual" || isReading) {
-        const rightColumn = await extractColumn(imageData, viewport.width, viewport.height, "right");
-        const rightText = await recognizeText(rightColumn, language);
-        finalText = `${leftText}\n${rightText}`;
-      }
-      
-
-      let lines = finalText.split("\n");
-      lines.pop(); // Remove last empty line if present
-      const cleanedText = lines.join("\n");
-      const processedText = cleanedText.replace(/\d+\\[A-Z\\]+[\d\s]+[\[\]]?/g, "");
-
-      // Extract question number tags
-      const questionTags = processedText.match(/^\d+\./gm) || [];
-      const cleanedQuestionTags = questionTags.map((tag) => tag.replace(/\./g, ""));
-      const catchNumber = file.name.split("_")[0];
-      const seriesName = file.name.split("_")[1].split(".")[0];
-
-      // Post pdf data 
-      if(!isReading){
-        await axios.post(`${apiUrl}/PdfData`, {
-        id: 0,
-        programId:selectedProgram?.value,
-        pageNumber: `${pageNum}`,
-        pageText: processedText,
-        catchNumber: catchNumber,
-        seriesName: seriesName,
-        questionNumbers: cleanedQuestionTags.join(", "),
-      });
-      }
-      // Send question number tags to the API
-      
-
-      pagenumbers = cleanedQuestionTags.join(", ");
-    } catch (error) {
-      console.error("Error processing page:", error);
-      setError("Error processing page. Please try again.");
-    }
-
-    return pagenumbers;
-  };
-
-  const checkForDuplicateQuestions = (questionNumbers) => {
-    // Split the comma-separated string into an array
-    const questionArray = questionNumbers.split(",").map(item => item.trim());
-
-    // Check for duplicates (if needed)
-    const hasDuplicates = new Set(questionArray).size !== questionArray.length;
-    
-    return hasDuplicates;
-};
-  
 
   const handleSelectEntries = (event) => {
     setEntriesPerPage(parseInt(event.target.value, 10))
@@ -403,7 +234,6 @@ const BulkPdfUpload = () => {
     setSortConfig({ key, direction })
   }
 
-  // Sorting Function
   const sortedStatus = [...uploadStatus].sort((a, b) => {
     if (a[sortConfig.key] < b[sortConfig.key]) {
       return sortConfig.direction === 'asc' ? -1 : 1
@@ -414,7 +244,6 @@ const BulkPdfUpload = () => {
     return 0
   })
 
-  // Pagination Logic
   const filteredStatus = sortedStatus.filter((status) =>
     status.file.toLowerCase().includes(searchTerm.toLowerCase()),
   )
@@ -432,7 +261,7 @@ const BulkPdfUpload = () => {
 
   const renderPageNumbers = () => {
     const pages = []
-    const totalPagesToShow = 5 // Number of page buttons to show
+    const totalPagesToShow = 5
     const halfTotalPagesToShow = Math.floor(totalPagesToShow / 2)
     let startPage = Math.max(1, currentPage - halfTotalPagesToShow)
     let endPage = Math.min(totalPages, startPage + totalPagesToShow - 1)
@@ -475,14 +304,6 @@ const BulkPdfUpload = () => {
     return pages
   }
 
-  // const countStatuses = (uploadStatus) => {
-  //   return uploadStatus.reduce((acc, status) => {
-  //     acc.total += 1;
-  //     acc[status.status] = (acc[status.status] || 0) + 1;
-  //     return acc;
-  //   }, { total: 0, 'Upload failed': 0, 'Uploaded successfully': 0 });
-  // };
-
   return (
     <>
       <ToastContainer />
@@ -515,9 +336,6 @@ const BulkPdfUpload = () => {
                 <FontAwesomeIcon icon={faUpload} className="me-2" />
                 Upload and Process
               </Button>
-              {/* <Button className='ms-2' onClick={processPdfRead}>
-                Process
-              </Button> */}
             </Form.Group>
           </Col>
           <Col md={4}>
@@ -530,7 +348,6 @@ const BulkPdfUpload = () => {
                   Upload Failed:{' '}
                   {uploadStatus.filter((status) => status.status === 'Upload failed').length}
                 </Badge>
-                {/* <Badge bg="primary" className="p-2 ms-2">Uploaded: {uploadStatus.filter(status => status.status === 'Uploaded successfully').length}</Badge> */}
                 <Badge bg="success" className="p-2 ms-2">
                   Uploads success:{' '}
                   {uploadSuccessCount}
@@ -541,7 +358,6 @@ const BulkPdfUpload = () => {
         </Row>
 
         <Row>
-          {/* Overall Progress Bar */}
           {overallProgress > 0 && (
             <Row className="mt-3">
               <Col md={12}>
@@ -555,6 +371,9 @@ const BulkPdfUpload = () => {
             <Col md={12} className="text-center">
               <Spinner animation="border" role="status" className="me-2" />
               <span>Files are uploading and processing. Please wait...</span>
+              {currentCatchNumber && (
+                <div>Processing Catch Number: {currentCatchNumber}</div>
+              )}
             </Col>
           </Row>
         )}
@@ -583,7 +402,6 @@ const BulkPdfUpload = () => {
               </div>
             </div>
 
-            {/* Table */}
             <Row className="mt-3">
               <Col md={12}>
                 <Table striped bordered hover>
@@ -599,7 +417,7 @@ const BulkPdfUpload = () => {
                       <tr key={index}>
                         <td>{status.file}</td>
                         <td>
-                          {status.status === 'Uploaded successfully' ? (
+                          {status.status === 'Upload successful' ? (
                             <FontAwesomeIcon icon={faCheckCircle} className="text-success me-2" />
                           ) : (
                             <FontAwesomeIcon icon={faTimesCircle} className="text-danger me-2" />
@@ -614,7 +432,6 @@ const BulkPdfUpload = () => {
               </Col>
             </Row>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <Row>
                 <Col md={12}>

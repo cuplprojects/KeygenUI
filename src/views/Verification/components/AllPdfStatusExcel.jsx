@@ -1,5 +1,5 @@
 import React from 'react';  // Ensure React is in scope if using React < 17
-import { Button } from 'react-bootstrap';
+import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { FaDownload } from 'react-icons/fa';  // Font Awesome download icon
 import axios from 'axios';
 import { saveAs } from 'file-saver';
@@ -23,9 +23,14 @@ const AllPdfStatusExcel = ({ programId }) => {
   };
 
   return (
-    <Button onClick={handleDownload} disabled={!programId}>
-      <FaDownload/>
-    </Button>
+    <OverlayTrigger
+      placement="top"
+      overlay={<Tooltip id="button-tooltip">Download the verification status as an Excel file</Tooltip>}
+    >
+      <Button onClick={handleDownload} disabled={!programId} size="sm">
+        <FaDownload />
+      </Button>
+    </OverlayTrigger>
   );
 };
 

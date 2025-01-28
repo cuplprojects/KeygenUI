@@ -375,6 +375,20 @@ const ViewPaper = () => {
                         </td>
                       </tr>
                       <tr>
+                        <td>Number of Questions:</td>
+                        <td>
+                          {formDisabled ? (
+                            paper.numberofQuestion
+                          ) : (
+                            <Form.Control
+                              type='number'
+                              value={paper.numberofQuestion}
+                              onChange={(e) => handleChange('numberofQuestion', e.target.value)}
+                            />
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
                         <td>Paper Created By:</td>
                         <td>{paper.createdBy}</td>
                       </tr>

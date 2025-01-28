@@ -110,9 +110,11 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                 const response = await fetch(`${baseUrl}/api/ProgConfigs/Programme/${selectedProgramme.value}/${bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
                 if (response.ok) {
                     const data = await response.json();
-                    setNumberOfQuestions(data[0].numberofQuestions);
+                    if (!selectedPaperData?.numberofQuestion) {
+                        setNumberOfQuestions(data[0].numberofQuestions);
+                    } 
                     setNoconfigError("");
-                    setFormData(Array.from({ length: data[0].numberofQuestions }, (_, index) => ({
+                    setFormData(Array.from({ length: numberOfQuestions }, (_, index) => ({
                         sn: index + 1,
                         page: '',
                         qNumber: '',
@@ -129,7 +131,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         if (selectedProgramme.value && bookletSize) {
             fetchData();
         }
-    }, [selectedProgramme, bookletSize]);
+    }, [selectedProgramme, bookletSize, numberOfQuestions]);
 
     useEffect(() => {
         let timeoutId;
@@ -184,30 +186,30 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     }, [editedBookletSize]);
 
     useEffect(() => {
-        if ((formData.length > 0 && formData[formData.length - 1].page !== "") && (formData[formData.length - 1].page + 2) != editedBookletSize) {
+        if ((formData.length > 0 && formData[formData.length - 1].page !== "") && (Number(formData[formData.length - 1].page) + 2) !== Number(editedBookletSize)) {
             setPageMatchError("Booklet size and page in Excel do not match.");
         } else {
             setPageMatchError("");
         }
     }, [editedBookletSize, formData]);
 
-    const handleNumberOfQuestionsChange = (e) => {
-        const inputNumber = e.target.value;
-        const selectedNumber = parseInt(inputNumber, 10);
-        const numberOfQuestionsValue = isNaN(selectedNumber) || inputNumber.trim() === '' ? '' : selectedNumber;
-        setNumberOfQuestions(numberOfQuestionsValue);
+    // const handleNumberOfQuestionsChange = (e) => {
+    //     const inputNumber = e.target.value;
+    //     const selectedNumber = parseInt(inputNumber, 10);
+    //     const numberOfQuestionsValue = isNaN(selectedNumber) || inputNumber.trim() === '' ? '' : selectedNumber;
+    //     setNumberOfQuestions(selectedPaperData?.numberofQuestion || numberOfQuestionsValue);
 
-        if (!isNaN(selectedNumber)) {
-            setFormData(Array.from({ length: selectedNumber }, (_, index) => ({
-                sn: index + 1,
-                page: '',
-                qNumber: '',
-                key: '',
-            })));
-        } else {
-            setFormData([]);
-        }
-    };
+    //     if (!isNaN(selectedNumber)) {
+    //         setFormData(Array.from({ length: selectedNumber }, (_, index) => ({
+    //             sn: index + 1,
+    //             page: '',
+    //             qNumber: '',
+    //             key: '',
+    //         })));
+    //     } else {
+    //         setFormData([]);
+    //     }
+    // };
 
     const handleInputChange = (index, field, value) => {
         const updatedFormData = [...formData];
@@ -219,6 +221,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         e.preventDefault();
 
         if (!selectedProgramme || !selectedPaper || !numberOfQuestions || formData.some(data => !data.page || !data.qNumber || !data.key)) {
+            console.log(formData)
             alert("Please ensure all required fields are filled out.");
             return;
         }
@@ -322,6 +325,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                                         setSelectedPaper(selectedOption);
                                         const paperData = papers.find((paper) => paper.paperID === selectedOption.value);
                                         setSelectedPaperData(paperData);
+                                        setNumberOfQuestions(paperData.numberofQuestion);
                                         setBookletSize(paperData.bookletSize);
                                         setEditedBookletSize(paperData.bookletSize);
                                     }}
@@ -354,7 +358,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                                     />
                                     {formData.length > 0 && formData[formData.length - 1].page !== '' && (
                                         <>
-                                            <Form.Label>Page in Excel: {formData[formData.length - 1].page + 2}</Form.Label>
+                                            <Form.Label>Page in Excel: {Number(formData[formData.length - 1].page) + 2}</Form.Label>
                                         </>
                                     )}
 
@@ -370,7 +374,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <hr />
                     <center className='text-primary fw-bold'><u>Input Master Data</u></center>
 
-                    <FileUpload setExcelFile={setExcelFile} setFormData={setFormData} setNumberOfQuestions={setNumberOfQuestions} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber} />
+                    <FileUpload setExcelFile={setExcelFile} setFormData={setFormData} numberOfQuestions={numberOfQuestions} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber} />
 
                     <center className='text-danger fw-bold'>OR</center>
                     <Form.Group>
@@ -378,7 +382,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                         <Form.Control
                             type="number"
                             value={numberOfQuestions}
-                            onChange={handleNumberOfQuestionsChange}
+                            // onChange={handleNumberOfQuestionsChange}
                             min="0"
                             placeholder="Enter the number of questions"
                             required
@@ -414,7 +418,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <Form className="rounded">
                         <Form.Group className='mt-2'>
                             
-                            <FormDataComponent programId={selectedProgramme?.value} formData={formData} setFormData={setFormData} handleInputChange={handleInputChange} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber}/>
+                            <FormDataComponent programId={selectedProgramme?.value} numberOfQuestions={numberOfQuestions } formData={formData} setFormData={setFormData} handleInputChange={handleInputChange} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber}/>
                         </Form.Group>
                     </Form>
                 )}

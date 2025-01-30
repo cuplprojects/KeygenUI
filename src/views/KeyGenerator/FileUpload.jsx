@@ -5,72 +5,117 @@ import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpload } from '@fortawesome/free-solid-svg-icons';
 
-const FileUpload = ({ setExcelFile, setFormData, numberOfQuestions, disabled, catchNumber }) => {
-  const [showModal, setShowModal] = useState(false);
+const FileUpload = ({ setExcelFile, setFormData, setNumberOfQuestions, numberOfQuestions, disabled, catchNumber }) => {
+  const [showCatchNumberModal, setShowCatchNumberModal] = useState(false);
+  const [showQuestionCountModal, setShowQuestionCountModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [isConfirmed, setIsConfirmed] = useState(false); // State for the checkbox
-  const fileInputRef = useRef(null);  // Reference to the file input for resetting
+  const [isCatchNumberConfirmed, setIsCatchNumberConfirmed] = useState(false);
+  const [isQuestionCountConfirmed, setIsQuestionCountConfirmed] = useState(false);
+  const [catchNumberModalMessage, setCatchNumberModalMessage] = useState('');
+  const [questionCountModalMessage, setQuestionCountModalMessage] = useState('');
+  const fileInputRef = useRef(null);
 
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const fileNameWithoutExtension = file.name.split('.')[0]; // Get the file name without extension
+      const fileNameWithoutExtension = file.name.split('.')[0];
 
       if (fileNameWithoutExtension !== catchNumber) {
-        // If the file name doesn't match the catch number, show the confirmation modal
         setSelectedFile(file);
-        setIsConfirmed(false); // Reset checkbox when a new file is selected
-        setShowModal(true);
+        setIsCatchNumberConfirmed(false);
+        setCatchNumberModalMessage(`The file name does not match the catch number. File name: ${file.name}, Catch number: ${catchNumber}`);
+        setShowCatchNumberModal(true);
       } else {
-        processFile(file); // Process the file if it matches the catch number
+        processFile(file);
       }
-      // Reset the input value immediately after selecting a file
       resetFileInput();
     }
   };
 
   const processFile = (file) => {
-    setExcelFile(file);
     const reader = new FileReader();
     reader.onload = (event) => {
       const data = event.target.result;
       const workbook = XLSX.read(data, { type: 'binary' });
-      const sheetName = 'Sheet1'; // Specify the sheet name here
+      const sheetName = 'Sheet1';
       const worksheet = workbook.Sheets[sheetName];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      const parsedData = Array.from({ length: numberOfQuestions }, (_, index) => {
-        const row = jsonData[index + 2] || []; // Adjust index to start from the correct row
-        return {
-          sn: index + 1,
-          qNumber: row[1] || '', // Default to empty string if undefined
-          key: row[2] || '', // Default to empty string if undefined
-          page: row[0] || '', // Default to empty string if undefined
-        };
-      });
+      const excelNumberOfQuestions = jsonData.length - 2;
 
-      setFormData(parsedData);
+      if (excelNumberOfQuestions > numberOfQuestions) {
+        setSelectedFile(file);
+        setIsQuestionCountConfirmed(false);
+        setQuestionCountModalMessage(`The Excel file contains more questions (${excelNumberOfQuestions}) than expected (${numberOfQuestions}). Do you want to update the number of questions?`);
+        setShowQuestionCountModal(true);
+      } else {
+        finalizeFileProcessing(file, jsonData, numberOfQuestions);
+      }
     };
     reader.readAsArrayBuffer(file);
   };
 
+  const finalizeFileProcessing = (file, jsonData, questionsCount) => {
+    setExcelFile(file);
+    const parsedData = Array.from({ length: questionsCount }, (_, index) => {
+      const row = jsonData[index + 2] || [];
+      return {
+        sn: index + 1,
+        qNumber: row[1] || '',
+        key: row[2] || '',
+        page: row[0] || '',
+      };
+    });
+
+    setFormData(parsedData);
+  };
+
   const resetFileInput = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';  // Clear the file input value to allow re-uploading the same file
+      fileInputRef.current.value = '';
     }
   };
 
-  const handleModalConfirm = () => {
-    setShowModal(false);
-    processFile(selectedFile); // Process the file even if the name doesn't match after confirmation
+  const handleCatchNumberModalConfirm = () => {
+    setShowCatchNumberModal(false);
+    if (selectedFile) {
+      processFile(selectedFile);
+    }
   };
 
-  const handleModalCancel = () => {
-    setShowModal(false);
-    setSelectedFile(null); // Clear the selected file if the user cancels
+  const handleQuestionCountModalConfirm = () => {
+    setShowQuestionCountModal(false);
+    if (selectedFile) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const data = event.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = 'Sheet1';
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        const excelNumberOfQuestions = jsonData.length - 2;
+        setNumberOfQuestions(excelNumberOfQuestions);
+        finalizeFileProcessing(selectedFile, jsonData, excelNumberOfQuestions);
+      };
+      reader.readAsArrayBuffer(selectedFile);
+    }
   };
 
-  const handleCheckboxChange = (e) => {
-    setIsConfirmed(e.target.checked); // Enable/disable the "Continue" button based on checkbox
+  const handleCatchNumberModalCancel = () => {
+    setShowCatchNumberModal(false);
+    setSelectedFile(null);
+  };
+
+  const handleQuestionCountModalCancel = () => {
+    setShowQuestionCountModal(false);
+    setSelectedFile(null);
+  };
+
+  const handleCatchNumberCheckboxChange = (e) => {
+    setIsCatchNumberConfirmed(e.target.checked);
+  };
+
+  const handleQuestionCountCheckboxChange = (e) => {
+    setIsQuestionCountConfirmed(e.target.checked);
   };
 
   return (
@@ -84,7 +129,7 @@ const FileUpload = ({ setExcelFile, setFormData, numberOfQuestions, disabled, ca
                 Upload Excel
               </label>
               <input
-                ref={fileInputRef}  // Attach the ref to the input element
+                ref={fileInputRef}
                 id="excel-upload"
                 type="file"
                 accept=".xlsx"
@@ -97,26 +142,50 @@ const FileUpload = ({ setExcelFile, setFormData, numberOfQuestions, disabled, ca
         </Row>
       </Form.Group>
 
-      <Modal show={showModal} onHide={handleModalCancel}>
+      <Modal show={showCatchNumberModal} onHide={handleCatchNumberModalCancel}>
         <Modal.Header closeButton>
-          <Modal.Title>File Name Mismatch</Modal.Title>
+          <Modal.Title>File Issue</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          The file name does not match the catch number. <br />
-          File name:<strong> {selectedFile?.name} </strong><br />
-          Catch number:<strong> {catchNumber} </strong><br />
+          {catchNumberModalMessage}
+          
           <Form.Check
+            className="mt-4"
             type="checkbox"
             label="I confirm that I want to proceed with this file"
-            checked={isConfirmed}
-            onChange={handleCheckboxChange}
+            checked={isCatchNumberConfirmed}
+            onChange={handleCatchNumberCheckboxChange}
           />
         </Modal.Body>
         <Modal.Footer className="d-flex justify-content-center">
-          <Button variant="secondary" onClick={handleModalCancel}>
+          <Button variant="secondary" onClick={handleCatchNumberModalCancel}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleModalConfirm} disabled={!isConfirmed}>
+          <Button variant="primary" onClick={handleCatchNumberModalConfirm} disabled={!isCatchNumberConfirmed}>
+            Continue
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal show={showQuestionCountModal} onHide={handleQuestionCountModalCancel}>
+        <Modal.Header closeButton>
+          <Modal.Title>Question Count Mismatch</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {questionCountModalMessage}
+          <Form.Check
+            className="mt-4"
+            type="checkbox"
+            label="I confirm that I want to proceed with this file"
+            checked={isQuestionCountConfirmed}
+            onChange={handleQuestionCountCheckboxChange}
+          />
+        </Modal.Body>
+        <Modal.Footer className="d-flex justify-content-center">
+          <Button variant="secondary" onClick={handleQuestionCountModalCancel}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleQuestionCountModalConfirm} disabled={!isQuestionCountConfirmed}>
             Continue
           </Button>
         </Modal.Footer>
@@ -127,6 +196,7 @@ const FileUpload = ({ setExcelFile, setFormData, numberOfQuestions, disabled, ca
 
 FileUpload.propTypes = {
   setExcelFile: PropTypes.func.isRequired,
+  setNumberOfQuestions: PropTypes.func.isRequired,
   numberOfQuestions: PropTypes.number.isRequired,
   setFormData: PropTypes.func.isRequired,
   disabled: PropTypes.bool.isRequired,

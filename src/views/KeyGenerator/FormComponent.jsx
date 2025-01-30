@@ -374,7 +374,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <hr />
                     <center className='text-primary fw-bold'><u>Input Master Data</u></center>
 
-                    <FileUpload setExcelFile={setExcelFile} setFormData={setFormData} numberOfQuestions={numberOfQuestions} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber} />
+                    <FileUpload setExcelFile={setExcelFile} setFormData={setFormData} setNumberOfQuestions={setNumberOfQuestions} numberOfQuestions={numberOfQuestions} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber} />
 
                     <center className='text-danger fw-bold'>OR</center>
                     <Form.Group>

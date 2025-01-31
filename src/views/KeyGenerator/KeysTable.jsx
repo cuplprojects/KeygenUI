@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-import { Table, DropdownButton, Dropdown } from "react-bootstrap";
+import { Table, DropdownButton, Dropdown, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDownload, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faKey, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
 const apiUrl = process.env.REACT_APP_BASE_URL;
 
@@ -92,11 +92,9 @@ const KeysTable = ({ papers, token }) => {
               <td>{paper.bookletSize}</td>
               <td>{paper.createdBy}</td>
               <td>
-                <DropdownButton id={`dropdown-button-${paper.paperID}`} title="Action" size="sm">
-                  <Dropdown.Item onClick={() => handleDownloadClick(paper)}>
-                    <FontAwesomeIcon icon={faDownload} className="me-2" />Download Key
-                  </Dropdown.Item>
-                </DropdownButton>
+                <Button variant="primary" size="sm" onClick={() => handleDownloadClick(paper)}>
+                  <FontAwesomeIcon icon={faKey}  />
+                </Button>
               </td>
             </tr>
           ))}

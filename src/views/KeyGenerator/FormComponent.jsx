@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, InputGroup } from 'react-bootstrap';
 import FormDataComponent from './FormDataComponent';
 import FileUpload from './FileUpload';
 import ShuffleConfig from './ShuffleConfig';
@@ -7,6 +7,8 @@ import Select from 'react-select';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { useUser } from './../../context/UserContext';
+import { faEdit, faSave } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -26,6 +28,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [loading, setLoading] = useState(false);
     const [pagematcherror, setPageMatchError] = useState("");
     const [excelfile, setExcelFile] = useState(null);
+    const [enablenumberofquestionEdit, setEnableNumberofquestionEdit] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -110,9 +113,11 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                 const response = await fetch(`${baseUrl}/api/ProgConfigs/Programme/${selectedProgramme.value}/${bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
                 if (response.ok) {
                     const data = await response.json();
-                    setNumberOfQuestions(data[0].numberofQuestions);
+                    if (!selectedPaperData?.numberofQuestion) {
+                        setNumberOfQuestions(data[0].numberofQuestions);
+                    } 
                     setNoconfigError("");
-                    setFormData(Array.from({ length: data[0].numberofQuestions }, (_, index) => ({
+                    setFormData(Array.from({ length: numberOfQuestions }, (_, index) => ({
                         sn: index + 1,
                         page: '',
                         qNumber: '',
@@ -129,7 +134,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         if (selectedProgramme.value && bookletSize) {
             fetchData();
         }
-    }, [selectedProgramme, bookletSize]);
+    }, [selectedProgramme, bookletSize, numberOfQuestions]);
 
     useEffect(() => {
         let timeoutId;
@@ -184,14 +189,14 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     }, [editedBookletSize]);
 
     useEffect(() => {
-        if ((formData.length > 0 && formData[formData.length - 1].page !== "") && (formData[formData.length - 1].page + 2) != editedBookletSize) {
+        if ((formData.length > 0 && formData[formData.length - 1].page !== "") && (Number(formData[formData.length - 1].page) + 2) !== Number(editedBookletSize)) {
             setPageMatchError("Booklet size and page in Excel do not match.");
         } else {
             setPageMatchError("");
         }
     }, [editedBookletSize, formData]);
 
-    const handleNumberOfQuestionsChange = (e) => {
+    const handleNumberOfQuestionsChange = async (e) => {
         const inputNumber = e.target.value;
         const selectedNumber = parseInt(inputNumber, 10);
         const numberOfQuestionsValue = isNaN(selectedNumber) || inputNumber.trim() === '' ? '' : selectedNumber;
@@ -207,6 +212,38 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         } else {
             setFormData([]);
         }
+        console.log("posting number of questions")
+        try {
+            console.log("posting number of questions inside try")
+            await axios.put(
+                `${baseUrl}/api/Papers/${selectedPaperData.paperID}`,
+                {
+                    paperID: selectedPaperData.paperID,
+                        programmeID: selectedPaperData.programmeID,
+                        paperName: selectedPaperData.paperName,
+                        catchNumber: selectedPaperData.catchNumber,
+                        paperCode: selectedPaperData.paperCode,
+                        courseID: selectedPaperData.courseID,
+                        examType: selectedPaperData.examType,
+                        subjectID: selectedPaperData.subjectID,
+                        paperNumber: selectedPaperData.paperNumber,
+                        examDate: selectedPaperData.examDate,
+                        numberofQuestion: parseInt(numberOfQuestionsValue) || 0,
+                        bookletSize: editedBookletSize,
+                        createdAt: selectedPaperData.createdAt,
+                        createdByID: selectedPaperData.createdByID,
+                        masterUploaded: selectedPaperData.masterUploaded,
+                        keyGenerated: selectedPaperData.keyGenerated
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${keygenUser?.token}`,
+                    },
+                }
+            );
+        } catch (error) {
+            console.error("Error updating number of questions:", error);
+        }
     };
 
     const handleInputChange = (index, field, value) => {
@@ -219,6 +256,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         e.preventDefault();
 
         if (!selectedProgramme || !selectedPaper || !numberOfQuestions || formData.some(data => !data.page || !data.qNumber || !data.key)) {
+            console.log(formData)
             alert("Please ensure all required fields are filled out.");
             return;
         }
@@ -322,6 +360,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                                         setSelectedPaper(selectedOption);
                                         const paperData = papers.find((paper) => paper.paperID === selectedOption.value);
                                         setSelectedPaperData(paperData);
+                                        setNumberOfQuestions(paperData.numberofQuestion);
                                         setBookletSize(paperData.bookletSize);
                                         setEditedBookletSize(paperData.bookletSize);
                                     }}
@@ -354,7 +393,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                                     />
                                     {formData.length > 0 && formData[formData.length - 1].page !== '' && (
                                         <>
-                                            <Form.Label>Page in Excel: {formData[formData.length - 1].page + 2}</Form.Label>
+                                            <Form.Label>Page in Excel: {Number(formData[formData.length - 1].page) + 2}</Form.Label>
                                         </>
                                     )}
 
@@ -370,20 +409,25 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <hr />
                     <center className='text-primary fw-bold'><u>Input Master Data</u></center>
 
-                    <FileUpload setExcelFile={setExcelFile} setFormData={setFormData} setNumberOfQuestions={setNumberOfQuestions} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber} />
+                    <FileUpload setExcelFile={setExcelFile} setFormData={setFormData} setNumberOfQuestions={setNumberOfQuestions} numberOfQuestions={numberOfQuestions} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber} />
 
                     <center className='text-danger fw-bold'>OR</center>
                     <Form.Group>
                         <Form.Label>Enter Number of Questions:<span className="text-danger">*</span></Form.Label>
-                        <Form.Control
-                            type="number"
-                            value={numberOfQuestions}
-                            onChange={handleNumberOfQuestionsChange}
-                            min="0"
-                            placeholder="Enter the number of questions"
-                            required
-                            disabled={true || formSubmitted}
-                        />
+                        <InputGroup>
+                            <Form.Control
+                                type="text"
+                                value={numberOfQuestions}
+                                onChange={handleNumberOfQuestionsChange}
+                                min="0"
+                                placeholder="Enter the number of questions"
+                                required
+                                disabled={!enablenumberofquestionEdit || formSubmitted}
+                            />
+                            <Button disabled={!selectedPaper} variant="primary" id="button-addon2" onClick={() => setEnableNumberofquestionEdit(!enablenumberofquestionEdit)}>
+                                <FontAwesomeIcon icon={enablenumberofquestionEdit ? faSave : faEdit} />
+                            </Button>
+                        </InputGroup>
                     </Form.Group>
                     <div className="d-grid gap-2 mt-4">
                         <Button type="submit" disabled={!editing && formSubmitted && loading || pagematcherror !== ""}>
@@ -414,7 +458,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <Form className="rounded">
                         <Form.Group className='mt-2'>
                             
-                            <FormDataComponent programId={selectedProgramme?.value} formData={formData} setFormData={setFormData} handleInputChange={handleInputChange} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber}/>
+                            <FormDataComponent programId={selectedProgramme?.value} numberOfQuestions={numberOfQuestions } formData={formData} setFormData={setFormData} handleInputChange={handleInputChange} disabled={!editing && formSubmitted} catchNumber={selectedPaperData?.catchNumber}/>
                         </Form.Group>
                     </Form>
                 )}

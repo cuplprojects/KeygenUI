@@ -31,7 +31,8 @@ const AddPaper = () => {
     createdAt: new Date().toISOString(),
     createdByID: userId || '',
     KeyGenerated: false,
-    language: ''
+    language: '',
+    numberofQuestion: 0
   });
 
   const [error, setError] = useState(null);
@@ -121,7 +122,8 @@ const AddPaper = () => {
         createdAt: new Date().toISOString(),
         createdByID: userId || '',
         KeyGenerated: false,
-        language: ''
+        language: '',
+        numberofQuestion: 0
       });
       setLoading(false);
     } catch (error) {
@@ -163,7 +165,7 @@ const AddPaper = () => {
       <Form onSubmit={handleSubmit}>
         <Row className='mb-3'>
           <Col>
-            <Form.Group controlId='programmeID'>
+            <Form.Group controlId='programmeID' className='mb-3'>
               <Form.Label>Program<span className='text-danger'>*</span></Form.Label>
               <Select
                 options={programs.map(program => ({ label: program.programmeName, value: program.programmeID }))}
@@ -177,7 +179,7 @@ const AddPaper = () => {
           </Col>
           {/* Booklet size  */}
           <Col>
-            <Form.Group controlId='bookletSize'>
+            <Form.Group controlId='bookletSize' className='mb-3'>
               <Form.Label>Booklet Size<span className='text-danger'>*</span></Form.Label>
               <Form.Control
                 type='text'
@@ -208,7 +210,7 @@ const AddPaper = () => {
               <Row className='row-cols-1 row-cols-sm-2 row-cols-md-3 mb-3'>
                 {/* catch no */}
                 <Col>
-                  <Form.Group controlId='catchNumber'>
+                  <Form.Group controlId='catchNumber' className='mb-3'>
                     <Form.Label>Catch Number<span className='text-danger'>*</span></Form.Label>
                     <Form.Control
                       type='text'
@@ -223,7 +225,7 @@ const AddPaper = () => {
                 </Col>
                 {/* course  */}
                 <Col>
-                  <Form.Group controlId='courseID'>
+                  <Form.Group controlId='courseID' className='mb-3'>
                     <Form.Label>Course<span className='text-danger'>*</span></Form.Label>
                     <Select
                       options={courses.map(course => ({ label: course.courseName, value: course.courseID }))}
@@ -237,7 +239,7 @@ const AddPaper = () => {
                 </Col>
                 {/* exam type  */}
                 <Col>
-                  <Form.Group controlId='examType'>
+                  <Form.Group controlId='examType' className='mb-3'>
                     <Form.Label>Exam Type<span className='text-danger'>*</span></Form.Label>
                     <Form.Control
                       type='text'
@@ -250,7 +252,7 @@ const AddPaper = () => {
                 </Col>
                 {/* subject  */}
                 <Col>
-                  <Form.Group controlId='subjectID'>
+                  <Form.Group controlId='subjectID' className='mb-3'>
                     <Form.Label>Subject<span className='text-danger'>*</span></Form.Label>
                     <Select
                       options={subjects.map(subject => ({ label: subject.subjectName, value: subject.subjectID }))}
@@ -264,7 +266,7 @@ const AddPaper = () => {
                 </Col>
                 {/* paper name  */}
                 <Col>
-                  <Form.Group controlId='paperName'>
+                  <Form.Group controlId='paperName' className='mb-3'>
                     <Form.Label>Paper Name</Form.Label>
                     <Form.Control
                       type='text'
@@ -276,7 +278,7 @@ const AddPaper = () => {
                 </Col>
                 {/* paper number  */}
                 {/* <Col>
-                  <Form.Group controlId='paperNumber'>
+                  <Form.Group controlId='paperNumber' className='mb-3'>
                     <Form.Label>Paper Number</Form.Label>
                     <Form.Control
                       type='text'
@@ -288,46 +290,53 @@ const AddPaper = () => {
                 </Col> */}
                 {/* exam date  */}
                 <Col>
-                  <Row>
-                    <Col>
-                      <Form.Group controlId='examDate'>
-                        <Form.Label>Exam Date</Form.Label>
-                        <Form.Control
-                          type='date'
-                          name='examDate'
-                          value={formData.examDate}
-                          onChange={(e) => handleChange('examDate', e.target.value)}
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col>
-                    <Form.Group controlId='language'>
-                        <Form.Label>Paper Language</Form.Label>
-                        <Form.Select
-                          name='language'
-                          value={formData.language}
-                          onChange={(e) => handleChange('language', e.target.value)}
-                        >
-                          <option value="">Select Language</option>
-                          <option value="B">Bilingual</option>
-                          <option value="H">Hindi</option>
-                          <option value="E">English</option>
-                          <option value="S">Sanskrit</option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-
+                  <Form.Group controlId='examDate' className='mb-3'>
+                    <Form.Label>Exam Date</Form.Label>
+                    <Form.Control
+                      type='date'
+                      name='examDate'
+                      value={formData.examDate}
+                      onChange={(e) => handleChange('examDate', e.target.value)}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId='language' className='mb-3'>
+                    <Form.Label>Paper Language</Form.Label>
+                    <Form.Select
+                      name='language'
+                      value={formData.language}
+                      onChange={(e) => handleChange('language', e.target.value)}
+                    >
+                      <option value="">Select Language</option>
+                      <option value="B">Bilingual</option>
+                      <option value="H">Hindi</option>
+                      <option value="E">English</option>
+                      <option value="S">Sanskrit</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group controlId='numberofQuestion' className='mb-3'>
+                    <Form.Label>Number of Questions</Form.Label>
+                    <Form.Control
+                      type='number'
+                      name='numberofQuestion'
+                      value={formData.numberofQuestion}
+                      onChange={(e) => handleChange('numberofQuestion', e.target.value)}
+                    />
+                  </Form.Group>
                 </Col>
               </Row>
 
               {error && <Alert variant='danger'>{error}</Alert>}
               {success && <Alert variant='success'>{success}</Alert>}
 
-              <Button variant='primary' type='submit' disabled={loading}>
-                {loading ? 'Adding...' : 'Add Paper'}
-              </Button>
+              <Col md={12} className="d-flex justify-content-center">
+                <Button variant='primary' type='submit' disabled={loading}>
+                  {loading ? 'Adding...' : 'Add Paper'}
+                </Button>
+              </Col>
             </>
           )
         }

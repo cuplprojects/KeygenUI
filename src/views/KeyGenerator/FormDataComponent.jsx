@@ -4,10 +4,8 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 const baseApiUrl = process.env.REACT_APP_BASE_API_URL;
 
-const FormDataComponent = ({programId, formData, setFormData, handleInputChange, disabled, catchNumber }) => {
+const FormDataComponent = ({ programId, numberOfQuestions, formData, setFormData, handleInputChange, disabled, catchNumber }) => {
     const [loading, setLoading] = useState(false); // Initialize loading state to false
-
-    // Function to handle key down event for input fields
     const handleKeyDown = (e, index, column) => {
         if (e.key === 'Tab' || e.key === 'Enter' || e.key === 'ArrowDown') {
             e.preventDefault(); // Prevent default behavior of Tab/Enter keys
@@ -19,11 +17,11 @@ const FormDataComponent = ({programId, formData, setFormData, handleInputChange,
         }
         if (e.key === 'ArrowUp') {
             e.preventDefault(); // Prevent default behavior of Tab/Enter keys
-            const nextIndex = (index - 1) % formData.length; // Loop back to the first if at the last
+            const nextIndex = (index - 1 + formData.length) % formData.length; // Loop back to the last if at the first
             const nextInput = document.querySelector(`input[data-index='${nextIndex}'][data-column='${column}']`);
             if (nextInput) {
                 nextInput.focus(); // Set focus to the next input field
-            } 
+            }
         }
     };
 
@@ -53,45 +51,69 @@ const FormDataComponent = ({programId, formData, setFormData, handleInputChange,
             console.error('Download failed:', error);
         }
     };
-useEffect(()=>{
-if(catchNumber){
-    autofillPages()
-}
-},catchNumber)
+
+    useEffect(() => {
+        if (catchNumber) {
+            autofillPages();
+        }
+    }, [catchNumber]);
 
     // Function to autofill pages
     const autofillPages = async () => {
-        setLoading(true); // Set loading state to true
-            const clearform = formData.map((data, index) => ({
-                ...data,
-                page:"",
-                qNumber: index + 1, // Fill question number based on index
-            }));
-            setFormData(clearform);
+        setLoading(true);
+        // Create initial form data with the correct number of rows
+        const initialFormData = Array.from({ length: numberOfQuestions }, (_, index) => ({
+            sn: (index + 1).toString(),
+            page: "",
+            qNumber: (index + 1).toString(),
+            key: ""
+        }));
+        setFormData(initialFormData);
+        
         try {
             const response = await axios.get(`${baseApiUrl}/PdfData/autofill?catchnumber=${catchNumber}&ProgramId=${programId}`);
             if (response.status === 200 && response.data.length > 0) {
-                setFormData(response.data);
-            } else {
-                // If no data, only fill question numbers
-                const updatedFormData = formData.map((data, index) => ({
-                    ...data,
-                    page:"",
-                    qNumber: index + 1, // Fill question number based on index
+                // Create a complete list of question numbers with the correct length
+                const completeData = Array.from({ length: numberOfQuestions }, (_, index) => ({
+                    sn: (index + 1).toString(),
+                    page: "",
+                    qNumber: (index + 1).toString(),
+                    key: ""
                 }));
-                setFormData(updatedFormData);
+
+                // Modified: Fill in the data from the response, matching by qNumber
+                response.data.forEach(data => {
+                    if (data.qNumber) {  // Check if qNumber exists
+                        const qIndex = parseInt(data.qNumber, 10) - 1;
+                        if (qIndex >= 0 && qIndex < numberOfQuestions) {
+                            completeData[qIndex] = {
+                                ...completeData[qIndex],
+                                page: data.page?.toString() || "",  // Convert page to string if it exists
+                                qNumber: data.qNumber.toString(),
+                                key: data.key || "",
+                                sn: (qIndex + 1).toString()
+                            };
+                        }
+                    }
+                });
+
+                setFormData(completeData);
             }
         } catch (error) {
             console.error('Fetch error:', error);
         } finally {
-            setLoading(false); // Reset loading state
+            setLoading(false);
         }
     };
 
     const handlePast = async () => {
         try {
             const clipboardText = await navigator.clipboard.readText(); // Read the clipboard text
-            const lines = clipboardText.split('\n'); // Split the text by new lines
+            const lines = clipboardText.split('\n').filter((line, index, self) => index < self.length - 1 || self[self.length - 1].trim() !== ''); // Split the text by new lines and remove the last line if it's empty
+            if (lines.length > numberOfQuestions) {
+                alert('Data exceeds the number of questions')
+                return;
+            }
 
             const updatedFormData = formData.map((data, index) => {
                 if (index < lines.length) {
@@ -100,7 +122,7 @@ if(catchNumber){
                 return data; // Return the original data if no corresponding clipboard line exists
             });
 
-            setFormData(updatedFormData);
+            setFormData(updatedFormData.slice(0, numberOfQuestions)); // Ensure formData has only numberOfQuestions items
         } catch (error) {
             console.error('Paste failed:', error);
         }
@@ -109,7 +131,7 @@ if(catchNumber){
     return (
         <div className="table-wrapper" style={{ maxHeight: '70vh', overflowY: 'scroll' }}>
             <div className="mx-2 d-flex align-items-center justify-content-between">
-                <Form.Label>Fill Master Data:<span className="text-danger">*</span></Form.Label>
+                <Form.Label className='fw-bold'>Fill Master Data:</Form.Label>
                 <div>
                     <Button size='sm' className='m-1' onClick={handleDownload} disabled={loading}>
                         <i className="fa fa-download" title="Download Template" />
@@ -129,13 +151,13 @@ if(catchNumber){
                 <thead>
                     <tr>
                         <th className='text-center'>SN</th>
-                        <th className='text-center'>Page No.</th>
-                        <th className='text-center'>Question Number</th>
-                        <th className='ps-3 text-center'>Key  <i className="fa-solid fa-paste text-primary c-pointer ms-4" onClick={handlePast} title='Past'></i></th>
+                        <th className='text-center'>Page No.<span className="text-danger">*</span></th>
+                        <th className='text-center'>Question Number<span className="text-danger">*</span></th>
+                        <th className='ps-3 text-center'>Key<span className="text-danger">*</span>  <i className="fa-solid fa-paste text-primary c-pointer ms-4" onClick={handlePast} title='Past'></i></th>
                     </tr>
                 </thead>
                 <tbody>
-                    {formData.map((data, index) => (
+                    {formData.slice(0, numberOfQuestions).map((data, index) => (
                         <tr key={index}>
                             <td>{index + 1}</td> {/* Automatically assign serial number */}
                             <td>
@@ -155,10 +177,8 @@ if(catchNumber){
                                 <Form.Control
                                     size="sm"
                                     type="text"
-                                    value={data.qNumber || index + 1}
-                                    onChange={(e) => handleInputChange(index, 'qNumber', e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, index, 'qNumber')}
-                                    disabled={disabled}
+                                    value={(index + 1).toString()} // Question numbers from 1 to numberOfQuestions as string
+                                    disabled={true} // Non-editable
                                     data-index={index}
                                     data-column="qNumber"
                                     className='text-center'
@@ -193,6 +213,7 @@ FormDataComponent.propTypes = {
     catchNumber: PropTypes.string.isRequired, // Added catchNumber prop
     setFormData: PropTypes.func.isRequired, // Ensure setFormData is required
     programId: PropTypes.number.isRequired, // Ensure setFormData is required
+    numberOfQuestions: PropTypes.number.isRequired, // Ensure setFormData is required
 };
 
 export default FormDataComponent;

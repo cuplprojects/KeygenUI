@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
-import { Dropdown, DropdownButton } from 'react-bootstrap';
+import { Button, Dropdown, DropdownButton } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload, faEye, faKey, faUpload, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
+import { faDownload, faEye, faKey, faUpload, faSortDown, faSortUp, faFileDownload, faFileUpload } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import { faKeybase } from '@fortawesome/free-brands-svg-icons';
 const apiUrl = process.env.REACT_APP_BASE_URL;
 
 const PaperTable = ({ papers, token }) => {
@@ -100,20 +101,23 @@ const PaperTable = ({ papers, token }) => {
               <td>{paper.bookletSize}</td>
               <td>{paper.createdBy}</td>
               <td onClick={(event) => event.stopPropagation()}>
-                <div>
-                  <DropdownButton id="dropdown-basic-button" title="Action" className='btn btn-sm'>
-                    {paper.keyGenerated ?
-                      <Dropdown.Item onClick={() => DownloadKey(paper)}><FontAwesomeIcon icon={faDownload} className="me-2" />Download Keys</Dropdown.Item>
-                      : <>
-                        {paper.masterUploaded ?
-                          <Dropdown.Item onClick={() => Generatekey(paper)}><FontAwesomeIcon icon={faKey} className="me-2" />Generate Key</Dropdown.Item>
-                          :
-                          <Dropdown.Item onClick={() => Generatekey(paper)}><FontAwesomeIcon icon={faUpload} className="me-2" />Upload Master</Dropdown.Item>
-                        }
-                      </>
-                    }
-                    <Dropdown.Item onClick={() => navigate(`/Masters/papers/ViewPaper/${encrypt(paper.paperID)}`)}> <FontAwesomeIcon icon={faEye} className="me-2" />View Paper</Dropdown.Item>
-                  </DropdownButton>
+                <div className="d-flex justify-content-around gap-2">
+                  <Button variant="primary" size="sm" onClick={() => navigate(`/Masters/papers/ViewPaper/${encrypt(paper.paperID)}`)} title="View Paper">
+                    <FontAwesomeIcon icon={faEye} color="white" />
+                  </Button>
+                  {paper.keyGenerated ? (
+                    <Button variant="success" size="sm" onClick={() => DownloadKey(paper)} title="Download Key">
+                      <FontAwesomeIcon icon={faKey} color="white" />
+                    </Button>
+                  ) : paper.masterUploaded ? (
+                    <Button variant="warning" size="sm" onClick={() => Generatekey(paper)} title="Generate Key">
+                      <FontAwesomeIcon icon={faUpload} color="white" />
+                    </Button>
+                  ) : (
+                    <Button variant="info" size="sm" onClick={() => Generatekey(paper)} title="Upload Master">
+                      <FontAwesomeIcon icon={faUpload} color="white" />
+                    </Button>
+                  )}
                 </div>
               </td>
             </tr>

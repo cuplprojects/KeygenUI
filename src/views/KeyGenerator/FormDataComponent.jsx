@@ -5,9 +5,7 @@ import axios from 'axios';
 const baseApiUrl = process.env.REACT_APP_BASE_API_URL;
 
 const FormDataComponent = ({ programId, numberOfQuestions, formData, setFormData, handleInputChange, disabled, catchNumber }) => {
-    console.log(formData)
     const [loading, setLoading] = useState(false); // Initialize loading state to false
-    console.log(numberOfQuestions)// Function to handle key down event for input fields
     const handleKeyDown = (e, index, column) => {
         if (e.key === 'Tab' || e.key === 'Enter' || e.key === 'ArrowDown') {
             e.preventDefault(); // Prevent default behavior of Tab/Enter keys
@@ -111,10 +109,9 @@ const FormDataComponent = ({ programId, numberOfQuestions, formData, setFormData
     const handlePast = async () => {
         try {
             const clipboardText = await navigator.clipboard.readText(); // Read the clipboard text
-            const lines = clipboardText.split('\n'); // Split the text by new lines
-
+            const lines = clipboardText.split('\n').filter((line, index, self) => index < self.length - 1 || self[self.length - 1].trim() !== ''); // Split the text by new lines and remove the last line if it's empty
             if (lines.length > numberOfQuestions) {
-                alert('Data exceeds the number of questions');
+                alert('Data exceeds the number of questions')
                 return;
             }
 
@@ -162,7 +159,6 @@ const FormDataComponent = ({ programId, numberOfQuestions, formData, setFormData
                 <tbody>
                     {formData.slice(0, numberOfQuestions).map((data, index) => (
                         <tr key={index}>
-                            {console.log(index)}
                             <td>{index + 1}</td> {/* Automatically assign serial number */}
                             <td>
                                 <Form.Control

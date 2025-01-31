@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Form, Button, Row, Col, InputGroup } from 'react-bootstrap';
 import FormDataComponent from './FormDataComponent';
 import FileUpload from './FileUpload';
 import ShuffleConfig from './ShuffleConfig';
@@ -7,6 +7,8 @@ import Select from 'react-select';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { useUser } from './../../context/UserContext';
+import { faEdit, faSave } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -26,6 +28,7 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     const [loading, setLoading] = useState(false);
     const [pagematcherror, setPageMatchError] = useState("");
     const [excelfile, setExcelFile] = useState(null);
+    const [enablenumberofquestionEdit, setEnableNumberofquestionEdit] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -193,23 +196,55 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
         }
     }, [editedBookletSize, formData]);
 
-    // const handleNumberOfQuestionsChange = (e) => {
-    //     const inputNumber = e.target.value;
-    //     const selectedNumber = parseInt(inputNumber, 10);
-    //     const numberOfQuestionsValue = isNaN(selectedNumber) || inputNumber.trim() === '' ? '' : selectedNumber;
-    //     setNumberOfQuestions(selectedPaperData?.numberofQuestion || numberOfQuestionsValue);
+    const handleNumberOfQuestionsChange = async (e) => {
+        const inputNumber = e.target.value;
+        const selectedNumber = parseInt(inputNumber, 10);
+        const numberOfQuestionsValue = isNaN(selectedNumber) || inputNumber.trim() === '' ? '' : selectedNumber;
+        setNumberOfQuestions(numberOfQuestionsValue);
 
-    //     if (!isNaN(selectedNumber)) {
-    //         setFormData(Array.from({ length: selectedNumber }, (_, index) => ({
-    //             sn: index + 1,
-    //             page: '',
-    //             qNumber: '',
-    //             key: '',
-    //         })));
-    //     } else {
-    //         setFormData([]);
-    //     }
-    // };
+        if (!isNaN(selectedNumber)) {
+            setFormData(Array.from({ length: selectedNumber }, (_, index) => ({
+                sn: index + 1,
+                page: '',
+                qNumber: '',
+                key: '',
+            })));
+        } else {
+            setFormData([]);
+        }
+        console.log("posting number of questions")
+        try {
+            console.log("posting number of questions inside try")
+            await axios.put(
+                `${baseUrl}/api/Papers/${selectedPaperData.paperID}`,
+                {
+                    paperID: selectedPaperData.paperID,
+                        programmeID: selectedPaperData.programmeID,
+                        paperName: selectedPaperData.paperName,
+                        catchNumber: selectedPaperData.catchNumber,
+                        paperCode: selectedPaperData.paperCode,
+                        courseID: selectedPaperData.courseID,
+                        examType: selectedPaperData.examType,
+                        subjectID: selectedPaperData.subjectID,
+                        paperNumber: selectedPaperData.paperNumber,
+                        examDate: selectedPaperData.examDate,
+                        numberofQuestion: parseInt(numberOfQuestionsValue) || 0,
+                        bookletSize: editedBookletSize,
+                        createdAt: selectedPaperData.createdAt,
+                        createdByID: selectedPaperData.createdByID,
+                        masterUploaded: selectedPaperData.masterUploaded,
+                        keyGenerated: selectedPaperData.keyGenerated
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${keygenUser?.token}`,
+                    },
+                }
+            );
+        } catch (error) {
+            console.error("Error updating number of questions:", error);
+        }
+    };
 
     const handleInputChange = (index, field, value) => {
         const updatedFormData = [...formData];
@@ -379,15 +414,20 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
                     <center className='text-danger fw-bold'>OR</center>
                     <Form.Group>
                         <Form.Label>Enter Number of Questions:<span className="text-danger">*</span></Form.Label>
-                        <Form.Control
-                            type="number"
-                            value={numberOfQuestions}
-                            // onChange={handleNumberOfQuestionsChange}
-                            min="0"
-                            placeholder="Enter the number of questions"
-                            required
-                            disabled={true || formSubmitted}
-                        />
+                        <InputGroup>
+                            <Form.Control
+                                type="text"
+                                value={numberOfQuestions}
+                                onChange={handleNumberOfQuestionsChange}
+                                min="0"
+                                placeholder="Enter the number of questions"
+                                required
+                                disabled={!enablenumberofquestionEdit || formSubmitted}
+                            />
+                            <Button disabled={!selectedPaper} variant="primary" id="button-addon2" onClick={() => setEnableNumberofquestionEdit(!enablenumberofquestionEdit)}>
+                                <FontAwesomeIcon icon={enablenumberofquestionEdit ? faSave : faEdit} />
+                            </Button>
+                        </InputGroup>
                     </Form.Group>
                     <div className="d-grid gap-2 mt-4">
                         <Button type="submit" disabled={!editing && formSubmitted && loading || pagematcherror !== ""}>

@@ -1,11 +1,13 @@
 // Papers.js
 import React, { useEffect, useState } from "react";
-import { Container, Form } from "react-bootstrap";
+import { Container, Dropdown, DropdownButton, Form } from "react-bootstrap";
 import PaperTable from "./PaperTable";
 import { Link } from "react-router-dom";
 import { useUser } from "./../../../context/UserContext.js";
 import axios from "axios";
 import PaperPlaceholder from "./../../../MyPlaceholders/PaperPlaceholder.jsx";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFilter } from "@fortawesome/free-solid-svg-icons";
 
 const apiUrl = process.env.REACT_APP_BASE_URL;
 
@@ -14,11 +16,48 @@ const Papers = () => {
   const token = keygenUser?.token;
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    const saved = localStorage.getItem('papersCurrentPage');
+    return saved ? parseInt(saved) : 1;
+  });
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(1);
-  const [dataEntriesToShow, setDataEntriesToShow] = useState(10);
+  const [dataEntriesToShow, setDataEntriesToShow] = useState(() => {
+    const saved = localStorage.getItem('papersEntriesPerPage');
+    return saved ? parseInt(saved) : 10;
+  });
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProgram, setSelectedProgram] = useState(() => {
+    return localStorage.getItem('papersSelectedProgram') || "";
+  });
+  const [programList, setProgramList] = useState([]);
+
+useEffect(()=>{
+  const fetchProgramList = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}/api/Programmes`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log(response.data);
+      setProgramList(response.data);
+    } catch (error) {
+      console.error("Error fetching program list:", error);
+    }
+  }
+  fetchProgramList();
+},[token])  
+
+useEffect(() => {
+  localStorage.setItem('papersCurrentPage', currentPage.toString());
+}, [currentPage]);
+
+useEffect(() => {
+  localStorage.setItem('papersEntriesPerPage', dataEntriesToShow.toString());
+}, [dataEntriesToShow]);
+
+useEffect(() => {
+  localStorage.setItem('papersSelectedProgram', selectedProgram);
+}, [selectedProgram]);
 
   useEffect(() => {
     let timeoutId;
@@ -26,9 +65,15 @@ const Papers = () => {
     const fetchData = async () => {
       try {
         let url = `${apiUrl}/api/Papers/${currentPage}/${dataEntriesToShow}`;
+
         if (searchQuery) {
-          url = `${apiUrl}/api/Papers/${currentPage}/${dataEntriesToShow}/Search?searchData=${searchQuery}`;
-        }
+          url += `/Search?searchData=${searchQuery}`;
+          if (selectedProgram) {
+            url += `&Programid=${selectedProgram}`;
+          }
+        } else if (selectedProgram) {
+          url += `?Programid=${selectedProgram}`;
+        }        
         const papersData = await axios.get(url, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => res.data);
@@ -44,14 +89,14 @@ const Papers = () => {
     };
 
     if (searchQuery) {
-      clearTimeout(timeoutId); // Clear any existing timeout
-      timeoutId = setTimeout(fetchData, 500); // Set a new timeout
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(fetchData, 500);
     } else {
-      fetchData(); // If no search query, fetch immediately
+      fetchData();
     }
 
-    return () => clearTimeout(timeoutId); // Cleanup the timeout on unmount or query change
-  }, [currentPage, token, dataEntriesToShow, searchQuery]);
+    return () => clearTimeout(timeoutId);
+  }, [currentPage, token, dataEntriesToShow, searchQuery, selectedProgram]);
 
 
   const handlePageChange = (page) => {
@@ -60,7 +105,7 @@ const Papers = () => {
 
   const renderPageNumbers = () => {
     const pages = [];
-    const totalPagesToShow = 5; // Number of page buttons to show
+    const totalPagesToShow = 5;
     const halfTotalPagesToShow = Math.floor(totalPagesToShow / 2);
     let startPage = Math.max(1, currentPage - halfTotalPagesToShow);
     let endPage = Math.min(totalPages, startPage + totalPagesToShow - 1);
@@ -93,8 +138,13 @@ const Papers = () => {
     setSearchQuery(event.target.value);
   };
 
+  const handleProgramChange = (programId) => {
+    setSelectedProgram(programId);
+    setCurrentPage(1);
+  };
+
   return (
-    <Container className="userform border border-3 p-4 my-3">
+    <Container fluid className="userform border border-3 p-4 my-3">
       <div className="d-flex justify-content-between m-3">
         <h3>Papers</h3>
         <Link to={`/Masters/papers/AddPaper`} className="btn btn-primary">
@@ -123,12 +173,46 @@ const Papers = () => {
                 </p>
               </div>
             </div>
-            <div className="search">
+            <div className="d-flex align-items-center gap-2">
+              <div className="filter">
+                <Form.Group className="mb-2 d-flex align-items-center gap-1">
+                  <Form.Label className='mt-1'>Program:</Form.Label>
+                  <DropdownButton 
+                    id={`select-program-filter`}
+                    size="sm"
+                    variant="outline-primary"
+                    title={<FontAwesomeIcon icon={faFilter} />}
+                    drop="start"
+                  >
+                    <div style={{maxHeight: '200px', overflowY: 'auto'}}>
+                    <p className="text-center bg-primary text-white mx-2 my-1 rounded-pill sticky-top">{selectedProgram ? programList.find(p => p.programmeID === selectedProgram)?.programmeName : "All Programs"}</p>
+
+                      <Dropdown.Item 
+                        key="all" 
+                        onClick={() => handleProgramChange("")}
+                      >
+                        All Programs
+                      </Dropdown.Item>
+                      {programList.map(program => (
+                        <Dropdown.Item
+                          key={program.programmeID}
+                          onClick={() => handleProgramChange(program.programmeID)}
+                        >
+                          {program.programmeName}
+                        </Dropdown.Item>
+                      ))}
+                    </div>
+                  </DropdownButton>
+                </Form.Group>
+              </div>
+              <div className="search">
               <Form.Group className="mb-2 d-flex align-items-center gap-1" >
                 <Form.Label className='mt-1'>Search:</Form.Label>
                 <Form.Control type="text" value={searchQuery} onChange={handleSearchChange} />
               </Form.Group>
             </div>
+            </div>
+            
           </div>
           <div className="table-responsive" style={{overflow: 'none'}}>
             <PaperTable

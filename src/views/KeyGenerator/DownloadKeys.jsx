@@ -10,7 +10,7 @@ import ExportFormat2 from './Downloads/ExportFormat2';
 
 // import Keyi from './Downloads/Keyi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileExcel, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { faFileExcel, faFileExport, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 const DownloadKeys = () => {
   const { keygenUser } = useUser();
@@ -136,7 +136,7 @@ useEffect(() => {
           </h5>
         </span>
         <div className='d-flex gap-2'>
-          <DropdownButton id="export-dropdown" title={<><FontAwesomeIcon icon={faFilePdf} className="me-2" />Export</>} variant="primary" disabled={!pdfVerification}>
+          <DropdownButton id="export-dropdown" title={<><FontAwesomeIcon icon={faFileExport} className="me-2" />Export</>} variant="primary" disabled={!pdfVerification}>
             <Dropdown.Item disabled={!pdfVerification}>
               <ExportToExcel data={apiResponse} paperData={paperData} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
             </Dropdown.Item>
@@ -145,7 +145,7 @@ useEffect(() => {
             </Dropdown.Item>
 
             <Dropdown.Item disabled={!pdfVerification}>
-              <PDFDownloadLink className='ms-3' document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
+              <PDFDownloadLink document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
                 {({ loading }) => (loading ? <Button disabled={!pdfVerification}>Loading...</Button> : <Button disabled={!pdfVerification}><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
               </PDFDownloadLink>
             </Dropdown.Item>

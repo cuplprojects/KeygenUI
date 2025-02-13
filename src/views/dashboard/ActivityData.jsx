@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Table } from 'react-bootstrap';
 import $ from 'jquery';
 import PropTypes from 'prop-types';
+import { formatDateTime } from 'src/utils/DateFormate';
 
 const ActivityData = ({ activities }) => {
     const tableRef = useRef(null);
@@ -25,16 +26,6 @@ const ActivityData = ({ activities }) => {
     }, []);
 
 
-    const formatDateTime = (dateTimeString) => {
-        const date = new Date(dateTimeString);
-        const day = date.getDate();
-        const month = date.getMonth() + 1;
-        const year = date.getFullYear();
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const seconds = date.getSeconds();
-        return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
-    };
 
     return (
         <div className='table-responsive'>

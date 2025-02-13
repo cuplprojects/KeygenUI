@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDownload, faEye, faKey, faUpload, faSortDown, faSortUp, faFileDownload, faFileUpload } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { faKeybase } from '@fortawesome/free-brands-svg-icons';
+import { formatDate } from 'src/utils/DateFormate';
 const apiUrl = process.env.REACT_APP_BASE_URL;
 
 const PaperTable = ({ papers, token }) => {
@@ -38,13 +39,6 @@ const PaperTable = ({ papers, token }) => {
     navigate(`/Masters/papers/ViewPaper/${encrypt(paperID)}`);
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
 
   const Generatekey = (paper) => {
     const { programmeID, programmeName, paperID, catchNumber } = paper;
@@ -73,7 +67,6 @@ const PaperTable = ({ papers, token }) => {
   };
 
   return (
-
       <table className="table table-striped table-bordered table-hover">
         <thead>
           <tr>
@@ -84,22 +77,23 @@ const PaperTable = ({ papers, token }) => {
             <th className='text-center c-pointer align-middle' onClick={() => handleSort('subjectName')}>Subject Name {sortBy === 'subjectName' && <FontAwesomeIcon icon={sortDir === 'asc' ? faSortUp : faSortDown} />}</th>
             <th className='text-center c-pointer align-middle' onClick={() => handleSort('examDate')}>Exam Date {sortBy === 'examDate' && <FontAwesomeIcon icon={sortDir === 'asc' ? faSortUp : faSortDown} />}</th>
             <th className='text-center c-pointer align-middle' onClick={() => handleSort('bookletSize')}>Booklet Size {sortBy === 'bookletSize' && <FontAwesomeIcon icon={sortDir === 'asc' ? faSortUp : faSortDown} />}</th>
+            <th className='text-center c-pointer align-middle' onClick={() => handleSort('language')}>Language {sortBy === 'language' && <FontAwesomeIcon icon={sortDir === 'asc' ? faSortUp : faSortDown} />}</th>
             <th className='text-center c-pointer align-middle' onClick={() => handleSort('createdBy')}>Created By {sortBy === 'createdBy' && <FontAwesomeIcon icon={sortDir === 'asc' ? faSortUp : faSortDown} />}</th>
             <th className='text-center align-middle'>Action</th>
-
           </tr>
         </thead>
         <tbody>
           {sortedPapers && sortedPapers.map((paper, index) => (
             <tr className="c-pointer" key={paper.paperID} onClick={() => handleRowClick(paper.paperID)}>
-              <td>{paper.paperID}</td>
-              <td>{paper.programmeName}</td>
-              <td>{paper.catchNumber}</td>
-              <td style={{ maxWidth: '150vw' }}>{paper.paperName}</td>
-              <td >{paper.subjectName}</td>
-              <td>{formatDate(paper.examDate)}</td>
-              <td>{paper.bookletSize}</td>
-              <td>{paper.createdBy}</td>
+              <td className="text-center">{paper.paperID}</td>
+              <td className="text-center">{paper.programmeName}</td>
+              <td className="text-center">{paper.catchNumber}</td>
+              <td className="text-center" style={{ maxWidth: '15vw' }}>{paper.paperName}</td>
+              <td className="text-center">{paper.subjectName}</td>
+              <td className="text-center">{formatDate(paper.examDate)}</td>
+              <td className="text-center">{paper.bookletSize}</td>
+              <td className="text-center">{paper.language || ''}</td>
+              <td className="text-center">{paper.createdBy}</td>
               <td onClick={(event) => event.stopPropagation()}>
                 <div className="d-flex justify-content-around gap-2">
                   <Button variant="primary" size="sm" onClick={() => navigate(`/Masters/papers/ViewPaper/${encrypt(paper.paperID)}`)} title="View Paper">

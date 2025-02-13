@@ -336,10 +336,10 @@ const VerificationStatus = () => {
                 <th style={{cursor: 'pointer'}} onClick={() => handleSort('catchNumber')}>
                   Catch Number {getSortIcon('catchNumber')}
                 </th>
-                <th>Status Series of A</th>
-                <th>Status Series of B</th>
-                <th>Status Series of C</th>
-                <th>Status Series of D</th>
+                <th>Status of Series A</th>
+                <th>Status of Series B</th>
+                <th>Status of Series C</th>
+                <th>Status of Series D</th>
               </tr>
             </thead>
             <tbody>

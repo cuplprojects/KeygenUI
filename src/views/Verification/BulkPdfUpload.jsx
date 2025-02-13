@@ -155,25 +155,32 @@ const BulkPdfUpload = () => {
       
       if (successfiles.length > 0) {
         setUploading(false);
-        const formData2 = new FormData();
         
-        // Append each successful file as an array
-        successfiles.forEach((file, index) => {
-          formData2.append(`pdf`, file); // Appending each file in array-like syntax
-        });
-        
-        formData2.append('programid', selectedProgram.value);
-        try {
-          const nodeApiResponse = await axios.post(`${nodeapiUrl}/upload`, formData2, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
+        // Process files in batches of 16
+        for(let i = 0; i < successfiles.length; i += 16) {
+          const batch = successfiles.slice(i, i + 16);
+          const formData2 = new FormData();
+          
+          // Append each file in current batch
+          batch.forEach(file => {
+            formData2.append('pdf', file);
           });
-          console.log("Upload successful: ", nodeApiResponse.data);
-        } catch (error) {
-          console.log(error?.response?.data);
+          
+          formData2.append('programid', selectedProgram.value);
+          
+          try {
+            const nodeApiResponse = await axios.post(`${nodeapiUrl}/upload`, formData2, {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            });
+            console.log("Batch upload successful: ", nodeApiResponse.data);
+          } catch (error) {
+            console.log("Error in batch upload:", error?.response?.data);
+          }
         }
       }
+      
       // Final feedback after all uploads
       if (totalSuccess > 0) {
         toast.success('PDF files uploaded and processed successfully.');

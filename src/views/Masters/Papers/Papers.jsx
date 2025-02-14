@@ -9,6 +9,7 @@ import PaperPlaceholder from "./../../../MyPlaceholders/PaperPlaceholder.jsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
 
+
 const apiUrl = process.env.REACT_APP_BASE_URL;
 
 const Papers = () => {

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDownload, faKey, faSortDown, faSortUp } from '@fortawesome/free-solid-svg-icons';
 import axios from "axios";
+import { formatDate } from "src/utils/DateFormate";
 const apiUrl = process.env.REACT_APP_BASE_URL;
 
 
@@ -55,13 +56,6 @@ const KeysTable = ({ papers, token }) => {
   };
   
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
 
   return (
     <div className="table-responsive">
@@ -75,23 +69,24 @@ const KeysTable = ({ papers, token }) => {
             <th className='text-center c-pointer align-middle' onClick={() => handleSort('subjectName')}>Subject Name {sortBy === 'subjectName' && <FontAwesomeIcon icon={sortDir === 'asc' ? faSortUp : faSortDown} />}</th>
             <th className='text-center c-pointer align-middle' onClick={() => handleSort('examDate')}>Exam Date {sortBy === 'examDate' && <FontAwesomeIcon icon={sortDir === 'asc' ? faSortUp : faSortDown} />}</th>
             <th className='text-center c-pointer align-middle' onClick={() => handleSort('bookletSize')}>Booklet Size {sortBy === 'bookletSize' && <FontAwesomeIcon icon={sortDir === 'asc' ? faSortUp : faSortDown} />}</th>
+            <th className='text-center c-pointer align-middle' onClick={() => handleSort('language')}>Language {sortBy === 'language' && <FontAwesomeIcon icon={sortDir === 'asc' ? faSortUp : faSortDown} />}</th>
             <th className='text-center c-pointer align-middle' onClick={() => handleSort('createdBy')}>Created By {sortBy === 'createdBy' && <FontAwesomeIcon icon={sortDir === 'asc' ? faSortUp : faSortDown} />}</th>
             <th className='text-center align-middle'>Action</th>
-
           </tr>
         </thead>
         <tbody>
         {sortedPapers && sortedPapers.map((paper, index) => (
             <tr key={paper.paperID}>
-              <td>{paper.paperID}</td>
-              <td>{paper.programmeName}</td>
-              <td>{paper.catchNumber}</td>
-              <td>{paper.paperName}</td>
-              <td>{paper.subjectName}</td>
-              <td>{formatDate(paper.examDate)}</td>
-              <td>{paper.bookletSize}</td>
-              <td>{paper.createdBy}</td>
-              <td>
+              <td className="text-center">{paper.paperID}</td>
+              <td className="text-center">{paper.programmeName}</td>
+              <td className="text-center">{paper.catchNumber}</td>
+              <td className="text-center">{paper.paperName}</td>
+              <td className="text-center">{paper.subjectName}</td>
+              <td className="text-center">{formatDate(paper.examDate)}</td>
+              <td className="text-center">{paper.bookletSize}</td>
+              <td className="text-center">{paper.language || ''}</td>
+              <td className="text-center">{paper.createdBy}</td>
+              <td className="text-center">
                 <Button variant="primary" size="sm" onClick={() => handleDownloadClick(paper)}>
                   <FontAwesomeIcon icon={faKey}  />
                 </Button>

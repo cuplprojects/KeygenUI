@@ -389,3 +389,7 @@ ol.progress-meter li.todo:before {
     background-color: #fff;
     z-index: 1;
   }
+
+  #select-program-filter:before {
+   display: none;
+  }

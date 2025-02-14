@@ -9,6 +9,7 @@ import { useUser } from './../../../context/UserContext';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUpload, faDownload, faKey } from '@fortawesome/free-solid-svg-icons';
+import { formatDateTime, formatDateTimeForInput } from 'src/utils/DateFormate';
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -213,31 +214,8 @@ const ViewPaper = () => {
     }
   };
 
-  const formatDateTimeForDisplay = (dateTimeString) => {
-    const date = new Date(dateTimeString);
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    let hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const amPM = hours >= 12 ? 'PM' : 'AM';
 
-    hours = hours % 12 || 12;
-
-    return `${day}/${month}/${year} ${hours}:${minutes} ${amPM}`;
-  };
-
-  const formatDateTimeForInput = (dateTimeString) => {
-    const date = new Date(dateTimeString);
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    let hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
+  
   const getLanguageText = (code) => {
     switch(code) {
       case 'B': return 'Bilingual';
@@ -350,7 +328,7 @@ const ViewPaper = () => {
                         <td>Exam DateTime:</td>
                         <td>
                           {formDisabled ? (
-                            formatDateTimeForDisplay(paper.examDate)
+                            formatDateTime(paper.examDate)
                           ) : (
                             <Form.Control
                               type='datetime-local'
@@ -394,7 +372,7 @@ const ViewPaper = () => {
                       </tr>
                       <tr>
                         <td>Paper Created DateTime:</td>
-                        <td>{formatDateTimeForDisplay(paper.createdAt)}</td>
+                        <td>{formatDateTime(paper.createdAt)}</td>
                       </tr>
                     </tbody>
                   </Table>

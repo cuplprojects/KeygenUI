@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import { Button, Table, Form, Row, Col, Pagination, Badge } from 'react-bootstrap';
 import axios from 'axios';
 import { useUser } from 'src/context/UserContext';
 import { ToastContainer, toast } from 'react-toastify';
-import { FaCheckCircle, FaTimesCircle, FaQuestionCircle, FaCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaQuestionCircle, FaCircle, FaCog, FaUpload, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import AllPdfStatusExcel from './components/AllPdfStatusExcel';
 import useStatusCounts from 'src/context/usePdfStatusData';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 const apiUrl = process.env.REACT_APP_BASE_API_URL;
 
@@ -17,15 +19,29 @@ const VerificationStatus = () => {
   const [pdfStatuses, setPdfStatuses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [uploadFilter, setUploadFilter] = useState('all');
+  const [sortField, setSortField] = useState('catchNumber');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [entriesPerPage, setEntriesPerPage] = useState(() => {
+    const saved = localStorage.getItem('verificationEntriesPerPage');
+    return saved ? parseInt(saved) : 10;
+  });
+  const [currentPage, setCurrentPage] = useState(() => {
+    const saved = localStorage.getItem('verificationCurrentPage');
+    return saved ? parseInt(saved) : 1;
+  });
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const { pdfStatusCounts, loadingstatus, error, refetch } = useStatusCounts(selectedProgram?.value);
   const { notVerifiedCount = 0, totalCatchNumbers = 0, totalFiles = 0, totalPapers = 0, verifiedCount = 0, wrongCount = 0 } = pdfStatusCounts || {};
 
-  // Ref for debounce timeout
-  const debounceTimeoutRef = useRef(null);
+  useEffect(() => {
+    localStorage.setItem('verificationCurrentPage', currentPage.toString());
+  }, [currentPage]);
+
+  useEffect(() => {
+    localStorage.setItem('verificationEntriesPerPage', entriesPerPage.toString());
+  }, [entriesPerPage]);
 
   useEffect(() => {
     async function fetchPrograms() {
@@ -39,7 +55,6 @@ const VerificationStatus = () => {
         }));
         setPrograms(programOptions);
 
-        // Load selected program from sessionStorage
         const savedProgram = JSON.parse(sessionStorage.getItem('selectedProgramme'));
         if (savedProgram) {
           setSelectedProgram(programOptions.find(p => p.value === savedProgram.value));
@@ -60,8 +75,25 @@ const VerificationStatus = () => {
 
   const handleProgramChange = (selectedOption) => {
     setSelectedProgram(selectedOption);
-    setCurrentPage(1); // Reset to the first page when program changes
-    setPdfStatuses([]); // Clear data when program changes
+    setCurrentPage(1);
+    setPdfStatuses([]);
+  };
+
+  const handleUploadFilterChange = (event) => {
+    setUploadFilter(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleSort = (field) => {
+    const newOrder = field === sortField && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortOrder(newOrder);
+    setCurrentPage(1);
+  };
+
+  const getSortIcon = (field) => {
+    if (field !== sortField) return <FaSort />;
+    return sortOrder === 'asc' ? <FaSortUp /> : <FaSortDown />;
   };
 
   const fetchStatuses = async () => {
@@ -78,10 +110,11 @@ const VerificationStatus = () => {
           programId: selectedProgram.value,
           pageNumber: currentPage,
           pageSize: entriesPerPage,
-          sortField: 'catchNumber',
-          sortOrder: 'asc',
+          sortField,
+          sortOrder,
           searchQuery: searchTerm,
-          maxPdfsPerCatchNumber: 4, // Adjust this if needed
+          uploadFilter: uploadFilter,
+          maxPdfsPerCatchNumber: 4,
         },
         headers: { Authorization: `Bearer ${keygenUser?.token}` },
       });
@@ -92,37 +125,22 @@ const VerificationStatus = () => {
       setTotalPages(totalPages);
     } catch (error) {
       console.error('Error fetching PDF statuses:', error);
+      toast.error('Error fetching data. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Debounce search input
   useEffect(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
+    let timeoutId;
+    
+    if (selectedProgram) {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(fetchStatuses, 500);
     }
 
-    debounceTimeoutRef.current = setTimeout(() => {
-      if (selectedProgram) {
-        fetchStatuses();
-      }
-    }, 500);
-
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, [searchTerm, entriesPerPage, currentPage]);
-
-
-  useEffect(()=>{
-    if(selectedProgram){
-       fetchStatuses()
-    }
-  },[selectedProgram])
-
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, entriesPerPage, currentPage, selectedProgram, uploadFilter, sortField, sortOrder]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -130,12 +148,12 @@ const VerificationStatus = () => {
 
   const handleSelectEntries = (event) => {
     setEntriesPerPage(parseInt(event.target.value, 10));
-    setCurrentPage(1); // Reset to the first page
+    setCurrentPage(1);
   };
 
   const renderPageNumbers = () => {
     const pages = [];
-    const totalPagesToShow = Math.min(totalPages, 5); // Number of page buttons to show
+    const totalPagesToShow = 5;
     const halfTotalPagesToShow = Math.floor(totalPagesToShow / 2);
     let startPage = Math.max(1, currentPage - halfTotalPagesToShow);
     let endPage = Math.min(totalPages, startPage + totalPagesToShow - 1);
@@ -198,30 +216,49 @@ const VerificationStatus = () => {
     return pages;
   };
 
-  // Count statuses
-  const statusCounts = pdfStatuses.reduce((acc, status) => {
-    acc.total += 1;
-    acc[status.status] = (acc[status.status] || 0) + 1;
-    return acc;
-  }, { total: 0, 'Not Uploaded': 0, 'Uploaded': 0, 'Verified': 0 });
-
   const getStatusForSeries = (pdfs, seriesName) => {
-    const pdf = pdfs?.pdfs?.find(pdf => pdf.seriesName === seriesName);
+    if (!pdfs) {
+      return (
+        <span>
+          <FaUpload className="ms-1" color="red" title="Not Uploaded" /> {' '}
+          <FaCog className="ms-1" color="gray" title="Not Processed" /> {' '}
+          <FaQuestionCircle color="gray" title="No Status" />
+        </span>
+      );
+    }
+
+    const pdf = pdfs.find(pdf => pdf.seriesName === seriesName);
     if (pdf) {
       const verifiedAt = new Date(pdf.verifiedAt);
       const formattedVerifiedAt = `${verifiedAt.toLocaleDateString()} ${verifiedAt.toLocaleTimeString()}`;
-      switch (pdf.status) {
-        case 1:
-          return <FaCheckCircle color="green" title={`Verified - ${pdf.verifiedByName} ${formattedVerifiedAt}`} />;
-        case 0:
-          return <FaCircle color="gray" title="Not verified" />; // Assuming a gray circle for not verified
-        case 2:
-          return <FaTimesCircle color="red"  title={`Incorrect - ${pdf.verifiedByName} ${formattedVerifiedAt}`} />;
-        default:
-          return <FaQuestionCircle color="gray" />; // Fallback to question mark if status is unknown
-      }
+      const statusIcon = (() => {
+        switch (pdf.status) {
+          case 1:
+            return <FaCheckCircle color="green" title={`Verified - ${pdf.verifiedByName} ${formattedVerifiedAt}`} />;
+          case 0:
+            return <FaCircle color="gray" title="Not verified" />;
+          case 2:
+            return <FaTimesCircle color="red" title={`Incorrect - ${pdf.verifiedByName} ${formattedVerifiedAt}`} />;
+          default:
+            return <FaQuestionCircle color="gray" />;
+        }
+      })();
+      
+      return (
+        <span>
+          <FaUpload className="ms-1" color="green" title="Uploaded" /> {' '}
+          {pdf.processed && <><FaCog className="ms-1" color="green" title="Processed" /> {' '}</>}
+          {statusIcon}
+        </span>
+      );
     } else {
-      return <FaQuestionCircle color="gray" title="No Status" />;
+      return (
+        <span>
+          <FaUpload className="ms-1" color="red" title="Not Uploaded" /> {' '}
+          <FaCog className="ms-1" color="gray" title="Not Processed" /> {' '}
+          <FaQuestionCircle color="gray" title="No Status" />
+        </span>
+      );
     }
   };
 
@@ -241,16 +278,14 @@ const VerificationStatus = () => {
             </Form.Group>
           </Col>
           <Col md={3}>
-            {/* <Form.Group controlId="formShowButton">
-              <Button
-                variant="primary"
-                onClick={handleShowStatus}
-                disabled={loading || !selectedProgram}
-                className="mt-4"
-              >
-                Show
-              </Button>
-            </Form.Group> */}
+            <Form.Group controlId="formUploadFilter">
+              <Form.Label>Upload Status</Form.Label>
+              <Form.Select value={uploadFilter} onChange={handleUploadFilterChange}>
+                <option value="all">All</option>
+                <option value="uploaded">Uploaded</option>
+                <option value="notUploaded">Not Uploaded</option>
+              </Form.Select>
+            </Form.Group>
           </Col>
           <Col md={5}>
             <div className="status-summary mb-3">
@@ -271,72 +306,78 @@ const VerificationStatus = () => {
 
         <div className='border border p-3 rounded'>
           <div className="filter-controls d-flex justify-content-between">
-                  <div className="entries-per-page">
-                    <p>
-                      Show{' '}
-                      <Form.Select
-                        value={entriesPerPage}
-                        onChange={handleSelectEntries}
-                        className="d-inline-block w-auto"
-                      >
-                        <option value="5">5</option>
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                      </Form.Select>{' '}
-                      entries per page
-                    </p>
-                  </div>
-                  <div className="search">
-                    <Form.Control
-                      type="text"
-                      placeholder="Search by catch number"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                </div>
+            <div className="entries-per-page">
+              <p className='mb-2 d-flex align-items-center gap-1'>
+                Show <span><Form.Select value={entriesPerPage} onChange={handleSelectEntries}>
+                  <option value="5">05</option>
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </Form.Select></span> Entries
+              </p>
+            </div>
+            <div className="search">
+              <Form.Group className="mb-2 d-flex align-items-center gap-1">
+                <Form.Label className='mt-1'>Search:</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by catch number"
+                />
+              </Form.Group>
+            </div>
+          </div>
 
-                <Table striped bordered hover responsive className=''>
-                    <thead className="text-center">
-                      <tr>
-                        <th>Catch Number</th>
-                        <th>Status Series of A</th>
-                        <th>Status Series of B</th>
-                        <th>Status Series of C</th>
-                        <th>Status Series of D</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pdfStatuses.length > 0 ? (
-                        pdfStatuses.map((item) => (
-                          <tr key={item.catchNumber}>
-                            <td className="text-center">{item.catchNumber}</td>
-                            <td className="text-center">{getStatusForSeries(item.pdfs, 'A')}</td>
-                            <td className="text-center">{getStatusForSeries(item.pdfs, 'B')}</td>
-                            <td className="text-center">{getStatusForSeries(item.pdfs, 'C')}</td>
-                            <td className="text-center">{getStatusForSeries(item.pdfs, 'D')}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={5} className="text-center">No Data found</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </Table>
+          <Table striped bordered hover responsive>
+            <thead className="text-center">
+              <tr>
+                <th style={{cursor: 'pointer'}} onClick={() => handleSort('catchNumber')}>
+                  Catch Number {getSortIcon('catchNumber')}
+                </th>
+                <th>Status of Series A</th>
+                <th>Status of Series B</th>
+                <th>Status of Series C</th>
+                <th>Status of Series D</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                Array(entriesPerPage).fill(0).map((_, index) => (
+                  <tr key={index}>
+                    <td><Skeleton baseColor="#D3D3D3" highlightColor="#E8E8E8" /></td>
+                    <td><Skeleton baseColor="#D3D3D3" highlightColor="#E8E8E8" /></td>
+                    <td><Skeleton baseColor="#D3D3D3" highlightColor="#E8E8E8" /></td>
+                    <td><Skeleton baseColor="#D3D3D3" highlightColor="#E8E8E8" /></td>
+                    <td><Skeleton baseColor="#D3D3D3" highlightColor="#E8E8E8" /></td>
+                  </tr>
+                ))
+              ) : pdfStatuses.length > 0 ? (
+                pdfStatuses.map((item) => (
+                  <tr key={item.catchNumber}>
+                    <td className="text-center">{item.catchNumber}</td>
+                    <td className="text-center">{getStatusForSeries(item.pdfs, 'A')}</td>
+                    <td className="text-center">{getStatusForSeries(item.pdfs, 'B')}</td>
+                    <td className="text-center">{getStatusForSeries(item.pdfs, 'C')}</td>
+                    <td className="text-center">{getStatusForSeries(item.pdfs, 'D')}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="text-center">No Data found</td>
+                </tr>
+              )}
+            </tbody>
+          </Table>
 
-                {totalPages > 1 && (
-                    <Row>
-                      <Col md={12}>
-                        <div className="pagination justify-content-end">
-                          <Pagination>{renderPageNumbers()}</Pagination>
-                        </div>
-                      </Col>
-                    </Row>
-                  )}
-        </div>
-       
-        
+          <div className="d-flex justify-content-between align-items-center mt-3">
+            <p>Showing {((currentPage - 1) * entriesPerPage) + 1} to {Math.min(currentPage * entriesPerPage, totalCount)} of {totalCount}</p>
+            <nav aria-label="Page navigation">
+              <Pagination>{renderPageNumbers()}</Pagination>
+            </nav>
+          </div>
+        </div>        
       </Form>
     </div>
   );

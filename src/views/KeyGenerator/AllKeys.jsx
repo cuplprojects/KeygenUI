@@ -63,21 +63,12 @@ const AllKeys = () => {
 
     const fetchData = async () => {
       try {
-        let params = {
-          keyGenerated: true
-        };
-
+        let url = `${apiUrl}/api/Papers/${currentPage}/${dataEntriesToShow}`;
         if (searchQuery) {
-          params.searchData = searchQuery;
+          url = `${apiUrl}/api/Papers/${currentPage}/${dataEntriesToShow}/Search?searchData=${searchQuery}`;
         }
-        
-        if (selectedProgram) {
-          params.Programid = selectedProgram;
-        }
-
-        const url = `${apiUrl}/api/Papers/${currentPage}/${dataEntriesToShow}`;
         const papersData = await axios.get(url, {
-          params,
+          params: { keyGenerated: true },
           headers: { Authorization: `Bearer ${token}` }
         }).then(res => res.data);
         setPapers(papersData.papers);

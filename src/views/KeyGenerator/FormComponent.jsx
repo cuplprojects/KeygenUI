@@ -247,10 +247,17 @@ const FormComponent = ({ formSubmitted, setFormSubmitted }) => {
     };
 
     const handleInputChange = (index, field, value) => {
-        const updatedFormData = [...formData];
-        updatedFormData[index][field] = value;
-        setFormData(updatedFormData);
+        setFormData((prevData) => {
+            const updatedFormData = prevData.map((item, i) =>
+                i === index ? { ...item, [field]: value, qNumber: item.qNumber || i + 1 } : item
+            );
+    
+            // console.log("Updated Form Data:", updatedFormData); // Log the updated state
+            return updatedFormData;
+        });
     };
+    
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();

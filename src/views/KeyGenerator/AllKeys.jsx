@@ -63,24 +63,34 @@ const AllKeys = () => {
 
     const fetchData = async () => {
       try {
-        let url = `${apiUrl}/api/Papers/${currentPage}/${dataEntriesToShow}`;
-        if (searchQuery) {
-          url = `${apiUrl}/api/Papers/${currentPage}/${dataEntriesToShow}/Search?searchData=${searchQuery}`;
-        }
-        const papersData = await axios.get(url, {
-          params: { keyGenerated: true },
-          headers: { Authorization: `Bearer ${token}` }
-        }).then(res => res.data);
-        setPapers(papersData.papers);
-        setTotalPages(papersData.totalPages);
-        setTotalCount(papersData.totalCount)
-        setLoading(false);
+          let url = `${apiUrl}/api/Papers/${currentPage}/${dataEntriesToShow}`;
+          let params = { keyGenerated: true }; // Define params object
+  
+          if (searchQuery) {
+              url = `${apiUrl}/api/Papers/${currentPage}/${dataEntriesToShow}/Search?searchData=${searchQuery}`;
+          }
+  
+          if (selectedProgram) {
+              params.Programid = selectedProgram; // Add selected program to params
+          }
+  
+          const response = await axios.get(url, {
+              params, // Pass params object correctly
+              headers: { Authorization: `Bearer ${token}` }
+          });
+  
+          const papersData = response.data;
+          setPapers(papersData.papers);
+          setTotalPages(papersData.totalPages);
+          setTotalCount(papersData.totalCount);
+          setLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error);
-        setPapers([])
-        setLoading(false);
+          console.error("Error fetching data:", error);
+          setPapers([]);
+          setLoading(false);
       }
-    };
+  };
+  
 
     if (searchQuery) {
       clearTimeout(timeoutId);

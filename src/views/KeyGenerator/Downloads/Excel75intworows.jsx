@@ -8,6 +8,7 @@ import { faFileExcel, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "", setlen = 0 }) => {
   const [loading, setLoading] = useState(false);
+  const fs = 12.2; // Font size
 
   const exportToExcel = async () => {
     setLoading(true);
@@ -33,7 +34,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
     const paperdetailsheadingcell = worksheet.getCell('B1');
     paperdetailsheadingcell.value = `Catch No. ${catchno}\n${paperData.courseName} ${paperData.examType} ${paperData.subjectName ? `(${paperData.subjectName})` : ''}\n ${paperData.paperName ? paperData.paperName : ''}`;
     paperdetailsheadingcell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-    paperdetailsheadingcell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    paperdetailsheadingcell.font = { bold: true, color: { argb: 'FFFFFFFF' }  }; // Increased font size
     paperdetailsheadingcell.style.font.name = 'Arial Narrow';
     paperdetailsheadingcell.fill = {
       type: 'pattern',
@@ -46,7 +47,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
     const questionnumbercell = worksheet.getCell('A2');
     questionnumbercell.value = 'Q.N.';
     questionnumbercell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-    questionnumbercell.font = { bold: true, color: { argb: 'FFFF0000' } };
+    questionnumbercell.font = { bold: true, color: { argb: 'FFFF0000' },  size: fs }; // Increased font size
     questionnumbercell.fill = {
       type: 'pattern',
       pattern: 'solid',
@@ -58,7 +59,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
       const tablestartchar = String.fromCharCode(tablestart);
       const tablestartcell = worksheet.getCell(`${tablestartchar}2`);
       tablestartcell.value = `Set ${dividedData[i].setID}`;
-      tablestartcell.font = { bold: true, color: { argb: 'FFFF0000' } };
+      tablestartcell.font = { bold: true, color: { argb: 'FFFF0000' },  size: fs }; // Increased font size
       tablestartcell.fill = {
         type: 'pattern',
         pattern: 'solid',
@@ -74,7 +75,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
     for (let i = 0; i < Math.min(dataLength2, 38); i++) {
       worksheet.getCell(`A${i + 3}`).value = i + 1;
       worksheet.getCell(`A${i + 3}`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-      worksheet.getCell(`A${i + 3}`).font = { bold: true, color: { argb: '00000000' } };
+      worksheet.getCell(`A${i + 3}`).font = { bold: true, color: { argb: '00000000' },  size: fs }; // Increased font size
     }
 
     let tablestart2 = 66;
@@ -84,7 +85,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
       for (let j = 0; j < Math.min(dataLength, 38); j++) {
         worksheet.getCell(`${tablestartchar2}${j + 3}`).value = dividedData[i].data[j].answer;
         worksheet.getCell(`${tablestartchar2}${j + 3}`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-        worksheet.getCell(`${tablestartchar2}${j + 3}`).font = { bold: true, color: { argb: '00000000' } };
+        worksheet.getCell(`${tablestartchar2}${j + 3}`).font = { bold: true, color: { argb: '00000000' },  size: fs }; // Increased font size
       }
       tablestart2 = tablestart2 + 1;
     }
@@ -94,7 +95,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
     const repeatedPaperDetailsHeading = worksheet.getCell('G1');
     repeatedPaperDetailsHeading.value = `Catch No. ${catchno}\n${paperData.courseName} ${paperData.examType} ${paperData.subjectName ? `(${paperData.subjectName})` : ''}\n ${paperData.paperName ? paperData.paperName : ''}`;
     repeatedPaperDetailsHeading.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-    repeatedPaperDetailsHeading.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    repeatedPaperDetailsHeading.font = { bold: true, color: { argb: 'FFFFFFFF' }  }; // Increased font size
     repeatedPaperDetailsHeading.style.font.name = 'Arial Narrow';
     repeatedPaperDetailsHeading.fill = {
       type: 'pattern',
@@ -105,7 +106,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
     const repeatedQuestionNumberCell = worksheet.getCell('G2');
     repeatedQuestionNumberCell.value = 'Q.N.';
     repeatedQuestionNumberCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-    repeatedQuestionNumberCell.font = { bold: true, color: { argb: 'FFFF0000' } };
+    repeatedQuestionNumberCell.font = { bold: true, color: { argb: 'FFFF0000' },  size: fs }; // Increased font size
     repeatedQuestionNumberCell.fill = {
       type: 'pattern',
       pattern: 'solid',
@@ -117,7 +118,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
       const tablestartchar = String.fromCharCode(tablestart);
       const tablestartcell = worksheet.getCell(`${tablestartchar}2`);
       tablestartcell.value = `Set ${dividedData[i].setID}`;
-      tablestartcell.font = { bold: true, color: { argb: 'FFFF0000' } };
+      tablestartcell.font = { bold: true, color: { argb: 'FFFF0000' },  size: fs }; // Increased font size
       tablestartcell.fill = {
         type: 'pattern',
         pattern: 'solid',
@@ -131,7 +132,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
       for (let i = 38; i < dataLength2; i++) {
         worksheet.getCell(`G${i - 35}`).value = i + 1;
         worksheet.getCell(`G${i - 35}`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-        worksheet.getCell(`G${i - 35}`).font = { bold: true, color: { argb: '00000000' } };
+        worksheet.getCell(`G${i - 35}`).font = { bold: true, color: { argb: '00000000' },  size: fs }; // Increased font size
       }
 
       tablestart2 = 72; // Start from column I
@@ -141,7 +142,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
         for (let j = 38; j < dataLength; j++) {
           worksheet.getCell(`${tablestartchar2}${j - 35}`).value = dividedData[i].data[j].answer;
           worksheet.getCell(`${tablestartchar2}${j - 35}`).alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-          worksheet.getCell(`${tablestartchar2}${j - 35}`).font = { bold: true, color: { argb: '00000000' } };
+          worksheet.getCell(`${tablestartchar2}${j - 35}`).font = { bold: true, color: { argb: '00000000' },  size: fs }; // Increased font size
         }
         tablestart2 = tablestart2 + 1;
       }
@@ -161,7 +162,7 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
     }
 
     // Add borders to H side cells
-    for (let row = 1; row <= (Math.min(dataLength2, 38) + 2); row++) {
+    for (let row = 1; row <= (Math.min(dataLength2, 37) + 2); row++) {
       for (let col = 71; col <= (71 + setlen); col++) {
         const cell = worksheet.getCell(`${String.fromCharCode(col)}${row}`);
         cell.border = {
@@ -172,6 +173,11 @@ const Excel75intworows = ({ data = [], paperData = {}, group = "", catchno = "",
         };
       }
     }
+
+    // Set column widths
+    worksheet.columns = Array.from({ length: 71 + setlen }, (_, i) => ({
+      width: 7.5 // Adjust the width as needed
+    }));
 
     const excelBuffer = await workbook.xlsx.writeBuffer();
     const excelBlob = new Blob([excelBuffer], {

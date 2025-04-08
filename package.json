@@ -21,7 +21,9 @@
       "node_modules/(?!axios)"
     ],
     "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["@testing-library/jest-dom/extend-expect"]
+    "setupFilesAfterEnv": [
+      "@testing-library/jest-dom/extend-expect"
+    ]
   },
   "dependencies": {
     "@coreui/chartjs": "^4.0.0-rc.0",
@@ -38,7 +40,7 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@pdf-lib/fontkit": "^1.1.1",
     "@popperjs/core": "^2.11.8",
-    "@react-pdf/renderer": "^3.3.8",
+    "@react-pdf/renderer": "^3.4.5",
     "@reduxjs/toolkit": "^2.2.3",
     "axios": "^1.7.5",
     "base-64": "^1.0.0",

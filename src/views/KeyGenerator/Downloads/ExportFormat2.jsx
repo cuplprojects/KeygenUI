@@ -13,6 +13,14 @@ const ExportToExcel = ({ data = [], paperData={}, group = "", catchno = "", setl
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sheet1');
+
+    // Repeat first two rows on every printed page
+    worksheet.pageSetup.printTitlesRow = '1:2';
+    // worksheet.pageSetup.fitToPage = true;
+    // worksheet.pageSetup.fitToWidth = 1; // Fit all columns horizontally
+    // worksheet.pageSetup.fitToHeight = 0; // Don't limit rows per page (0 = auto)
+    // worksheet.pageSetup.orientation = 'landscape';
+
     let chunkedData = [];
     const dividedData = data.reduce((acc, item) => {
       if (acc.length && acc[acc.length - 1].setID === item.setID) {
@@ -24,12 +32,13 @@ const ExportToExcel = ({ data = [], paperData={}, group = "", catchno = "", setl
     }, chunkedData);
     
     // A1 
-    const answerheadingcell = worksheet.getCell('A1');
-    answerheadingcell.value = 'Answer key';
-    answerheadingcell.alignment = { horizontal: 'center', vertical: 'middle' };
-    answerheadingcell.font = { bold: true, color: { argb: '00000000' } };
-    worksheet.getColumn("A").width = 20;
-    worksheet.mergeCells(`B1:E1`);
+    // const answerheadingcell = worksheet.getCell('A1');
+    // answerheadingcell.value = 'Answer key';
+    // answerheadingcell.alignment = { horizontal: 'center', vertical: 'middle' };
+    // answerheadingcell.font = { bold: true, color: { argb: '00000000' } };
+    // worksheet.getColumn("A").width = 20;
+
+    worksheet.mergeCells(`A1:E1`);
     const paperdetailsheadingcell = worksheet.getCell('B1')
     paperdetailsheadingcell.value = `Catch No. ${catchno}\n${paperData.courseName} ${paperData.examType}  ${paperData.subjectName ? `(${paperData.subjectName})` : ''}\n ${paperData.paperName ? paperData.paperName : ''}`;
     paperdetailsheadingcell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
@@ -43,7 +52,7 @@ const ExportToExcel = ({ data = [], paperData={}, group = "", catchno = "", setl
     paperdetailsheadingcell.width=50;
     worksheet.getRow(1).height = 50;
     const questionnumbercell = worksheet.getCell('A2')
-    questionnumbercell.value = 'Question Number';
+    questionnumbercell.value = 'Q.N.';
     questionnumbercell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
     questionnumbercell.font = { bold: true, color: { argb: 'FFFF0000' } };
     questionnumbercell.fill = {

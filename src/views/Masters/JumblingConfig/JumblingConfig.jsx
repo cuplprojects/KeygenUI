@@ -26,10 +26,15 @@ const JumblingConfig = () => {
     setofSteps: ['']
   });
 
+  const [sourceProject, setSourceProject] = useState('');
+  const [destinationProject, setDestinationProject] = useState('');
+  const [projects, setProjects] = useState([]);
+
   useEffect(() => {
     fetchPrograms();
     fetchSessions();
     fetchConfigurations();
+    fetchProjects();
   }, []);
 
   useEffect(() => {
@@ -50,7 +55,6 @@ const JumblingConfig = () => {
       }
     }
   }, [formData.progID, formData.bookletSize, configurations]);
-
 
   const fetchPrograms = async () => {
     try {
@@ -89,6 +93,15 @@ const JumblingConfig = () => {
       setLoadingData(false);
     } catch (error) {
       console.error('Error fetching configurations:', error);
+    }
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/api/Programmes`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+      setProjects(response.data);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
     }
   };
 
@@ -136,6 +149,32 @@ const JumblingConfig = () => {
     }
   };
 
+  const handleStepChange = (stepNumber, value) => {
+    const newSetofSteps = [...formData.setofSteps];
+    newSetofSteps[stepNumber - 1] = value;
+    const splitValues = value.split(',').map(val => parseInt(val.trim(), 10));
+
+    // Check if any number in splitValues is greater than the booklet size
+    if (splitValues.some(val => val > parseInt(formData.bookletSize, 10))) {
+      setErrorText("Numbers in step cannot be greater than booklet size")
+      return;
+    }
+
+    // Check for duplicates
+    if (new Set(splitValues).size !== splitValues.length) {
+      setErrorText("Duplicate numbers in step")
+      return;
+    }
+    else {
+      setErrorText("")
+    }
+    setFormData({
+      ...formData,
+      setofSteps: newSetofSteps,
+      [`step${stepNumber}`]: splitValues.join(', ') // Store the filtered values in formData
+    });
+  };
+
   const renderStepFields = () => {
     const fields = [];
     for (let i = 1; i <= formData.numberofJumblingSteps; i++) {
@@ -166,40 +205,34 @@ const JumblingConfig = () => {
     return fields;
   };
 
-  const handleStepChange = (stepNumber, value) => {
-    const newSetofSteps = [...formData.setofSteps];
-    newSetofSteps[stepNumber - 1] = value;
-    const splitValues = value.split(',').map(val => parseInt(val.trim(), 10));
-
-    // Check if any number in splitValues is greater than the booklet size
-    if (splitValues.some(val => val > parseInt(formData.bookletSize, 10))) {
-      setErrorText("Numbers in step cannot be greater than booklet size")
+  const handleImport = async () => {
+    if (!sourceProject || !destinationProject) {
+      setErrorText('Please select both source and destination projects.');
       return;
     }
-
-    // Check for duplicates
-    if (new Set(splitValues).size !== splitValues.length) {
-      setErrorText("Duplicate numbers in step")
-      return;
+    console.log(sourceProject, destinationProject)
+    try {
+      const response = await axios.post(`${baseUrl}/api/ProgConfigs/Import`, {
+        sourceProgID: sourceProject,
+        destinationProgID: destinationProject
+      }, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
+      if (response.status === 200) {
+        fetchConfigurations(); // Refresh configurations after import
+        setErrorText('');
+      } else {
+        throw new Error('Failed to import configuration');
+      }
+    } catch (error) {
+      console.error('Error importing configuration:', error);
+      setErrorText('Error importing configuration.');
     }
-    else {
-      setErrorText("")
-    }
-    setFormData({
-      ...formData,
-      setofSteps: newSetofSteps,
-      [`step${stepNumber}`]: splitValues.join(', ') // Store the filtered values in formData
-    });
   };
-
 
   const indexOfLastConfiguration = currentPage * configurationsPerPage;
   const indexOfFirstConfiguration = indexOfLastConfiguration - configurationsPerPage;
   const currentConfigurations = filteredConfigurations.slice(indexOfFirstConfiguration, indexOfLastConfiguration);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-
 
   const renderPlaceholderGrid = () => (
     <div className="d-flex flex-wrap">
@@ -269,7 +302,7 @@ const JumblingConfig = () => {
           </Card>
         </Col>
         <Col>
-          <Card>
+          <Card className='h-100'>
             <Card.Header>
               <Card.Title className='text-center'>Create new configuration</Card.Title>
             </Card.Header>
@@ -382,6 +415,58 @@ const JumblingConfig = () => {
           </Card>
         </Col>
       </Row>
+
+      <Row className='row-cols-1 mt-5'>
+        <Col>
+          <Card>
+            <Card.Header>
+              <Card.Title className='text-center'>Import Configuration</Card.Title>
+            </Card.Header>
+            <Card.Body>
+              <Form>
+                <Row className='row-cols-1 row-cols-md-2'>
+                  <Col className='mb-2'>
+                    <Form.Group controlId="sourceProject">
+                      <Form.Label>Source Project <span className='text-danger'>*</span></Form.Label>
+                      <Form.Control
+                        as="select"
+                        value={sourceProject}
+                        onChange={(e) => setSourceProject(e.target.value)}
+                        required
+                      >
+                        <option value="">Select source project</option>
+                        {projects.map((project) => (
+                          <option key={project.programmeID} value={project.programmeID}>{project.programmeName}</option>
+                        ))}
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                  <Col className='mb-2'>
+                    <Form.Group controlId="destinationProject">
+                      <Form.Label>Destination Project <span className='text-danger'>*</span></Form.Label>
+                      <Form.Control
+                        as="select"
+                        value={destinationProject}
+                        onChange={(e) => setDestinationProject(e.target.value)}
+                        required
+                      >
+                        <option value="">Select destination project</option>
+                        {projects.map((project) => (
+                          <option key={project.programmeID} value={project.programmeID}>{project.programmeName}</option>
+                        ))}
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <div className="text-center mt-3">
+                  <Button onClick={handleImport} disabled={!sourceProject || !destinationProject}>Import Configuration</Button>
+                </div>
+              </Form>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
     </Container>
   );
 };

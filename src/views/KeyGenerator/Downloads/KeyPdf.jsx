@@ -5,10 +5,10 @@ import PropTypes from 'prop-types';
 const style = StyleSheet.create({
     page: {
         padding: 10,
+        paddingBottom: 20,
         fontSize: 9.4,
         boxSizing: 'border-box',
         textAlign: 'center'
-        
     },
     section: {
         margin: 10,
@@ -66,7 +66,7 @@ const style = StyleSheet.create({
     },
 });
 
-const KeyPdf = ({ data=[], group='', catchno='' }) => {
+const KeyPdf = ({ data=[], paperData={}, group='', catchno='' }) => {
     if (!data) {
         return null; // If data is null, return null to prevent rendering
     }
@@ -86,34 +86,29 @@ const KeyPdf = ({ data=[], group='', catchno='' }) => {
     return (
         <Document>
             <Page size="A4" style={style.page}>
-                <Text style={style.pagetitle}>Group: {group} & Catch Number: {catchno}</Text>
+                <Text style={style.pagetitle}>{`Catch No.-${catchno}, ${paperData.courseName} ${paperData.examType}  ${paperData.subjectName ? `(${paperData.subjectName})` : ''}\n ${paperData.paperName ? paperData.paperName : ''}`}</Text>
                 <View style={style.section}>
-                    {Object.entries(groupedData).map(([setID, setData]) => (
-                        <View key={setID} style={style.settable}>
-                            <Text style={style.settitle}>Set {setID}</Text>
-                            <View style={style.tableHeader}>
-                                <Text style={style.columnHeader}>Page Number</Text>
-                                <Text style={style.columnHeader}>Question Number</Text>
-                                <Text style={style.columnHeader}>Answer</Text>
-                            </View>
-                            {setData.map((item, index) => (
-                                <View key={index} style={style.tableRow}>
-                                    <Text style={style.column}>{item.pageNumber}</Text>
-                                    <Text style={style.column}>{item.questionNumber}</Text>
-                                    <Text style={style.column}>{item.answer}</Text>
-                                </View>
-                            ))}
-                            {/* Add empty rows to match the max number of questions */}
-                            {Array.from({ length: maxQuestions - setData.length }).map((_, index) => (
-                                <View key={`empty-${index}`} style={style.tableRow}>
-                                    <Text style={style.column}>&nbsp;</Text>
-                                    <Text style={style.column}>&nbsp;</Text>
-                                    <Text style={style.column}>&nbsp;</Text>
-                                </View>
-                            ))}
-                        </View>
-                    ))}
+                <View style={style.settable}>
+                    <View style={style.tableHeader}>
+                        <Text style={style.columnHeader}>Q.NO.</Text>
+                        {Object.keys(groupedData).map((setID) => (
+                            <Text key={setID} style={style.columnHeader}>Set {setID}</Text>
+                        ))}
                 </View>
+
+        {Array.from({ length: maxQuestions }).map((_, index) => (
+            <View key={index} style={style.tableRow}>
+                <Text style={style.column}>{index + 1}</Text>
+                {Object.keys(groupedData).map((setID) => (
+                    <Text key={setID} style={style.column}>
+                        {groupedData[setID][index]?.answer || ""}
+                    </Text>
+                ))}
+            </View>
+        ))}
+    </View>
+</View>
+
                 <Text style={style.pagenumber} render={({ pageNumber, totalPages }) => `Page ${pageNumber} / ${totalPages}`} fixed />
             </Page>
         </Document>
@@ -124,13 +119,12 @@ KeyPdf.propTypes = {
     data: PropTypes.arrayOf(
         PropTypes.shape({
           setID: PropTypes.string.isRequired,
-          pageNumber: PropTypes.number.isRequired,
-          questionNumber: PropTypes.number.isRequired,
           answer: PropTypes.string.isRequired
         })
       ),
-    group: PropTypes.string, 
-    catchno: PropTypes.string, 
+    group: PropTypes.string,
+    catchno: PropTypes.string,
+    paperData: PropTypes.object
 };
 
 export default KeyPdf;

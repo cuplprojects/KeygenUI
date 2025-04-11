@@ -11,6 +11,7 @@ import ExportFormat2 from './Downloads/ExportFormat2';
 // import Keyi from './Downloads/Keyi';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileExcel, faFileExport, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import Excel75intworows from './Downloads/Excel75intworows';
 const baseUrl = process.env.REACT_APP_BASE_URL;
 const DownloadKeys = () => {
   const { keygenUser } = useUser();
@@ -143,11 +144,23 @@ useEffect(() => {
             <Dropdown.Item disabled={!pdfVerification}>
               <ExportFormat2 data={apiResponse} paperData={paperData} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
             </Dropdown.Item>
+            <Dropdown.Item disabled={!pdfVerification}>
+              <Excel75intworows data={apiResponse} paperData={paperData} group={programData?.programmeName} catchno={catchNumber} setlen={setOrders.length} />
+            </Dropdown.Item>
 
             <Dropdown.Item disabled={!pdfVerification}>
-              <PDFDownloadLink document={<KeyPdf data={apiResponse} group={programData?.programmeName} catchno={catchNumber} />} fileName={catchNumber}>
-                {({ loading }) => (loading ? <Button disabled={!pdfVerification}>Loading...</Button> : <Button disabled={!pdfVerification}><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
-              </PDFDownloadLink>
+              <div>
+                <PDFDownloadLink document={<KeyPdf data={apiResponse} paperData={paperData} group={programData?.programmeName} catchno={catchNumber} />} fileName={`${catchNumber}.pdf`}>
+                  {({ blob, url, loading, error }) => (loading ? <Button disabled={!pdfVerification}>Loading...</Button> : <Button disabled={!pdfVerification} onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `${catchNumber}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}><FontAwesomeIcon icon={faFilePdf} className="me-2" /> Export to PDF</Button>)}
+                </PDFDownloadLink>
+              </div>
             </Dropdown.Item>
 
             {/* <Dropdown.Item>

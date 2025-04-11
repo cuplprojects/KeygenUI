@@ -4,7 +4,7 @@ import Select from 'react-select';
 import { Col, Row, Form, Card, Table, Button, Modal } from 'react-bootstrap';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCancel, faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { formatDateTime } from 'src/utils/DateFormate';
 
 const apiUrl = process.env.REACT_APP_BASE_API_URL;
@@ -231,32 +231,7 @@ const ManageKeys = () => {
 
   return (
     <>
-      <Form>
-        <Row>
-          <Col>
-            <Form.Group>
-              <Form.Label>Select a Program:</Form.Label>
-              <Select
-                value={selectedProgram}
-                onChange={handleProgramChange}
-                options={programs.map(program => ({ value: program.programmeID, label: program.programmeName }))}
-                placeholder="Select a program"
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group>
-              <Form.Label>Select a Paper:</Form.Label>
-              <Select
-                value={selectedPaper}
-                onChange={setSelectedPaper}
-                options={papers.map(paper => ({ value: paper.paperID, label: paper.catchNumber }))}
-                placeholder="Select a paper"
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-      </Form>
+      
       <Row className='mt-3'>
         <Col md={6} className='mb-3'>
           {nomaster && (
@@ -270,6 +245,9 @@ const ManageKeys = () => {
                   <span className='d-flex align-items-center justify-content-around gap-2'>
                     {editMode ? (
                       <>
+                      <Button variant='outline-secondary' size='sm' onClick={() => setEditMode(false)}>
+                        <FontAwesomeIcon icon={faCancel} /> Cancel
+                      </Button>
                         <Button variant="primary" onClick={handleSubmit} disabled={Object.keys(editedAnswers).length === 0}>Submit</Button>
                       </>
                     ) : (
@@ -283,7 +261,7 @@ const ManageKeys = () => {
                   </span>
                 </div>
               </Card.Header>
-              <Card.Body>
+              <Card.Body style={{maxHeight: '700px', overflowY: 'auto'}}>
                 <Table className="table" striped bordered hover>
                   <thead>
                     <tr>
@@ -315,8 +293,34 @@ const ManageKeys = () => {
             </Card>
           )}
         </Col>
-        {selectedPaperData && (
           <Col md={6}>
+          <Form className='mb-3'>
+        <Row>
+          <Col>
+            <Form.Group>
+              <Form.Label>Select a Program:</Form.Label>
+              <Select
+                value={selectedProgram}
+                onChange={handleProgramChange}
+                options={programs.map(program => ({ value: program.programmeID, label: program.programmeName }))}
+                placeholder="Select a program"
+              />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group>
+              <Form.Label>Select a Paper:</Form.Label>
+              <Select
+                value={selectedPaper}
+                onChange={setSelectedPaper}
+                options={papers.map(paper => ({ value: paper.paperID, label: paper.catchNumber }))}
+                placeholder="Select a paper"
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+      </Form>
+        {selectedPaperData && (
             <Card>
               <Card.Header>
                 <Card.Title className='text-center'>Paper Data</Card.Title>
@@ -387,8 +391,8 @@ const ManageKeys = () => {
                 </Table>
               </Card.Body>
             </Card>
-          </Col>
         )}
+        </Col>
       </Row>
       <Modal show={showConfirmation} onHide={() => setShowConfirmation(false)}>
         <Modal.Header closeButton>

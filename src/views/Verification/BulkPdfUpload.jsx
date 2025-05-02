@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import Select from 'react-select'
-import { Col, Row, Form, Button, Table, Pagination, ProgressBar, Badge, Spinner } from 'react-bootstrap'
+import { Col, Row, Form, Button, Table, Pagination, Alert, Badge } from 'react-bootstrap'
 import axios from 'axios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUpload, faCheckCircle, faTimesCircle, faDownload } from '@fortawesome/free-solid-svg-icons'
+import { faUpload, faCheckCircle, faTimesCircle, faExclamationTriangle, faFileAlt, faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { useUser } from 'src/context/UserContext'
 import { ToastContainer, toast } from 'react-toastify'
 import UploadFailFiles from './components/UploadFailFiles'
 import pdfjsLib from './components/pdfWorkerLoader'
+import ErrorBoundary from 'src/components/ErrorBoundary'
+import { safeStringify } from 'src/utils/errorHandler'
+import FileUploadProgress from 'src/components/FileUploadProgress'
 
 const apiUrl = process.env.REACT_APP_BASE_API_URL
-const nodeapiUrl = process.env.REACT_APP_BASE_URL_NODE;
 
 const BulkPdfUpload = () => {
   const { keygenUser } = useUser()
@@ -59,7 +61,7 @@ const BulkPdfUpload = () => {
   }
 
   const handleFileChange = (event) => {
-    const files = Array.from(event.target.files)
+    const files = Array.from(event.target.files || [])
     const validFiles = []
     const invalidFiles = []
 
@@ -87,62 +89,104 @@ const BulkPdfUpload = () => {
     // Clear the table when new files are selected
     setUploadStatus([])
     setSelectedFiles(validFiles)
+
+    // Show toast with file count
+    if (validFiles.length > 0) {
+      toast.info(`${validFiles.length} PDF file${validFiles.length > 1 ? 's' : ''} selected and ready for upload.`);
+    }
   }
-  
+
   const handleUpload = async () => {
     if (selectedFiles.length === 0) {
       toast.error('No files selected');
       return;
     }
-  
+
     if (!selectedProgram) {
       toast.error('No program selected');
       return;
     }
-  
+
     setUploading(true);
     setOverallProgress(0);
-  
+    setUploadSuccessCount(0);
+
     try {
       let completedFiles = 0;
       let totalSuccess = 0;
-      let successfiles = [];
+
+      // Process each file individually
       for (const file of selectedFiles) {
-        const arrayBuffer = await file.arrayBuffer();
-            const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            const numPages = pdfDoc.numPages;
-            console.log(numPages)
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('bookletsize',numPages)
-        
         try {
-          await axios.post(`${apiUrl}/PDFfile?ProgramId=${selectedProgram.value}`, formData, {
-            headers: {
-              Authorization: `Bearer ${keygenUser?.token}`,
-              'Content-Type': 'multipart/form-data',
-            },
-          });
-          successfiles.push(file);
-          // Increment the success count
+          // Extract PDF information
+          const arrayBuffer = await file.arrayBuffer();
+          const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          const numPages = pdfDoc.numPages;
+
+          // Upload the file
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('bookletsize', numPages);
+
+          // Send the file to the backend which will handle both saving and processing
+          const response = await axios.post(
+            `${apiUrl}/PDFfile?ProgramId=${selectedProgram.value}`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${keygenUser?.token}`,
+                'Content-Type': 'multipart/form-data',
+              },
+            }
+          );
+
+          // Increment success count
           totalSuccess++;
-  
-          // Update progress after processing the file
-          completedFiles++;
-          const totalProgress = Math.round((completedFiles / selectedFiles.length) * 100);
-          setOverallProgress(totalProgress); // Update overall progress after processing
-  
+          setUploadSuccessCount(prevCount => prevCount + 1);
+
+          // Update status to show successful upload and processing
+          // Ensure processingStatus is a string
+          let processingStatus = 'File uploaded and sent for processing';
+
+          if (response?.data?.processingStatus) {
+            if (typeof response.data.processingStatus === 'string') {
+              processingStatus = response.data.processingStatus;
+            } else if (typeof response.data.processingStatus === 'object') {
+              try {
+                processingStatus = JSON.stringify(response.data.processingStatus);
+              } catch (e) {
+                processingStatus = 'File uploaded and sent for processing';
+              }
+            }
+          }
+
+          setUploadStatus(prevStatus => [
+            ...prevStatus,
+            {
+              file: file.name,
+              status: 'Uploaded successfully',
+              remark: processingStatus,
+            },
+          ]);
         } catch (error) {
-          const responseMessage = error?.response?.data || 'An error occurred during upload.';
-          
-          // Increment completed files even if upload failed
-          completedFiles++;
-          
-          // Update progress immediately for failures
-          const totalProgress = Math.round((completedFiles / selectedFiles.length) * 100);
-          setOverallProgress(totalProgress); // Update overall progress after failure
-  
-          setUploadStatus((prevStatus) => [
+          // Handle upload errors
+          let responseMessage = 'An error occurred during upload.';
+
+          // Ensure responseMessage is a string
+          if (error?.response?.data) {
+            if (typeof error.response.data === 'string') {
+              responseMessage = error.response.data;
+            } else if (typeof error.response.data === 'object') {
+              // Convert object to string representation
+              try {
+                responseMessage = JSON.stringify(error.response.data);
+              } catch (e) {
+                responseMessage = 'Error parsing response data';
+              }
+            }
+          }
+
+          setUploadStatus(prevStatus => [
             ...prevStatus,
             {
               file: file.name,
@@ -151,45 +195,23 @@ const BulkPdfUpload = () => {
             },
           ]);
         }
+
+        // Update progress regardless of success or failure
+        completedFiles++;
+        const totalProgress = Math.round((completedFiles / selectedFiles.length) * 100);
+        setOverallProgress(totalProgress);
       }
-      
-      if (successfiles.length > 0) {
-        setUploading(false);
-        
-        // Process files in batches of 16
-        for(let i = 0; i < successfiles.length; i += 16) {
-          const batch = successfiles.slice(i, i + 16);
-          const formData2 = new FormData();
-          
-          // Append each file in current batch
-          batch.forEach(file => {
-            formData2.append('pdf', file);
-          });
-          
-          formData2.append('programid', selectedProgram.value);
-          
-          try {
-            const nodeApiResponse = await axios.post(`${nodeapiUrl}/upload`, formData2, {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            });
-            console.log("Batch upload successful: ", nodeApiResponse.data);
-          } catch (error) {
-            console.log("Error in batch upload:", error?.response?.data);
-          }
-        }
-      }
-      
+
       // Final feedback after all uploads
       if (totalSuccess > 0) {
-        toast.success('PDF files uploaded and processed successfully.');
+        toast.success(`${totalSuccess} PDF files uploaded and sent for processing.`);
       } else {
         toast.error('All uploads failed. Please check the errors.');
       }
-      
+
     } catch (error) {
-      console.error('Error during upload:', error);
+      console.error('Error during upload process:', error);
+      toast.error('An unexpected error occurred during the upload process.');
     } finally {
       setUploading(false);
       setSelectedFiles([]);
@@ -290,8 +312,45 @@ const BulkPdfUpload = () => {
     return pages
   }
 
+  // Function to safely render table data
+  const renderTableData = () => {
+    try {
+      return currentItems.map((status, index) => (
+        <tr key={index}>
+          <td>{status.file}</td>
+          <td>
+            {status.status === 'Uploaded successfully' ? (
+              <FontAwesomeIcon icon={faCheckCircle} className="text-success me-2" />
+            ) : (
+              <FontAwesomeIcon icon={faTimesCircle} className="text-danger me-2" />
+            )}
+            {status.status}
+          </td>
+          <td>
+            {/* Ensure remark is always a string */}
+            {typeof status.remark === 'string'
+              ? status.remark
+              : safeStringify(status.remark)}
+          </td>
+        </tr>
+      ));
+    } catch (error) {
+      console.error('Error rendering table data:', error);
+      return (
+        <tr>
+          <td colSpan={3}>
+            <Alert variant="warning">
+              <FontAwesomeIcon icon={faExclamationTriangle} className="me-2" />
+              Error rendering table data. Please try refreshing the page.
+            </Alert>
+          </td>
+        </tr>
+      );
+    }
+  };
+
   return (
-    <>
+    <ErrorBoundary>
       <ToastContainer />
       <Form>
         <Row>
@@ -325,43 +384,36 @@ const BulkPdfUpload = () => {
             </Form.Group>
           </Col>
           <Col md={4}>
-            <div className="status-summary mb-3">
-              <div>
-                <Badge bg="secondary" className="p-2">
-                  Total selected files: {selectedFiles.length}
+            <div className="d-flex align-items-center justify-content-center h-100">
+              {uploading ? (
+                <Badge bg="primary" className="px-4 py-3 fs-6">
+                  <FontAwesomeIcon icon={faSpinner} className="me-2 fa-spin" />
+                  Processing Files...
                 </Badge>
-                <Badge bg="danger" className="p-2 ms-2">
-                  Upload Failed:{' '}
-                  {uploadStatus.filter((status) => status.status === 'Upload failed').length}
+              ) : selectedFiles.length > 0 && (
+                <Badge bg="success" className="px-4 py-3 fs-6">
+                  <FontAwesomeIcon icon={faFileAlt} className="me-2" />
+                  {selectedFiles.length} Files Selected
                 </Badge>
-                <Badge bg="success" className="p-2 ms-2">
-                  Uploads success:{' '}
-                  {uploadSuccessCount}
-                </Badge>
-              </div>
+              )}
             </div>
           </Col>
         </Row>
 
-        <Row>
-          {/* Overall Progress Bar */}
-          {overallProgress > 0 && (
-            <Row className="mt-3">
-              <Col md={12}>
-                <ProgressBar now={overallProgress} label={`${overallProgress}%`} striped />
-              </Col>
-            </Row>
-          )}
-        </Row>
-        {uploading && (
-          <Row className="mt-3">
-            <Col md={12} className="text-center">
-              <Spinner animation="border" role="status" className="me-2" />
-              <span>Files are uploading and processing. Please wait...</span>
+        {(overallProgress > 0 || uploading) && (
+          <Row>
+            <Col md={12} className="mt-3" >
+              <FileUploadProgress
+                totalFiles={selectedFiles.length}
+                successCount={uploadSuccessCount}
+                failedCount={uploadStatus.filter((status) => status.status === 'Upload failed').length}
+                progress={overallProgress}
+                isUploading={uploading}
+              />
             </Col>
           </Row>
         )}
-        { currentItems.length >0 && (
+        {currentItems.length > 0 && (
           <div className="border border-3 p-4 py-2 my-3">
             <div className="d-flex justify-content-between mt-3">
               <div className="dataonpage">
@@ -389,31 +441,20 @@ const BulkPdfUpload = () => {
             {/* Table */}
             <Row className="mt-3">
               <Col md={12}>
-                <Table striped bordered hover>
-                  <thead>
-                    <tr>
-                      <th onClick={() => handleSort('file')}>File Name</th>
-                      <th onClick={() => handleSort('status')}>Status</th>
-                      <th onClick={() => handleSort('remark')}>Remark</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentItems.map((status, index) => (
-                      <tr key={index}>
-                        <td>{status.file}</td>
-                        <td>
-                          {status.status === 'Uploaded successfully' ? (
-                            <FontAwesomeIcon icon={faCheckCircle} className="text-success me-2" />
-                          ) : (
-                            <FontAwesomeIcon icon={faTimesCircle} className="text-danger me-2" />
-                          )}
-                          {status.status}
-                        </td>
-                        <td>{status.remark}</td>
+                <ErrorBoundary>
+                  <Table striped bordered hover>
+                    <thead>
+                      <tr>
+                        <th onClick={() => handleSort('file')}>File Name</th>
+                        <th onClick={() => handleSort('status')}>Status</th>
+                        <th onClick={() => handleSort('remark')}>Remark</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                    </thead>
+                    <tbody>
+                      {renderTableData()}
+                    </tbody>
+                  </Table>
+                </ErrorBoundary>
               </Col>
             </Row>
 
@@ -428,9 +469,9 @@ const BulkPdfUpload = () => {
               </Row>
             )}
           </div>
-       )}
+        )}
       </Form>
-    </>
+    </ErrorBoundary>
   )
 }
 

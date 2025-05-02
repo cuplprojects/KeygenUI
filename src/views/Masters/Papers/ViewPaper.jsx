@@ -1,14 +1,14 @@
 // updated 23-01-2025
 // added paper language selection
 import React, { useState, useEffect } from 'react';
-import { Form, Container, Row, Col, Card, Table, Button, Alert } from 'react-bootstrap';
+import { Form, Container, Row, Col, Card, Table, Button, Alert, Modal } from 'react-bootstrap';
 import { Link, useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useSecurity } from './../../../context/Security';
 import { useUser } from './../../../context/UserContext';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpload, faDownload, faKey } from '@fortawesome/free-solid-svg-icons';
+import { faUpload, faDownload, faKey, faFileExcel, faEdit } from '@fortawesome/free-solid-svg-icons';
 import { formatDateTime, formatDateTimeForInput } from 'src/utils/DateFormate';
 
 const baseUrl = process.env.REACT_APP_BASE_URL;
@@ -24,11 +24,11 @@ const ViewPaper = () => {
   const [courses, setCourses] = useState([]);
   const [formDisabled, setFormDisabled] = useState(true);
   const [buttonText, setButtonText] = useState('Update');
-  const [pdfFile, setPdfFile] = useState(null);
-  const [pdfDataUrl, setPdfDataUrl] = useState('');
+  const [keyDataUrl, setKeyDataUrl] = useState('');
   const [uploadAlert, setUploadAlert] = useState(null);
   const [masterKeyFile, setMasterKeyFile] = useState(null);
-  const [masterKeyData, setMasterKeyData] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedKeyFile, setSelectedKeyFile] = useState(null);
 
   useEffect(() => {
     fetchPaper();
@@ -38,7 +38,7 @@ const ViewPaper = () => {
 
   useEffect(() => {
     if (paper && paper.paperID) {
-      fetchPdfData(paper.paperID);
+      fetchKeyData(paper.paperID);
       fetchMasterKeyFile(paper.paperID);
     }
   }, [paper]);
@@ -50,28 +50,25 @@ const ViewPaper = () => {
     });
   };
 
-  const handlePdfFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setPdfFile(selectedFile);
+  const handleKeyFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedKeyFile(file);
+      setShowConfirmModal(true);
+    }
   };
 
-  useEffect(() => {
-    if (pdfFile) {
-      handlePdfUpload();
-    }
-  }, [pdfFile]);
-
-  const fetchPdfData = (paperID) => {
-    axios.get(`${baseUrl}/api/BookletPdfData/PaperID/${paperID}`, {
+  const fetchKeyData = (paperID) => {
+    axios.get(`${baseUrl}/api/ManualKeyExcelData/PaperID/${paperID}`, {
       headers: {
         Authorization: `Bearer ${keygenUser?.token}`
       }
     })
       .then(response => {
-        setPdfDataUrl(response.data.bookletData);
+        setKeyDataUrl(response.data.manualKeyData);
       })
       .catch(error => {
-        console.error('Error fetching file data:', error);
+        console.error('Error fetching key file data:', error);
       });
   };
 
@@ -82,7 +79,6 @@ const ViewPaper = () => {
       }
     })
       .then(response => {
-        setMasterKeyData(response.data)
         setMasterKeyFile(response.data.masterKeyFileData);
       })
       .catch(error => {
@@ -90,73 +86,127 @@ const ViewPaper = () => {
       });
   };
 
-  const handlePdfUpload = () => {
-    if (pdfFile) {
+  const confirmUpload = () => {
+    if (selectedKeyFile) {
       const reader = new FileReader();
-      reader.readAsDataURL(pdfFile);
+      reader.readAsDataURL(selectedKeyFile);
       reader.onload = () => {
         const binaryData = reader.result;
 
         const decryptedPaperID = decrypt(paperID);
-        axios.post(`${baseUrl}/api/BookletPdfData`, { paperID: decryptedPaperID, bookletData: binaryData }, {
-          headers: {
-            Authorization: `Bearer ${keygenUser?.token}`
-          }
-        }).then(() => {
-          setUploadAlert(<Alert variant="success" onClose={() => setUploadAlert(null)} dismissible>Booklet uploaded successfully</Alert>);
-          fetchPdfData(paper.paperID);
-          // Optionally, you can call fetchPaper() here to fetch updated paper data
-        }).catch(error => {
-          setUploadAlert(<Alert variant="danger" onClose={() => setUploadAlert(null)} dismissible>Error uploading PDF: {error.message}</Alert>);
-        });
+        const userId = keygenUser?.userID || 0;
+        const currentDateTime = new Date().toISOString();
+
+        // Check if we already have key data to determine if we should update or create
+        if (keyDataUrl) {
+          // Update existing key data with PUT
+          axios.put(`${baseUrl}/api/ManualKeyExcelData/PaperID/${decryptedPaperID}`, {
+            paperID: decryptedPaperID,
+            manualKeyData: binaryData,
+            uploadedBy: userId,
+            uploadedDateTime: currentDateTime
+          }, {
+            headers: {
+              Authorization: `Bearer ${keygenUser?.token}`
+            }
+          }).then(() => {
+            setUploadAlert(<Alert variant="success" onClose={() => setUploadAlert(null)} dismissible>Manual keys updated successfully</Alert>);
+            fetchKeyData(paper.paperID);
+            setShowConfirmModal(false);
+            setSelectedKeyFile(null);
+          }).catch(error => {
+            setUploadAlert(<Alert variant="danger" onClose={() => setUploadAlert(null)} dismissible>Error updating keys: {error.message}</Alert>);
+            setShowConfirmModal(false);
+          });
+        } else {
+          // Create new key data with POST
+          axios.post(`${baseUrl}/api/ManualKeyExcelData`, {
+            paperID: decryptedPaperID,
+            manualKeyData: binaryData,
+            uploadedBy: userId,
+            uploadedDateTime: currentDateTime
+          }, {
+            headers: {
+              Authorization: `Bearer ${keygenUser?.token}`
+            }
+          }).then(() => {
+            setUploadAlert(<Alert variant="success" onClose={() => setUploadAlert(null)} dismissible>Manual keys uploaded successfully</Alert>);
+            fetchKeyData(paper.paperID);
+            setShowConfirmModal(false);
+            setSelectedKeyFile(null);
+          }).catch(error => {
+            setUploadAlert(<Alert variant="danger" onClose={() => setUploadAlert(null)} dismissible>Error uploading keys: {error.message}</Alert>);
+            setShowConfirmModal(false);
+          });
+        }
       };
       reader.onerror = () => {
-        console.error('Error reading the PDF file');
+        console.error('Error reading the key file');
+        setShowConfirmModal(false);
       };
     } else {
-      console.error('No PDF file selected');
+      console.error('No key file selected');
+      setShowConfirmModal(false);
     }
   };
 
+  const cancelUpload = () => {
+    setSelectedKeyFile(null);
+    setShowConfirmModal(false);
+  };
+
   const handleDownload = () => {
-    if (pdfDataUrl) {
-      const downloadLink = document.createElement('a');
-      downloadLink.href = pdfDataUrl;
-      downloadLink.download = `${paper.catchNumber}.pdf`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+    if (keyDataUrl) {
+      try {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = keyDataUrl;
+        downloadLink.download = `${paper.catchNumber}_keys.xlsx`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        setUploadAlert(<Alert variant="success" onClose={() => setUploadAlert(null)} dismissible>Download started successfully</Alert>);
+      } catch (error) {
+        console.error('Error downloading file:', error);
+        setUploadAlert(<Alert variant="danger" onClose={() => setUploadAlert(null)} dismissible>Error downloading file</Alert>);
+      }
     } else {
-      console.error('No PDF data to download');
+      setUploadAlert(<Alert variant="warning" onClose={() => setUploadAlert(null)} dismissible>No key data available to download</Alert>);
     }
   };
 
   const handleDownloadmaster = () => {
-    if (masterKeyFile ) {
-      const downloadLink = document.createElement('a');
-      downloadLink.href = masterKeyFile;
-      downloadLink.download = `${paper.catchNumber}.xlsx`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+    if (masterKeyFile) {
+      try {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = masterKeyFile;
+        downloadLink.download = `${paper.catchNumber}_master.xlsx`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        setUploadAlert(<Alert variant="success" onClose={() => setUploadAlert(null)} dismissible>Master key download started successfully</Alert>);
+      } catch (error) {
+        console.error('Error downloading master key file:', error);
+        setUploadAlert(<Alert variant="danger" onClose={() => setUploadAlert(null)} dismissible>Error downloading master key file</Alert>);
+      }
     } else {
-      console.error('No master key file data to download');
+      setUploadAlert(<Alert variant="warning" onClose={() => setUploadAlert(null)} dismissible>No master key file data available to download</Alert>);
     }
   };
-  
+
 
   const updatePaper = () => {
     axios.put(`${baseUrl}/api/Papers/${decrypt(paperID)}`, paper, {
       headers: { Authorization: `Bearer ${keygenUser?.token}` }
     })
-      .then(response => {
+      .then(() => {
         setFormDisabled(true);
         setButtonText('Update');
         fetchPaper();
+        setUploadAlert(<Alert variant="success" onClose={() => setUploadAlert(null)} dismissible>Paper details updated successfully</Alert>);
       })
       .catch(error => {
         console.error('Error updating paper:', error);
-        // Handle error appropriately, such as displaying an error message to the user
+        setUploadAlert(<Alert variant="danger" onClose={() => setUploadAlert(null)} dismissible>Error updating paper: {error.message}</Alert>);
       });
   };
 
@@ -200,7 +250,7 @@ const ViewPaper = () => {
       const progConfigResponse = await axios.get(`${baseUrl}/api/ProgConfigs/Programme/${paper.programmeID}/${paper.bookletSize}`, { headers: { Authorization: `Bearer ${keygenUser?.token}` } });
       const progConfigData = progConfigResponse.data[0]; // Assuming the API returns an array with a single object
       const progConfigID = progConfigData.progConfigID;
-  
+
       const paperData = {
         programmeID: paper.programmeID,
         paperID: paper.paperID,
@@ -215,7 +265,7 @@ const ViewPaper = () => {
   };
 
 
-  
+
   const getLanguageText = (code) => {
     switch(code) {
       case 'B': return 'Bilingual';
@@ -228,6 +278,36 @@ const ViewPaper = () => {
 
   return (
     <Container className="userform border border-3 p-4 my-3">
+      {/* Confirmation Modal */}
+      <Modal show={showConfirmModal} onHide={cancelUpload} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>{keyDataUrl ? 'Confirm Update' : 'Confirm Upload'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>{keyDataUrl
+            ? 'Are you sure you want to update the existing key file with the selected file?'
+            : 'Are you sure you want to upload the selected key file?'}</p>
+          {selectedKeyFile && (
+            <p>
+              <strong>File:</strong> {selectedKeyFile.name} ({Math.round(selectedKeyFile.size / 1024)} KB)
+            </p>
+          )}
+          {keyDataUrl && (
+            <Alert variant="warning">
+              This will replace the existing key file. This action cannot be undone.
+            </Alert>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={cancelUpload}>
+            Cancel
+          </Button>
+          <Button variant={keyDataUrl ? "warning" : "primary"} onClick={confirmUpload}>
+            {keyDataUrl ? 'Update' : 'Upload'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       {loading && <div>Loading...</div>}
       {paper && (
         <>
@@ -428,33 +508,46 @@ const ViewPaper = () => {
               </Card>
               <Card className='mt-4'>
                 <Card.Header>
-                  <Card.Title className="text-center">PDF Booklet Status</Card.Title>
+                  <Card.Title className="text-center">Manually Generated Keys</Card.Title>
                 </Card.Header>
                 <Card.Body>
                   <div className="mt-2 text-center">
-                    {pdfDataUrl ? (
+                    {keyDataUrl ? (
                       <>
                         {uploadAlert}
-                        <p>Booklet Uploaded</p>
-                        <Button onClick={handleDownload}>
-                          <FontAwesomeIcon icon={faDownload} className="me-2" />
-                          Download Booklet
-                        </Button>
+                        <p>Manual Keys Uploaded</p>
+                        <div className="d-flex gap-2">
+                          <Button onClick={handleDownload}>
+                            <FontAwesomeIcon icon={faDownload} className="me-2" />
+                            Download Manually Generated Keys
+                          </Button>
+                          <label htmlFor="key-update" className="btn btn-warning">
+                            <FontAwesomeIcon icon={faEdit} className="me-2" />
+                            Update Manually Generated Keys
+                          </label>
+                          <input
+                            id="key-update"
+                            type="file"
+                            accept=".xlsx,.xls"
+                            onChange={handleKeyFileChange}
+                            style={{ display: 'none' }}
+                          />
+                        </div>
                       </>
                     ) : (
                       <>
                         {uploadAlert}
-                        <p>Booklet Not Uploaded </p>
+                        <p>Manually Generated Keys Not Uploaded </p>
                         <div className="mt-2 text-center">
-                          <label htmlFor="pdf-upload" className="btn btn-primary">
-                            <FontAwesomeIcon icon={faUpload} className="me-2" />
-                            Upload PDF
+                          <label htmlFor="key-upload" className="btn btn-primary">
+                            <FontAwesomeIcon icon={faFileExcel} className="me-2" />
+                            Upload Manually Generated Keys
                           </label>
                           <input
-                            id="pdf-upload"
+                            id="key-upload"
                             type="file"
-                            accept=".pdf"
-                            onChange={handlePdfFileChange}
+                            accept=".xlsx,.xls"
+                            onChange={handleKeyFileChange}
                             style={{ display: 'none' }}
                           />
                         </div>
@@ -472,7 +565,7 @@ const ViewPaper = () => {
                   <div className="mt-2 text-center">
                     {masterKeyFile ? (
                       <>
-                        
+
                         <Button onClick={handleDownloadmaster}>
                           <FontAwesomeIcon icon={faDownload} className="me-2" />
                           Download Master Key File

@@ -11,12 +11,20 @@ import 'datatables.net-dt/css/jquery.dataTables.css';
 import 'datatables.net';
 import 'react-toastify/dist/ReactToastify.css';
 import 'react-loading-skeleton/dist/skeleton.css';
+import ErrorBoundary from './components/ErrorBoundary'
+import { setupErrorHandlers } from './utils/errorHandler'
 
+// Set up global error handlers
+setupErrorHandlers();
 
 createRoot(document.getElementById('root')).render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
+  <React.StrictMode>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </ErrorBoundary>
+  </React.StrictMode>
 )
 
 reportWebVitals()

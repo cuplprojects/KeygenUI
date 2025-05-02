@@ -1,41 +1,53 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { useUser } from 'src/context/UserContext';
+import { useUser } from './UserContext';
 
-const useStatusCounts = (selectedProgram) => {
+const apiUrl = process.env.REACT_APP_BASE_API_URL;
+
+/**
+ * Custom hook to fetch PDF status counts for a specific program
+ * @param {number} programId - The ID of the program to fetch status counts for
+ * @returns {Object} - Status counts and loading state
+ */
+const useStatusCounts = (programId) => {
   const { keygenUser } = useUser();
-  const [pdfStatusCounts, setStatusCounts] = useState(null);
-  const [loadingstatus, setLoading] = useState(false);
+  const [pdfStatusCounts, setPdfStatusCounts] = useState(null);
+  const [loadingstatus, setLoadingStatus] = useState(false);
   const [error, setError] = useState(null);
 
-  const apiUrl = process.env.REACT_APP_BASE_API_URL;
-
   const fetchStatusCounts = useCallback(async () => {
-    if (!selectedProgram) {
+    if (!programId) {
+      setPdfStatusCounts(null);
       return;
     }
 
-    setLoading(true);
+    setLoadingStatus(true);
     setError(null);
 
     try {
-      const response = await axios.get(`${apiUrl}/PDFfile/GetStatusCount/${selectedProgram}`, {
+      const response = await axios.get(`${apiUrl}/PDFfile/GetStatusCount/${programId}`, {
         headers: { Authorization: `Bearer ${keygenUser?.token}` },
       });
 
-      setStatusCounts(response.data);
+      setPdfStatusCounts(response.data);
     } catch (err) {
-      setError(err);
+      console.error('Error fetching PDF status counts:', err);
+      setError(err.message || 'Failed to fetch status counts');
+      setPdfStatusCounts(null);
     } finally {
-      setLoading(false);
+      setLoadingStatus(false);
     }
-  }, [selectedProgram, keygenUser, apiUrl]);
+  }, [programId, keygenUser]);
 
-  return { 
-    pdfStatusCounts, 
-    loadingstatus, 
-    error, 
-    refetch: fetchStatusCounts 
+  useEffect(() => {
+    fetchStatusCounts();
+  }, [fetchStatusCounts]);
+
+  return {
+    pdfStatusCounts,
+    loadingstatus,
+    error,
+    refetch: fetchStatusCounts
   };
 };
 

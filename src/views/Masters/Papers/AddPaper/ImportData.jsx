@@ -231,7 +231,7 @@ const ImportData = ({ programmeID, setSelecedfile, bookletSize }) => {
       const updatedRow = { ...row, programmeID}; // Add programmeID to the record
   
       try {
-        const response = await axios.post(`${baseUrl}/api/Papers1111`, updatedRow, {
+        const response = await axios.post(`${baseUrl}/api/Papers`, updatedRow, {
           headers: {
             Authorization: `Bearer ${keygenUser?.token}`,
             'Content-Type': 'application/json',

@@ -872,7 +872,7 @@ useEffect(() => {
         <div className="d-flex align-items-center justify-content-end gap-1"> 
         {
           !showVerificationBtn && (
-            <div className="verifiedbtn">
+            <div className="verifiedbtn me-5">
                 <Button size='sm' variant='danger' className='text-white' onClick={()=>markVerified(2)}>
                   Mark as Wrong
                 </Button>
@@ -883,7 +883,7 @@ useEffect(() => {
          {/* mark as verified btn  */}
          {
             showVerificationBtn && pdfUrls && verificationData.length>0 && (
-              <div className="verifiedbtn">
+              <div className="verifiedbtn me-5">
                 <Button size='sm' variant='primary' onClick={()=>markVerified(1)}>
                   Mark as Verified
                 </Button>
@@ -891,7 +891,7 @@ useEffect(() => {
             )
           }
           {/* Success Mark (Green) */}
-          <Button variant="outline-success" size='sm' onClick={() => handleVerification(true)}>
+          <Button className='ms-5' variant="outline-success" size='sm' onClick={() => handleVerification(true)}>
             <FontAwesomeIcon icon={faCheckCircle} />
           </Button>
 

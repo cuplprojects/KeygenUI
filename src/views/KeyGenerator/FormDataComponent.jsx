@@ -153,7 +153,7 @@ const FormDataComponent = ({ programId, numberOfQuestions, formData, setFormData
                         <th className='text-center'>SN</th>
                         <th className='text-center'>Page No.<span className="text-danger">*</span></th>
                         <th className='text-center'>Question Number<span className="text-danger">*</span></th>
-                        <th className='ps-3 text-center'>Key<span className="text-danger">*</span>  <i className="fa-solid fa-paste text-primary c-pointer ms-4" onClick={handlePast} title='Past'></i></th>
+                        <th className='ps-3 text-center'>Key<span className="text-danger">*</span>  <i className="fa-solid fa-paste text-primary c-pointer ms-4" onClick={handlePast} title='Paste'></i></th>
                     </tr>
                 </thead>
                 <tbody>

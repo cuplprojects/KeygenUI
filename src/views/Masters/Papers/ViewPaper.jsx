@@ -324,9 +324,19 @@ const ViewPaper = () => {
                         <td>Program:</td>
                         <td>{paper.programmeName}</td>
                       </tr>
-                      <tr>
+                     <tr>
                         <td>Catch Number:</td>
-                        <td>{paper.catchNumber}</td>
+                        <td>
+                          {formDisabled ? (
+                            paper.catchNumber
+                          ) : (
+                            <Form.Control
+                              type="text"
+                              value={paper.catchNumber}
+                              onChange={(e) => handleChange('catchNumber', e.target.value)}
+                            />
+                          )}
+                        </td>
                       </tr>
                       <tr>
                         <td>Course:</td>
